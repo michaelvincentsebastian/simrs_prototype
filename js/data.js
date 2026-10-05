@@ -362,23 +362,166 @@ const SIMRS_MASTER_DATA = {
         labOrders: [],
         isFinalized: true
       }
+    },
+    {
+      id: "OPV-2026-0005",
+      patientId: "PAT-005",
+      patientName: "Muhammad Rayhan (Anak)",
+      mrNo: "RM-2026-0210",
+      departmentId: "POLI-ANAK",
+      departmentName: "Poli Anak",
+      practitionerId: "DOC-ANISA",
+      practitionerName: "dr. Anisa Putri, Sp.A",
+      registrationSource: "Walk-in",
+      payerType: "BPJS",
+      payerMemberNo: "0003112233445",
+      eligibilityStatus: "Valid",
+      visitStatus: "WAITING_TRIAGE",
+      pharmacyStatus: "Not Required",
+      billingStatus: "Pending",
+      checkedInAt: "2026-10-05T09:12:00",
+      ticketNo: "T-004",
+      queueType: "Triase"
+    },
+    {
+      id: "OPV-2026-0006",
+      patientId: "PAT-001",
+      patientName: "Aditya Pratama (Balita)",
+      mrNo: "RM-2026-0215",
+      departmentId: "POLI-ANAK",
+      departmentName: "Poli Anak",
+      practitionerId: "DOC-ANISA",
+      practitionerName: "dr. Anisa Putri, Sp.A",
+      registrationSource: "Appointment",
+      payerType: "Umum",
+      payerMemberNo: "-",
+      eligibilityStatus: "Valid",
+      visitStatus: "WAITING_DOCTOR",
+      pharmacyStatus: "Not Required",
+      billingStatus: "Pending",
+      checkedInAt: "2026-10-05T08:50:00",
+      triageCompletedAt: "2026-10-05T09:05:00",
+      ticketNo: "B-001",
+      queueType: "Dokter",
+      vitals: {
+        systolic: 95,
+        diastolic: 60,
+        pulse: 105,
+        temperature: 38.4,
+        respiratoryRate: 24,
+        spo2: 99,
+        height: 102,
+        weight: 16,
+        bmi: 15.4,
+        bmiStatus: "Normal"
+      },
+      triage: {
+        chiefComplaint: "Demam naik turun 3 hari disertai batuk pilek dan nafsu makan menurun",
+        fallRisk: "Rendah",
+        allergies: "Tidak ada riwayat alergi",
+        painScore: 2,
+        infectionScreening: "Demam & ISPA",
+        outcome: "Normal"
+      }
+    },
+    {
+      id: "OPV-2026-0007",
+      patientId: "PAT-003",
+      patientName: "Agus Setiawan",
+      mrNo: "RM-2026-0220",
+      departmentId: "POLI-BEDAH",
+      departmentName: "Poli Bedah Umum",
+      practitionerId: "DOC-BAMBANG",
+      practitionerName: "dr. Bambang Irawan, Sp.B",
+      registrationSource: "Walk-in",
+      payerType: "BPJS",
+      payerMemberNo: "0002981726354",
+      eligibilityStatus: "Valid",
+      visitStatus: "WAITING_TRIAGE",
+      pharmacyStatus: "Not Required",
+      billingStatus: "Pending",
+      checkedInAt: "2026-10-05T09:20:00",
+      ticketNo: "T-005",
+      queueType: "Triase"
+    },
+    {
+      id: "OPV-2026-0008",
+      patientId: "PAT-004",
+      patientName: "Ratna Sari Dewi",
+      mrNo: "RM-2026-0225",
+      departmentId: "POLI-SARAF",
+      departmentName: "Poli Saraf",
+      practitionerId: "DOC-CYNTHIA",
+      practitionerName: "dr. Cynthia Dewi, Sp.S",
+      registrationSource: "Appointment",
+      payerType: "Asuransi",
+      payerMemberNo: "ASU-119920",
+      eligibilityStatus: "Valid",
+      visitStatus: "WAITING_DOCTOR",
+      pharmacyStatus: "Not Required",
+      billingStatus: "Pending",
+      checkedInAt: "2026-10-05T08:40:00",
+      triageCompletedAt: "2026-10-05T09:00:00",
+      ticketNo: "E-001",
+      queueType: "Dokter",
+      vitals: {
+        systolic: 130,
+        diastolic: 85,
+        pulse: 80,
+        temperature: 36.7,
+        respiratoryRate: 18,
+        spo2: 98,
+        height: 160,
+        weight: 60,
+        bmi: 23.4,
+        bmiStatus: "Normal"
+      },
+      triage: {
+        chiefComplaint: "Kesemutan dan kebas pada kedua telapak tangan dan kaki sejak 2 minggu",
+        fallRisk: "Rendah",
+        allergies: "Tidak ada",
+        painScore: 3,
+        infectionScreening: "Tidak ada",
+        outcome: "Normal"
+      }
+    },
+    {
+      id: "OPV-2026-0009",
+      patientId: "PAT-002",
+      patientName: "Hj. Maryam",
+      mrNo: "RM-2026-0230",
+      departmentId: "POLI-INT",
+      departmentName: "Poli Penyakit Dalam",
+      practitionerId: "DOC-HENDRA",
+      practitionerName: "dr. Hendra Pratama, Sp.PD",
+      registrationSource: "Walk-in",
+      payerType: "BPJS",
+      payerMemberNo: "0001928374650",
+      eligibilityStatus: "Valid",
+      visitStatus: "WAITING_TRIAGE",
+      pharmacyStatus: "Not Required",
+      billingStatus: "Pending",
+      checkedInAt: "2026-10-05T09:30:00",
+      ticketNo: "T-006",
+      queueType: "Triase"
     }
   ]
 };
 
 // Seed or retrieve from LocalStorage
 function initDatabase() {
-  if (!localStorage.getItem("SIMRS_DB_VERSION") || localStorage.getItem("SIMRS_DB_VERSION") !== "2.0") {
+  if (!localStorage.getItem("SIMRS_DB_VERSION") || localStorage.getItem("SIMRS_DB_VERSION") !== "2.2") {
     localStorage.setItem("SIMRS_PATIENTS", JSON.stringify(SIMRS_MASTER_DATA.initialPatients));
     localStorage.setItem("SIMRS_VISITS", JSON.stringify(SIMRS_MASTER_DATA.initialVisits));
-    localStorage.setItem("SIMRS_TICKETS_SEQ", JSON.stringify({ A: 3, B: 1, C: 1, D: 1, E: 1, F: 2, K: 1, T: 4 }));
+    localStorage.setItem("SIMRS_TICKETS_SEQ", JSON.stringify({ A: 3, B: 2, C: 1, D: 1, E: 2, F: 2, K: 1, T: 7 }));
     localStorage.setItem("SIMRS_AUDIT_LOGS", JSON.stringify([
       { timestamp: "2026-10-05 08:15:22", user: "Budi Santoso", role: "Registration Staff", action: "Check-In Pasien Walk-in: Bambang Sutrisno (Tiket A-001)" },
       { timestamp: "2026-10-05 08:30:10", user: "Ns. Siti Rahma", role: "Nursing User", action: "Selesai Triase & Input TTV: Bambang Sutrisno -> Routing ke dr. Hendra" },
       { timestamp: "2026-10-05 08:45:04", user: "dr. Hendra Pratama", role: "Physician", action: "Mulai Pelayanan Medis / Buka Rekam Medis Pasien: Bambang Sutrisno" }
     ]));
-    localStorage.setItem("SIMRS_DB_VERSION", "2.0");
+    localStorage.setItem("SIMRS_DB_VERSION", "2.2");
   }
 }
 
 initDatabase();
+

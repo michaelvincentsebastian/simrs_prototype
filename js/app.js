@@ -9,6 +9,173 @@ let activeDoctorConsultationVisitId = "OPV-2026-0001";
 let isAudioEnabled = true;
 let searchQuery = "";
 
+// Multi-Department & Station Queue Filter States
+let triageDeptFilter = localStorage.getItem("SIMRS_FILTER_TRIAGE_DEPT") || "POLI-INT";
+let triageDoctorFilter = localStorage.getItem("SIMRS_FILTER_TRIAGE_DOC") || "DOC-HENDRA";
+let activeTriageVisitId = null;
+
+let doctorFilterDoc = localStorage.getItem("SIMRS_FILTER_DOCTOR_DOC") || "DOC-HENDRA";
+let doctorFilterDept = localStorage.getItem("SIMRS_FILTER_DOCTOR_DEPT") || "POLI-INT";
+
+let regQueueDeptFilter = "ALL";
+let regQueueDocFilter = "ALL";
+let regQueueStatusFilter = "ALL";
+
+let pharmacyDeptFilter = "ALL";
+let pharmacyDocFilter = "ALL";
+
+let cashierDeptFilter = "ALL";
+let cashierPayerFilter = "ALL";
+
+let displayDeptFilter = "ALL";
+
+// Queue & Workstation Filter Event Handlers
+function handleTriageDeptChange(val) {
+  triageDeptFilter = val;
+  localStorage.setItem("SIMRS_FILTER_TRIAGE_DEPT", val);
+  if (val !== "ALL") {
+    const currentDoc = SIMRS_MASTER_DATA.practitioners.find(d => d.id === triageDoctorFilter);
+    if (currentDoc && currentDoc.department !== val) {
+      triageDoctorFilter = "ALL";
+      localStorage.setItem("SIMRS_FILTER_TRIAGE_DOC", "ALL");
+    }
+  }
+  activeTriageVisitId = null;
+  renderWorkspace("triase");
+  renderContextualTopBar();
+}
+
+function handleTriageDoctorChange(val) {
+  triageDoctorFilter = val;
+  localStorage.setItem("SIMRS_FILTER_TRIAGE_DOC", val);
+  if (val !== "ALL") {
+    const docObj = SIMRS_MASTER_DATA.practitioners.find(d => d.id === val);
+    if (docObj && docObj.department) {
+      triageDeptFilter = docObj.department;
+      localStorage.setItem("SIMRS_FILTER_TRIAGE_DEPT", docObj.department);
+    }
+  }
+  activeTriageVisitId = null;
+  renderWorkspace("triase");
+  renderContextualTopBar();
+}
+
+function selectTriagePatient(visitId) {
+  activeTriageVisitId = visitId;
+  const visit = VisitStateService.findVisitById(visitId);
+  if (visit && visit.visitStatus === "WAITING_TRIAGE") {
+    try {
+      TriageService.startTriage(visitId);
+    } catch (e) {
+      console.warn("Could not transition to IN_TRIAGE:", e);
+    }
+  }
+  renderWorkspace("triase");
+}
+
+function handleDoctorPractitionerChange(val) {
+  doctorFilterDoc = val;
+  localStorage.setItem("SIMRS_FILTER_DOCTOR_DOC", val);
+  if (val !== "ALL") {
+    const docObj = SIMRS_MASTER_DATA.practitioners.find(d => d.id === val);
+    if (docObj && docObj.department) {
+      doctorFilterDept = docObj.department;
+      localStorage.setItem("SIMRS_FILTER_DOCTOR_DEPT", docObj.department);
+    }
+  }
+  activeDoctorConsultationVisitId = null;
+  renderWorkspace("dokter");
+  renderContextualTopBar();
+}
+
+function handleDoctorDeptChange(val) {
+  doctorFilterDept = val;
+  localStorage.setItem("SIMRS_FILTER_DOCTOR_DEPT", val);
+  if (val !== "ALL") {
+    const currentDoc = SIMRS_MASTER_DATA.practitioners.find(d => d.id === doctorFilterDoc);
+    if (currentDoc && currentDoc.department !== val) {
+      const deptDoc = SIMRS_MASTER_DATA.practitioners.find(d => d.department === val);
+      doctorFilterDoc = deptDoc ? deptDoc.id : "ALL";
+      localStorage.setItem("SIMRS_FILTER_DOCTOR_DOC", doctorFilterDoc);
+    }
+  }
+  activeDoctorConsultationVisitId = null;
+  renderWorkspace("dokter");
+  renderContextualTopBar();
+}
+
+function handleRegQueueDeptChange(val) {
+  regQueueDeptFilter = val;
+  const tblContainer = document.getElementById("recent-visits-table-container");
+  if (tblContainer) {
+    tblContainer.innerHTML = renderRecentVisitsTableHtml();
+  } else {
+    renderWorkspace("registrasi");
+  }
+}
+
+function handleRegQueueDocChange(val) {
+  regQueueDocFilter = val;
+  const tblContainer = document.getElementById("recent-visits-table-container");
+  if (tblContainer) {
+    tblContainer.innerHTML = renderRecentVisitsTableHtml();
+  } else {
+    renderWorkspace("registrasi");
+  }
+}
+
+function handleRegQueueStatusChange(val) {
+  regQueueStatusFilter = val;
+  const tblContainer = document.getElementById("recent-visits-table-container");
+  if (tblContainer) {
+    tblContainer.innerHTML = renderRecentVisitsTableHtml();
+  } else {
+    renderWorkspace("registrasi");
+  }
+}
+
+function resetRegQueueFilters() {
+  regQueueDeptFilter = "ALL";
+  regQueueDocFilter = "ALL";
+  regQueueStatusFilter = "ALL";
+  const tblContainer = document.getElementById("recent-visits-table-container");
+  if (tblContainer) {
+    tblContainer.innerHTML = renderRecentVisitsTableHtml();
+  } else {
+    renderWorkspace("registrasi");
+  }
+}
+
+function handlePharmacyDeptFilter(val) {
+  pharmacyDeptFilter = val;
+  renderWorkspace("farmasi");
+  renderContextualTopBar();
+}
+
+function handlePharmacyDocFilter(val) {
+  pharmacyDocFilter = val;
+  renderWorkspace("farmasi");
+  renderContextualTopBar();
+}
+
+function handleKasirDeptFilter(val) {
+  cashierDeptFilter = val;
+  renderWorkspace("kasir");
+  renderContextualTopBar();
+}
+
+function handleKasirPayerFilter(val) {
+  cashierPayerFilter = val;
+  renderWorkspace("kasir");
+  renderContextualTopBar();
+}
+
+function handleDisplayDeptFilter(val) {
+  displayDeptFilter = val;
+  renderWorkspace("display");
+}
+
+
 // 1. Initialization
 document.addEventListener("DOMContentLoaded", () => {
   initApp();
@@ -216,7 +383,31 @@ function renderContextualTopBar() {
   const noteEl = document.getElementById("role-contextual-note");
 
   if (noteEl) {
-    noteEl.textContent = `${role.id} · ${role.allowedWorkspaces.length} Ruang Kerja`;
+    if (activeWorkspaceId === "triase") {
+      const deptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === triageDeptFilter);
+      const docObj = SIMRS_MASTER_DATA.practitioners.find(d => d.id === triageDoctorFilter);
+      const deptName = triageDeptFilter === "ALL" ? "Semua Poli" : (deptObj ? deptObj.name : "Poli");
+      const docName = triageDoctorFilter === "ALL" ? "Semua Dokter" : (docObj ? docObj.name.split(',')[0] : "Dokter");
+      noteEl.innerHTML = `<span class="inline-flex items-center gap-1.5 text-brand font-semibold"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>Unit: ${deptName} · ${docName}</span>`;
+    } else if (activeWorkspaceId === "dokter") {
+      const docObj = SIMRS_MASTER_DATA.practitioners.find(d => d.id === doctorFilterDoc);
+      const deptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === doctorFilterDept);
+      const deptName = doctorFilterDept === "ALL" ? "Semua Poli" : (deptObj ? deptObj.name : "Poli");
+      const docName = doctorFilterDoc === "ALL" ? "Semua Dokter" : (docObj ? docObj.name : "Dokter");
+      noteEl.innerHTML = `<span class="inline-flex items-center gap-1.5 text-brand font-semibold"><span class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>Stasiun: ${deptName} · ${docName}</span>`;
+    } else if (activeWorkspaceId === "registrasi") {
+      noteEl.innerHTML = `<span class="inline-flex items-center gap-1.5 text-brand font-semibold"><span class="w-2 h-2 rounded-full bg-blue-500"></span>Stasiun: Loket Admisi &amp; Pendaftaran 01</span>`;
+    } else if (activeWorkspaceId === "farmasi") {
+      const deptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === pharmacyDeptFilter);
+      const deptName = pharmacyDeptFilter === "ALL" ? "Semua Poli" : (deptObj ? deptObj.name : "Poli");
+      noteEl.innerHTML = `<span class="inline-flex items-center gap-1.5 text-brand font-semibold"><span class="w-2 h-2 rounded-full bg-teal-500"></span>Apotek Rawat Jalan (${deptName})</span>`;
+    } else if (activeWorkspaceId === "kasir") {
+      const deptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === cashierDeptFilter);
+      const deptName = cashierDeptFilter === "ALL" ? "Semua Poli" : (deptObj ? deptObj.name : "Poli");
+      noteEl.innerHTML = `<span class="inline-flex items-center gap-1.5 text-brand font-semibold"><span class="w-2 h-2 rounded-full bg-amber-500"></span>Kasir Rawat Jalan (${deptName})</span>`;
+    } else {
+      noteEl.textContent = `${role.id} · ${role.allowedWorkspaces.length} Ruang Kerja`;
+    }
   }
 
   if (!tabsList) return;
@@ -1167,7 +1358,8 @@ function renderRegistrasiWorkspace(container) {
 }
 
 function renderRecentVisitsTableHtml() {
-  let visits = VisitStateService.getVisits();
+  let allVisits = VisitStateService.getVisits();
+  let visits = allVisits;
   if (searchQuery) {
     visits = visits.filter(v => 
       v.patientName.toLowerCase().includes(searchQuery) || 
@@ -1176,11 +1368,81 @@ function renderRecentVisitsTableHtml() {
     );
   }
 
+  if (regQueueDeptFilter !== "ALL") {
+    visits = visits.filter(v => {
+      if (v.departmentId) return v.departmentId === regQueueDeptFilter;
+      const deptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === regQueueDeptFilter);
+      return deptObj ? v.departmentName === deptObj.name : true;
+    });
+  }
+
+  if (regQueueDocFilter !== "ALL") {
+    visits = visits.filter(v => {
+      if (v.practitionerId) return v.practitionerId === regQueueDocFilter;
+      const docObj = SIMRS_MASTER_DATA.practitioners.find(d => d.id === regQueueDocFilter);
+      return docObj ? (v.practitionerName && v.practitionerName.includes(docObj.name.split(',')[0])) : true;
+    });
+  }
+
+  if (regQueueStatusFilter !== "ALL") {
+    visits = visits.filter(v => v.visitStatus === regQueueStatusFilter);
+  }
+
+  const isFiltered = regQueueDeptFilter !== 'ALL' || regQueueDocFilter !== 'ALL' || regQueueStatusFilter !== 'ALL';
+
   return `
+    <!-- Queue Filter Toolbar for Front Desk & Admission -->
+    <div class="p-3 bg-surface-container-low border-b border-line/40 flex flex-wrap items-center justify-between gap-2.5">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-caption font-semibold text-ink-soft flex items-center gap-1 shrink-0">
+          <span class="material-symbols-outlined text-[16px] text-brand">filter_alt</span>
+          <span>Filter Antrian:</span>
+        </span>
+        
+        <!-- Filter Poli -->
+        <select onchange="handleRegQueueDeptChange(this.value)" class="h-8 px-2 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+          <option value="ALL" ${regQueueDeptFilter === 'ALL' ? 'selected' : ''}>🏢 Semua Poli</option>
+          ${SIMRS_MASTER_DATA.departments.map(dept => `
+            <option value="${dept.id}" ${regQueueDeptFilter === dept.id ? 'selected' : ''}>${dept.name}</option>
+          `).join("")}
+        </select>
+
+        <!-- Filter Dokter -->
+        <select onchange="handleRegQueueDocChange(this.value)" class="h-8 px-2 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+          <option value="ALL" ${regQueueDocFilter === 'ALL' ? 'selected' : ''}>👨‍⚕️ Semua Dokter</option>
+          ${SIMRS_MASTER_DATA.practitioners.map(doc => `
+            <option value="${doc.id}" ${regQueueDocFilter === doc.id ? 'selected' : ''}>${doc.name}</option>
+          `).join("")}
+        </select>
+
+        <!-- Filter Status -->
+        <select onchange="handleRegQueueStatusChange(this.value)" class="h-8 px-2 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+          <option value="ALL" ${regQueueStatusFilter === 'ALL' ? 'selected' : ''}>📋 Semua Status</option>
+          <option value="WAITING_TRIAGE" ${regQueueStatusFilter === 'WAITING_TRIAGE' ? 'selected' : ''}>Menunggu Triase</option>
+          <option value="WAITING_DOCTOR" ${regQueueStatusFilter === 'WAITING_DOCTOR' ? 'selected' : ''}>Menunggu Dokter</option>
+          <option value="IN_SERVICE" ${regQueueStatusFilter === 'IN_SERVICE' ? 'selected' : ''}>Sedang Dilayani</option>
+          <option value="SERVICE_COMPLETED" ${regQueueStatusFilter === 'SERVICE_COMPLETED' ? 'selected' : ''}>Pelayanan Selesai</option>
+          <option value="CLOSED" ${regQueueStatusFilter === 'CLOSED' ? 'selected' : ''}>Ditutup / Selesai</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <span class="text-caption text-ink-soft">
+          Menampilkan: <strong class="text-ink font-mono">${visits.length}</strong> dari <span class="font-mono">${allVisits.length}</span> antrian
+        </span>
+        ${isFiltered ? `
+          <button onclick="resetRegQueueFilters()" class="text-caption text-brand hover:underline font-semibold ml-2 flex items-center gap-0.5">
+            <span class="material-symbols-outlined text-[14px]">refresh</span>
+            <span>Reset</span>
+          </button>
+        ` : ''}
+      </div>
+    </div>
+
     <div class="overflow-x-auto">
       <table class="w-full text-left font-table-cell text-table-cell border-collapse">
         <thead>
-          <tr class="bg-surface-container-low border-b border-line text-ink-soft font-semibold text-caption">
+          <tr class="bg-surface-container-low/60 border-b border-line text-ink-soft font-semibold text-caption">
             <th class="p-space-sm">Tiket / ID Visit</th>
             <th class="p-space-sm">Pasien &amp; No. RM</th>
             <th class="p-space-sm">Poli Tujuan</th>
@@ -1191,7 +1453,13 @@ function renderRecentVisitsTableHtml() {
           </tr>
         </thead>
         <tbody class="divide-y divide-line">
-          ${visits.map(v => `
+          ${visits.length === 0 ? `
+            <tr>
+              <td colspan="7" class="p-8 text-center text-ink-soft font-caption text-caption">
+                Tidak ada kunjungan atau antrian yang sesuai dengan filter yang dipilih.
+              </td>
+            </tr>
+          ` : visits.map(v => `
             <tr class="hover:bg-surface-container-low/50 transition">
               <td class="p-space-sm">
                 <span class="font-mono font-bold text-brand text-caption px-2 py-0.5 bg-brand-tint rounded">${v.ticketNo}</span>
@@ -1239,8 +1507,43 @@ function renderTriaseWorkspace(container) {
       (v.departmentName && v.departmentName.toLowerCase().includes(searchQuery))
     );
   }
-  const triageQueue = visits.filter(v => v.visitStatus === "WAITING_TRIAGE" || v.visitStatus === "IN_TRIAGE");
-  const selectedVisit = triageQueue[0] || visits[0];
+
+  const allTriageQueue = visits.filter(v => v.visitStatus === "WAITING_TRIAGE" || v.visitStatus === "IN_TRIAGE");
+
+  // Dynamic filter by selected department & doctor
+  let triageQueue = allTriageQueue.filter(v => {
+    if (triageDeptFilter !== "ALL") {
+      if (v.departmentId && v.departmentId !== triageDeptFilter) return false;
+      if (!v.departmentId && v.departmentName) {
+        const matchDept = SIMRS_MASTER_DATA.departments.find(d => d.id === triageDeptFilter);
+        if (matchDept && v.departmentName !== matchDept.name) return false;
+      }
+    }
+    if (triageDoctorFilter !== "ALL") {
+      if (v.practitionerId && v.practitionerId !== triageDoctorFilter) return false;
+      if (!v.practitionerId && v.practitionerName) {
+        const matchDoc = SIMRS_MASTER_DATA.practitioners.find(d => d.id === triageDoctorFilter);
+        if (matchDoc && !v.practitionerName.includes(matchDoc.name.split(',')[0])) return false;
+      }
+    }
+    return true;
+  });
+
+  // Selected visit for TTV input
+  let selectedVisit = null;
+  if (activeTriageVisitId) {
+    selectedVisit = visits.find(v => v.id === activeTriageVisitId);
+  }
+  if (!selectedVisit) {
+    selectedVisit = triageQueue[0] || allTriageQueue[0] || visits[0];
+  }
+
+  const activeDeptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === triageDeptFilter);
+  const activeDocObj = SIMRS_MASTER_DATA.practitioners.find(d => d.id === triageDoctorFilter);
+
+  const availableDoctorsForTriage = triageDeptFilter === "ALL"
+    ? SIMRS_MASTER_DATA.practitioners
+    : SIMRS_MASTER_DATA.practitioners.filter(p => p.department === triageDeptFilter);
 
   container.innerHTML = `
     <div class="flex flex-col gap-space-lg w-full">
@@ -1256,49 +1559,118 @@ function renderTriaseWorkspace(container) {
             <h1 class="font-headline-lg text-headline-lg text-ink font-bold tracking-tight">Triase &amp; Pengukuran Tanda Vital (TTV)</h1>
             <div class="flex items-center gap-1.5 px-2.5 py-1 bg-brand-tint rounded-full text-brand-strong font-caption text-caption font-semibold">
               <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
-              <span>Perawat Rawat Jalan</span>
+              <span>${triageDeptFilter === 'ALL' ? 'Semua Poliklinik' : (activeDeptObj?.name || 'Poliklinik')}</span>
             </div>
           </div>
         </div>
         <div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-xl text-caption font-caption">
-          <span class="text-ink-soft">Antrian Triase:</span>
+          <span class="text-ink-soft">Antrian Stasiun:</span>
           <strong class="text-warning font-mono font-bold text-body-strong">${triageQueue.length}</strong>
-          <span class="text-ink-soft">pasien</span>
+          <span class="text-ink-soft font-mono">/ ${allTriageQueue.length} total</span>
         </div>
       </div>
 
       <!-- 2-Column Clinical Worksheet -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
         
-        <!-- Left: Triage Queue Stream (Col 4) -->
-        <div class="lg:col-span-4 bg-surface rounded-xl shadow-sm border border-line/30 p-space-lg flex flex-col gap-space-md">
-          <div class="flex items-center justify-between pb-space-sm border-b border-line/40">
-            <span class="font-headline-md text-headline-md text-ink font-bold flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[20px] text-brand">checklist</span>
-              <span>Antrian Triase</span>
-            </span>
-            <span class="font-mono text-caption text-brand-strong font-bold bg-brand-tint px-2 py-0.5 rounded">${triageQueue.length}</span>
-          </div>
+        <!-- Left: Station Filter & Triage Queue Stream (Col 4) -->
+        <div class="lg:col-span-4 flex flex-col gap-space-md">
+          
+          <!-- Station / Workstation Filter Box -->
+          <div class="bg-surface rounded-xl shadow-sm border border-line/30 p-space-md flex flex-col gap-2.5">
+            <div class="flex items-center justify-between pb-1 border-b border-line/30">
+              <span class="font-bold text-caption text-ink uppercase tracking-wider flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-brand">domain</span>
+                <span>Pilih Stasiun / Unit Kerja</span>
+              </span>
+              <span class="text-[11px] font-mono text-brand font-semibold bg-brand-tint px-1.5 py-0.5 rounded">
+                ${triageDeptFilter === 'ALL' ? 'Multi-Unit' : (activeDeptObj?.code || 'Unit')}
+              </span>
+            </div>
 
-          <div class="flex flex-col gap-space-xs">
-            ${triageQueue.length === 0 ? '<p class="font-caption text-caption text-ink-soft py-6 text-center">Tidak ada antrian triase aktif saat ini.</p>' : ''}
-            ${triageQueue.map(v => `
-              <div class="p-space-sm rounded-xl border transition flex items-center justify-between ${
-                selectedVisit && selectedVisit.id === v.id ? 'border-brand bg-brand-tint/40 shadow-sm' : 'border-line/40 hover:bg-surface-container-low'
-              }">
-                <div class="min-w-0">
-                  <div class="flex items-center gap-1.5 flex-wrap">
-                    <span class="font-mono font-bold text-caption text-brand bg-surface px-1.5 py-0.5 rounded shadow-sm">${v.ticketNo}</span>
-                    <span class="font-body-strong text-body-strong text-ink truncate">${v.patientName}</span>
-                  </div>
-                  <span class="font-caption text-caption text-ink-soft block mt-0.5 truncate">${v.departmentName}</span>
-                </div>
-                <button onclick="callTicket('${v.ticketNo}', 'Meja Triase Perawat')" class="h-8 px-2.5 rounded-xl border border-line/50 bg-surface hover:bg-brand-tint text-brand transition shadow-sm shrink-0" title="Panggil Pasien">
-                  <span class="material-symbols-outlined text-[16px]">volume_up</span>
+            <div class="flex flex-col gap-2">
+              <div>
+                <label class="block text-[11px] font-semibold text-ink-soft mb-1">Poli / Departemen Triase:</label>
+                <select onchange="handleTriageDeptChange(this.value)" class="w-full h-8 px-2.5 bg-canvas text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+                  <option value="ALL" ${triageDeptFilter === 'ALL' ? 'selected' : ''}>🏢 Semua Poliklinik (Semua Unit)</option>
+                  ${SIMRS_MASTER_DATA.departments.map(dept => `
+                    <option value="${dept.id}" ${triageDeptFilter === dept.id ? 'selected' : ''}>
+                      ${dept.name} (${dept.room})
+                    </option>
+                  `).join("")}
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-ink-soft mb-1">Dokter Tujuan:</label>
+                <select onchange="handleTriageDoctorChange(this.value)" class="w-full h-8 px-2.5 bg-canvas text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+                  <option value="ALL" ${triageDoctorFilter === 'ALL' ? 'selected' : ''}>👨‍⚕️ Semua Dokter</option>
+                  ${availableDoctorsForTriage.map(doc => `
+                    <option value="${doc.id}" ${triageDoctorFilter === doc.id ? 'selected' : ''}>
+                      ${doc.name}
+                    </option>
+                  `).join("")}
+                </select>
+              </div>
+            </div>
+
+            ${(triageDeptFilter !== 'ALL' || triageDoctorFilter !== 'ALL') ? `
+              <div class="flex items-center justify-between pt-1 border-t border-line/20 text-[11px]">
+                <span class="text-ink-soft">Filter aktif stasiun</span>
+                <button onclick="handleTriageDeptChange('ALL'); handleTriageDoctorChange('ALL');" class="text-brand font-semibold hover:underline">
+                  Tampilkan Semua Poli
                 </button>
               </div>
-            `).join("")}
+            ` : ''}
           </div>
+
+          <!-- Queue List Card -->
+          <div class="bg-surface rounded-xl shadow-sm border border-line/30 p-space-lg flex flex-col gap-space-md">
+            <div class="flex items-center justify-between pb-space-sm border-b border-line/40">
+              <span class="font-headline-md text-headline-md text-ink font-bold flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[20px] text-brand">checklist</span>
+                <span>Antrian Triase Pasien</span>
+              </span>
+              <span class="font-mono text-caption text-brand-strong font-bold bg-brand-tint px-2 py-0.5 rounded">${triageQueue.length}</span>
+            </div>
+
+            <div class="flex flex-col gap-space-xs max-h-[460px] overflow-y-auto">
+              ${triageQueue.length === 0 ? `
+                <div class="py-8 px-4 text-center flex flex-col items-center gap-2">
+                  <span class="material-symbols-outlined text-[32px] text-ink-soft">assignment_turned_in</span>
+                  <p class="font-caption text-caption text-ink-soft">Tidak ada antrian triase untuk stasiun kerja ini.</p>
+                  ${allTriageQueue.length > 0 ? `
+                    <p class="text-[11px] text-ink-soft">Terdapat <strong>${allTriageQueue.length}</strong> pasien menunggu di poli lain.</p>
+                    <button onclick="handleTriageDeptChange('ALL'); handleTriageDoctorChange('ALL');" class="mt-1 text-caption text-brand font-semibold hover:underline">
+                      Buka Antrian Semua Poli
+                    </button>
+                  ` : ''}
+                </div>
+              ` : ''}
+              ${triageQueue.map(v => `
+                <div onclick="selectTriagePatient('${v.id}')" class="p-space-sm rounded-xl border cursor-pointer transition flex items-center justify-between ${
+                  selectedVisit && selectedVisit.id === v.id ? 'border-brand bg-brand-tint/40 shadow-sm ring-1 ring-brand/30' : 'border-line/40 hover:bg-surface-container-low'
+                }">
+                  <div class="min-w-0 flex-1">
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                      <span class="font-mono font-bold text-caption text-brand bg-surface px-1.5 py-0.5 rounded shadow-sm">${v.ticketNo}</span>
+                      <span class="font-body-strong text-body-strong text-ink truncate">${v.patientName}</span>
+                      ${v.visitStatus === 'IN_TRIAGE' ? '<span class="px-1.5 py-0.2 bg-warning-tint text-warning font-semibold text-[10px] rounded">Sedang TTV</span>' : ''}
+                    </div>
+                    <div class="flex items-center gap-1 text-[11px] text-ink-soft mt-0.5">
+                      <span class="font-medium text-ink truncate">${v.departmentName}</span>
+                      <span>·</span>
+                      <span class="truncate">${v.practitionerName}</span>
+                    </div>
+                  </div>
+                  <button onclick="event.stopPropagation(); callTicket('${v.ticketNo}', 'Meja Triase ${v.departmentName || 'Perawat'}')" class="h-8 px-2.5 rounded-xl border border-line/50 bg-surface hover:bg-brand-tint text-brand transition shadow-sm shrink-0 ml-2" title="Panggil Pasien">
+                    <span class="material-symbols-outlined text-[16px]">volume_up</span>
+                  </button>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+
         </div>
 
         <!-- Right: Active Patient TTV Form (Col 8) -->
@@ -1438,13 +1810,41 @@ function renderDokterWorkspace(container) {
       (v.departmentName && v.departmentName.toLowerCase().includes(searchQuery))
     );
   }
-  const doctorQueue = visits.filter(v => 
+
+  const allDoctorVisits = visits.filter(v => 
     v.visitStatus === "WAITING_DOCTOR" || 
     v.visitStatus === "IN_SERVICE" || 
     v.visitStatus === "WAITING_RESULTS"
   );
 
-  let activeVisit = visits.find(v => v.id === activeDoctorConsultationVisitId) || doctorQueue[0] || visits[0];
+  let doctorQueue = allDoctorVisits.filter(v => {
+    if (doctorFilterDoc !== "ALL") {
+      if (v.practitionerId && v.practitionerId !== doctorFilterDoc) return false;
+      if (!v.practitionerId && v.practitionerName) {
+        const docObj = SIMRS_MASTER_DATA.practitioners.find(d => d.id === doctorFilterDoc);
+        if (docObj && !v.practitionerName.includes(docObj.name.split(',')[0])) return false;
+      }
+    }
+    if (doctorFilterDept !== "ALL") {
+      if (v.departmentId && v.departmentId !== doctorFilterDept) return false;
+      if (!v.departmentId && v.departmentName) {
+        const deptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === doctorFilterDept);
+        if (deptObj && v.departmentName !== deptObj.name) return false;
+      }
+    }
+    return true;
+  });
+
+  let activeVisit = null;
+  if (activeDoctorConsultationVisitId) {
+    activeVisit = doctorQueue.find(v => v.id === activeDoctorConsultationVisitId) || visits.find(v => v.id === activeDoctorConsultationVisitId);
+  }
+  if (!activeVisit) {
+    activeVisit = doctorQueue[0] || allDoctorVisits[0] || visits[0];
+  }
+
+  const currentDoctorObj = SIMRS_MASTER_DATA.practitioners.find(d => d.id === doctorFilterDoc);
+  const currentDeptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === doctorFilterDept);
 
   container.innerHTML = `
     <div class="flex flex-col gap-space-lg w-full">
@@ -1460,51 +1860,120 @@ function renderDokterWorkspace(container) {
             <h1 class="font-headline-lg text-headline-lg text-ink font-bold tracking-tight">Ruang Konsultasi &amp; Rekam Medis (RME)</h1>
             <div class="flex items-center gap-1.5 px-2.5 py-1 bg-brand-tint rounded-full text-brand-strong font-caption text-caption font-semibold">
               <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
-              <span>dr. Hendra Pratama, Sp.PD</span>
+              <span>${currentDoctorObj ? currentDoctorObj.name : 'Semua Dokter Spesialis'} · ${currentDeptObj ? currentDeptObj.name : 'Poliklinik'}</span>
             </div>
           </div>
         </div>
 
         <div class="flex items-center gap-space-sm">
-          <button onclick="callTicket('${activeVisit.ticketNo}', '${activeVisit.departmentName}')" class="h-10 px-space-md rounded-xl bg-surface hover:bg-brand-tint border border-line text-brand font-body-strong text-body-strong flex items-center gap-1.5 transition shadow-sm">
-            <span class="material-symbols-outlined text-[18px]">volume_up</span>
-            <span>Panggil Tiket: ${activeVisit.ticketNo}</span>
-          </button>
-          <button onclick="printResumeMedis('${activeVisit.id}')" class="h-10 px-space-md rounded-xl bg-surface hover:bg-surface-container-low border border-line text-ink font-body-default text-body-default flex items-center gap-1.5 transition shadow-sm">
-            <span class="material-symbols-outlined text-[18px]">print</span>
-            <span>Resume Medis</span>
-          </button>
+          ${activeVisit ? `
+            <button onclick="callTicket('${activeVisit.ticketNo}', '${activeVisit.departmentName}')" class="h-10 px-space-md rounded-xl bg-surface hover:bg-brand-tint border border-line text-brand font-body-strong text-body-strong flex items-center gap-1.5 transition shadow-sm">
+              <span class="material-symbols-outlined text-[18px]">volume_up</span>
+              <span>Panggil Tiket: ${activeVisit.ticketNo}</span>
+            </button>
+            <button onclick="printResumeMedis('${activeVisit.id}')" class="h-10 px-space-md rounded-xl bg-surface hover:bg-surface-container-low border border-line text-ink font-body-default text-body-default flex items-center gap-1.5 transition shadow-sm">
+              <span class="material-symbols-outlined text-[18px]">print</span>
+              <span>Resume Medis</span>
+            </button>
+          ` : ''}
         </div>
       </div>
 
       <!-- 2-Column Workstation Layout -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
         
-        <!-- Column 1: Doctor's Queue (4 cols) -->
-        <div class="lg:col-span-4 bg-surface rounded-xl shadow-sm border border-line/30 p-space-lg flex flex-col gap-space-md">
-          <div class="flex items-center justify-between pb-space-sm border-b border-line/40">
-            <span class="font-headline-md text-headline-md text-ink font-bold flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[20px] text-brand">format_list_bulleted</span>
-              <span>Antrian Poli Dokter</span>
-            </span>
-            <span class="font-mono text-caption text-brand-strong font-bold bg-brand-tint px-2 py-0.5 rounded">${doctorQueue.length}</span>
+        <!-- Column 1: Doctor's Station Selector & Queue (4 cols) -->
+        <div class="lg:col-span-4 flex flex-col gap-space-md">
+          
+          <!-- Station & Practitioner Selector Card -->
+          <div class="bg-surface rounded-xl shadow-sm border border-line/30 p-space-md flex flex-col gap-2.5">
+            <div class="flex items-center justify-between pb-1 border-b border-line/30">
+              <span class="font-bold text-caption text-ink uppercase tracking-wider flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-brand">stethoscope</span>
+                <span>Praktisi &amp; Ruang Poli</span>
+              </span>
+              <span class="text-[11px] font-mono text-brand font-semibold bg-brand-tint px-1.5 py-0.5 rounded">
+                ${doctorFilterDoc === 'ALL' ? 'Semua Dokter' : (currentDoctorObj?.name.split(',')[0] || 'Dokter')}
+              </span>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <div>
+                <label class="block text-[11px] font-semibold text-ink-soft mb-1">Dokter Penanggung Jawab (DPJP):</label>
+                <select onchange="handleDoctorPractitionerChange(this.value)" class="w-full h-8 px-2.5 bg-canvas text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+                  <option value="ALL" ${doctorFilterDoc === 'ALL' ? 'selected' : ''}>👨‍⚕️ Semua Dokter Spesialis</option>
+                  ${SIMRS_MASTER_DATA.practitioners.map(doc => `
+                    <option value="${doc.id}" ${doctorFilterDoc === doc.id ? 'selected' : ''}>
+                      ${doc.name} (${SIMRS_MASTER_DATA.departments.find(d => d.id === doc.department)?.name || ''})
+                    </option>
+                  `).join("")}
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-ink-soft mb-1">Poliklinik Tujuan:</label>
+                <select onchange="handleDoctorDeptChange(this.value)" class="w-full h-8 px-2.5 bg-canvas text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+                  <option value="ALL" ${doctorFilterDept === 'ALL' ? 'selected' : ''}>🏢 Semua Poliklinik</option>
+                  ${SIMRS_MASTER_DATA.departments.map(dept => `
+                    <option value="${dept.id}" ${doctorFilterDept === dept.id ? 'selected' : ''}>
+                      ${dept.name} (${dept.room})
+                    </option>
+                  `).join("")}
+                </select>
+              </div>
+            </div>
+
+            ${(doctorFilterDoc !== 'ALL' || doctorFilterDept !== 'ALL') ? `
+              <div class="flex items-center justify-between pt-1 border-t border-line/20 text-[11px]">
+                <span class="text-ink-soft">Antrian spesifik dokter</span>
+                <button onclick="handleDoctorPractitionerChange('ALL'); handleDoctorDeptChange('ALL');" class="text-brand font-semibold hover:underline">
+                  Tampilkan Semua
+                </button>
+              </div>
+            ` : ''}
           </div>
 
-          <div class="flex flex-col gap-space-xs max-h-[600px] overflow-y-auto">
-            ${doctorQueue.length === 0 ? '<p class="font-caption text-caption text-ink-soft py-6 text-center">Tidak ada antrian dokter saat ini.</p>' : ''}
-            ${doctorQueue.map(v => `
-              <div onclick="selectDoctorVisit('${v.id}')" class="p-space-sm rounded-xl border cursor-pointer transition ${
-                activeVisit.id === v.id ? 'border-brand bg-brand-tint/40 shadow-sm' : 'border-line/40 hover:bg-surface-container-low'
-              }">
-                <div class="flex items-center justify-between">
-                  <span class="font-mono font-bold text-caption text-brand bg-surface px-1.5 py-0.5 rounded shadow-sm">${v.ticketNo}</span>
-                  ${renderStatusChip(v.visitStatus)}
+          <!-- Queue List Card -->
+          <div class="bg-surface rounded-xl shadow-sm border border-line/30 p-space-lg flex flex-col gap-space-md">
+            <div class="flex items-center justify-between pb-space-sm border-b border-line/40">
+              <span class="font-headline-md text-headline-md text-ink font-bold flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[20px] text-brand">format_list_bulleted</span>
+                <span>Antrian Pasien Dokter</span>
+              </span>
+              <span class="font-mono text-caption text-brand-strong font-bold bg-brand-tint px-2 py-0.5 rounded">${doctorQueue.length}</span>
+            </div>
+
+            <div class="flex flex-col gap-space-xs max-h-[500px] overflow-y-auto">
+              ${doctorQueue.length === 0 ? `
+                <div class="py-8 px-4 text-center flex flex-col items-center gap-2">
+                  <span class="material-symbols-outlined text-[32px] text-ink-soft">person_off</span>
+                  <p class="font-caption text-caption text-ink-soft">Tidak ada antrian pasien untuk dokter ini.</p>
+                  ${allDoctorVisits.length > 0 ? `
+                    <p class="text-[11px] text-ink-soft">Terdapat <strong>${allDoctorVisits.length}</strong> pasien menunggu di dokter lain.</p>
+                    <button onclick="handleDoctorPractitionerChange('ALL'); handleDoctorDeptChange('ALL');" class="mt-1 text-caption text-brand font-semibold hover:underline">
+                      Tampilkan Semua Dokter
+                    </button>
+                  ` : ''}
                 </div>
-                <h4 class="font-body-strong text-body-strong text-ink mt-1 truncate">${v.patientName}</h4>
-                <p class="font-caption text-caption text-ink-soft font-mono mt-0.5">${v.mrNo} · ${v.payerType}</p>
-              </div>
-            `).join("")}
+              ` : ''}
+              ${doctorQueue.map(v => `
+                <div onclick="selectDoctorVisit('${v.id}')" class="p-space-sm rounded-xl border cursor-pointer transition ${
+                  activeVisit && activeVisit.id === v.id ? 'border-brand bg-brand-tint/40 shadow-sm ring-1 ring-brand/30' : 'border-line/40 hover:bg-surface-container-low'
+                }">
+                  <div class="flex items-center justify-between">
+                    <span class="font-mono font-bold text-caption text-brand bg-surface px-1.5 py-0.5 rounded shadow-sm">${v.ticketNo}</span>
+                    ${renderStatusChip(v.visitStatus)}
+                  </div>
+                  <h4 class="font-body-strong text-body-strong text-ink mt-1 truncate">${v.patientName}</h4>
+                  <div class="flex items-center justify-between mt-0.5 text-caption text-ink-soft font-mono">
+                    <span>${v.mrNo} · ${v.payerType}</span>
+                    <span class="text-[11px] text-ink/70 font-sans">${v.departmentName}</span>
+                  </div>
+                </div>
+              `).join("")}
+            </div>
           </div>
+
         </div>
 
         <!-- Column 2 & 3: Active Encounter (8 cols) -->
@@ -1764,7 +2233,28 @@ function renderFarmasiWorkspace(container) {
       (v.id && v.id.toLowerCase().includes(searchQuery))
     );
   }
+
+  const allPharmacyVisits = pharmacyVisits;
+
+  if (pharmacyDeptFilter !== "ALL") {
+    pharmacyVisits = pharmacyVisits.filter(v => {
+      if (v.departmentId) return v.departmentId === pharmacyDeptFilter;
+      const deptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === pharmacyDeptFilter);
+      return deptObj ? v.departmentName === deptObj.name : true;
+    });
+  }
+
+  if (pharmacyDocFilter !== "ALL") {
+    pharmacyVisits = pharmacyVisits.filter(v => {
+      if (v.practitionerId) return v.practitionerId === pharmacyDocFilter;
+      const docObj = SIMRS_MASTER_DATA.practitioners.find(d => d.id === pharmacyDocFilter);
+      return docObj ? (v.practitionerName && v.practitionerName.includes(docObj.name.split(',')[0])) : true;
+    });
+  }
+
   const pendingCount = pharmacyVisits.filter(v => v.pharmacyStatus !== 'Dispensed').length;
+  const activeDeptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === pharmacyDeptFilter);
+  const isFiltered = pharmacyDeptFilter !== "ALL" || pharmacyDocFilter !== "ALL";
 
   container.innerHTML = `
     <div class="flex flex-col gap-space-lg w-full">
@@ -1780,14 +2270,14 @@ function renderFarmasiWorkspace(container) {
             <h1 class="font-headline-lg text-headline-lg text-ink font-bold tracking-tight">Farmasi Rawat Jalan &amp; Telaah Resep 7-Benar</h1>
             <div class="flex items-center gap-1.5 px-2.5 py-1 bg-brand-tint rounded-full text-brand-strong font-caption text-caption font-semibold">
               <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
-              <span>Apoteker Klinis</span>
+              <span>Apoteker Klinis (${pharmacyDeptFilter === 'ALL' ? 'Semua Poli' : (activeDeptObj?.name || 'Poli')})</span>
             </div>
           </div>
         </div>
         <div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-xl text-caption font-caption">
           <span class="text-ink-soft">Menunggu Penyerahan:</span>
           <strong class="text-warning font-mono font-bold text-body-strong">${pendingCount}</strong>
-          <span class="text-ink-soft">resep</span>
+          <span class="text-ink-soft font-mono">/ ${allPharmacyVisits.length} resep</span>
         </div>
       </div>
 
@@ -1799,6 +2289,41 @@ function renderFarmasiWorkspace(container) {
             <span>Antrian Resep Elektronik Dokter (e-Prescribing)</span>
           </span>
           <span class="font-caption text-caption text-ink-soft font-mono">ADR FR-PHA-001</span>
+        </div>
+
+        <!-- Pharmacy Filter Bar -->
+        <div class="p-3 bg-surface-container-low border-b border-line/40 flex flex-wrap items-center justify-between gap-2.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-caption font-semibold text-ink-soft flex items-center gap-1 shrink-0">
+              <span class="material-symbols-outlined text-[16px] text-brand">filter_list</span>
+              <span>Filter Asal Resep:</span>
+            </span>
+
+            <select onchange="handlePharmacyDeptFilter(this.value)" class="h-8 px-2.5 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+              <option value="ALL" ${pharmacyDeptFilter === 'ALL' ? 'selected' : ''}>🏢 Semua Poli Asal</option>
+              ${SIMRS_MASTER_DATA.departments.map(dept => `
+                <option value="${dept.id}" ${pharmacyDeptFilter === dept.id ? 'selected' : ''}>${dept.name}</option>
+              `).join("")}
+            </select>
+
+            <select onchange="handlePharmacyDocFilter(this.value)" class="h-8 px-2.5 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+              <option value="ALL" ${pharmacyDocFilter === 'ALL' ? 'selected' : ''}>👨‍⚕️ Semua Dokter Peresep</option>
+              ${SIMRS_MASTER_DATA.practitioners.map(doc => `
+                <option value="${doc.id}" ${pharmacyDocFilter === doc.id ? 'selected' : ''}>${doc.name}</option>
+              `).join("")}
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="text-caption text-ink-soft">
+              Menampilkan: <strong class="text-ink font-mono">${pharmacyVisits.length}</strong> resep
+            </span>
+            ${isFiltered ? `
+              <button onclick="handlePharmacyDeptFilter('ALL'); handlePharmacyDocFilter('ALL');" class="text-caption text-brand hover:underline font-semibold ml-2">
+                Reset Filter
+              </button>
+            ` : ''}
+          </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -1893,8 +2418,25 @@ function renderKasirWorkspace(container) {
       (v.id && v.id.toLowerCase().includes(searchQuery))
     );
   }
+
+  const allBilling = readyForBilling;
+
+  if (cashierDeptFilter !== "ALL") {
+    readyForBilling = readyForBilling.filter(v => {
+      if (v.departmentId) return v.departmentId === cashierDeptFilter;
+      const deptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === cashierDeptFilter);
+      return deptObj ? v.departmentName === deptObj.name : true;
+    });
+  }
+
+  if (cashierPayerFilter !== "ALL") {
+    readyForBilling = readyForBilling.filter(v => v.payerType === cashierPayerFilter);
+  }
+
   const unpaidCount = readyForBilling.filter(v => v.billingStatus !== 'Paid').length;
   const paidCount = readyForBilling.filter(v => v.billingStatus === 'Paid').length;
+  const activeDeptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === cashierDeptFilter);
+  const isFiltered = cashierDeptFilter !== "ALL" || cashierPayerFilter !== "ALL";
 
   container.innerHTML = `
     <div class="flex flex-col gap-space-lg w-full">
@@ -1910,7 +2452,7 @@ function renderKasirWorkspace(container) {
             <h1 class="font-headline-lg text-headline-lg text-ink font-bold tracking-tight">Kasir Rawat Jalan &amp; Billing Aggregator</h1>
             <div class="flex items-center gap-1.5 px-2.5 py-1 bg-brand-tint rounded-full text-brand-strong font-caption text-caption font-semibold">
               <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
-              <span>Kasir Rawat Jalan</span>
+              <span>Kasir Rawat Jalan (${cashierDeptFilter === 'ALL' ? 'Semua Poli' : (activeDeptObj?.name || 'Poli')})</span>
             </div>
           </div>
         </div>
@@ -1934,6 +2476,40 @@ function renderKasirWorkspace(container) {
             <span>Tagihan Kunjungan Rawat Jalan (docs/data-model.md §9)</span>
           </span>
           <span class="font-caption text-caption text-ink-soft font-mono">Sales Invoice Frappe</span>
+        </div>
+
+        <!-- Kasir Filter Bar -->
+        <div class="p-3 bg-surface-container-low border-b border-line/40 flex flex-wrap items-center justify-between gap-2.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-caption font-semibold text-ink-soft flex items-center gap-1 shrink-0">
+              <span class="material-symbols-outlined text-[16px] text-brand">filter_list</span>
+              <span>Filter Unit Tagihan:</span>
+            </span>
+
+            <select onchange="handleKasirDeptFilter(this.value)" class="h-8 px-2.5 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+              <option value="ALL" ${cashierDeptFilter === 'ALL' ? 'selected' : ''}>🏢 Semua Poli Asal</option>
+              ${SIMRS_MASTER_DATA.departments.map(dept => `
+                <option value="${dept.id}" ${cashierDeptFilter === dept.id ? 'selected' : ''}>${dept.name}</option>
+              `).join("")}
+            </select>
+
+            <select onchange="handleKasirPayerFilter(this.value)" class="h-8 px-2.5 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+              <option value="ALL" ${cashierPayerFilter === 'ALL' ? 'selected' : ''}>💳 Semua Penjamin</option>
+              <option value="BPJS" ${cashierPayerFilter === 'BPJS' ? 'selected' : ''}>BPJS Kesehatan</option>
+              <option value="Umum" ${cashierPayerFilter === 'Umum' ? 'selected' : ''}>Umum / Mandiri</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="text-caption text-ink-soft">
+              Menampilkan: <strong class="text-ink font-mono">${readyForBilling.length}</strong> dari <span class="font-mono">${allBilling.length}</span> tagihan
+            </span>
+            ${isFiltered ? `
+              <button onclick="handleKasirDeptFilter('ALL'); handleKasirPayerFilter('ALL');" class="text-caption text-brand hover:underline font-semibold ml-2">
+                Reset Filter
+              </button>
+            ` : ''}
+          </div>
         </div>
 
         <div class="overflow-x-auto">
@@ -2198,7 +2774,14 @@ function renderAuditWorkspace(container) {
 // WORKSPACE 9: QUEUE DISPLAY TV (Public TV Display - ZERO PHI)
 // ========================================================
 function renderDisplayWorkspace(container) {
+  const visits = VisitStateService.getVisits();
   const latestCall = JSON.parse(localStorage.getItem("SIMRS_LATEST_CALL") || '{"ticketNo": "A-001", "destination": "Poli Penyakit Dalam"}');
+  const activeDeptObj = SIMRS_MASTER_DATA.departments.find(d => d.id === displayDeptFilter);
+
+  const deptVisits = activeDeptObj ? visits.filter(v => v.departmentId === activeDeptObj.id || v.departmentName === activeDeptObj.name) : visits;
+  const deptInService = deptVisits.filter(v => v.visitStatus === "IN_SERVICE");
+  const deptWaitingDoctor = deptVisits.filter(v => v.visitStatus === "WAITING_DOCTOR");
+  const deptWaitingTriage = deptVisits.filter(v => v.visitStatus === "WAITING_TRIAGE");
 
   container.innerHTML = `
     <div class="bg-ink text-surface rounded-2xl p-space-xl space-y-space-xl border border-ink shadow-2xl">
@@ -2210,7 +2793,9 @@ function renderDisplayWorkspace(container) {
           </div>
           <div>
             <h2 class="text-lg font-bold tracking-tight text-white">RS SEHAT MANDIRI NUSANTARA</h2>
-            <p class="text-caption text-brand-tint/80 uppercase tracking-wider font-semibold">Papan Informasi Antrian Poliklinik Rawat Jalan</p>
+            <p class="text-caption text-brand-tint/80 uppercase tracking-wider font-semibold">
+              ${displayDeptFilter === 'ALL' ? 'Papan Informasi Antrian Poliklinik Rawat Jalan' : `Display Khusus: ${activeDeptObj?.name} (${activeDeptObj?.room})`}
+            </p>
           </div>
         </div>
         <div class="flex items-center gap-space-md">
@@ -2224,43 +2809,120 @@ function renderDisplayWorkspace(container) {
         </div>
       </div>
 
+      <!-- Display Mode Selector (Zero-PHI Control Bar) -->
+      <div class="flex flex-wrap items-center justify-between gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[20px] text-brand-tint">tv</span>
+          <span class="text-caption font-bold text-white uppercase tracking-wider">Pilih Layar Display:</span>
+          <select onchange="handleDisplayDeptFilter(this.value)" class="h-8 px-2.5 bg-ink text-white font-medium text-caption rounded-lg border border-white/20 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+            <option value="ALL" ${displayDeptFilter === 'ALL' ? 'selected' : ''}>📺 Display Sentral (Semua Poliklinik)</option>
+            ${SIMRS_MASTER_DATA.departments.map(dept => `
+              <option value="${dept.id}" ${displayDeptFilter === dept.id ? 'selected' : ''}>
+                ${dept.name} (${dept.room})
+              </option>
+            `).join("")}
+          </select>
+        </div>
+        <div class="text-caption text-white/70 font-mono flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-success"></span>
+          <span>${displayDeptFilter === 'ALL' ? 'Papan Informasi Terpusat' : `Dedicated: ${activeDeptObj?.name} · ${activeDeptObj?.room}`}</span>
+        </div>
+      </div>
+
       <!-- Called Ticket Big Banner -->
       <div class="bg-surface/5 p-space-xl rounded-2xl border-2 border-brand text-center relative overflow-hidden">
         <div class="absolute -top-12 -right-12 w-48 h-48 bg-brand/10 rounded-full blur-3xl pointer-events-none"></div>
         <span class="text-caption font-bold text-brand-tint uppercase tracking-widest block">
-          NOMOR ANTRIAN DIPANGGIL
+          ${displayDeptFilter === 'ALL' ? 'NOMOR ANTRIAN DIPANGGIL' : `NOMOR ANTRIAN ${activeDeptObj?.name.toUpperCase()} DIPANGGIL`}
         </span>
         <div class="text-8xl font-black text-brand-tint my-4 font-mono tracking-widest">
-          ${latestCall.ticketNo}
+          ${displayDeptFilter === 'ALL' ? latestCall.ticketNo : (deptInService[0]?.ticketNo || deptWaitingDoctor[0]?.ticketNo || latestCall.ticketNo)}
         </div>
         <p class="text-xl font-bold text-white tracking-wide">
-          SILAKAN MENUJU KE: <span class="text-brand-tint underline decoration-brand/60 underline-offset-4">${latestCall.destination.toUpperCase()}</span>
+          SILAKAN MENUJU KE: <span class="text-brand-tint underline decoration-brand/60 underline-offset-4">
+            ${displayDeptFilter === 'ALL' ? latestCall.destination.toUpperCase() : `${activeDeptObj?.name.toUpperCase()} (${activeDeptObj?.room.toUpperCase()})`}
+          </span>
         </p>
       </div>
 
-      <!-- 4 Columns Grid -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-space-md">
-        <div class="p-space-lg rounded-xl bg-surface/5 border border-white/10 text-center">
-          <span class="text-caption text-white/70 block mb-1 font-semibold uppercase tracking-wider">Loket Registrasi</span>
-          <span class="text-4xl font-extrabold text-brand-tint font-mono block my-2">A-003</span>
-          <span class="text-caption text-white/60 block">Loket Pendaftaran 1</span>
+      ${displayDeptFilter === 'ALL' ? `
+        <!-- 4 Columns Central Overview Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-space-md">
+          <div class="p-space-lg rounded-xl bg-surface/5 border border-white/10 text-center">
+            <span class="text-caption text-white/70 block mb-1 font-semibold uppercase tracking-wider">Loket Registrasi</span>
+            <span class="text-4xl font-extrabold text-brand-tint font-mono block my-2">A-003</span>
+            <span class="text-caption text-white/60 block">Loket Pendaftaran 1</span>
+          </div>
+          <div class="p-space-lg rounded-xl bg-surface/5 border border-white/10 text-center">
+            <span class="text-caption text-white/70 block mb-1 font-semibold uppercase tracking-wider">Poli Penyakit Dalam</span>
+            <span class="text-4xl font-extrabold text-brand-tint font-mono block my-2">A-001</span>
+            <span class="text-caption text-white/60 block">Ruang Periksa 101</span>
+          </div>
+          <div class="p-space-lg rounded-xl bg-surface/5 border border-white/10 text-center">
+            <span class="text-caption text-white/70 block mb-1 font-semibold uppercase tracking-wider">Farmasi / Apotek</span>
+            <span class="text-4xl font-extrabold text-brand-tint font-mono block my-2">F-001</span>
+            <span class="text-caption text-white/60 block">Loket Penyerahan Obat</span>
+          </div>
+          <div class="p-space-lg rounded-xl bg-surface/5 border border-white/10 text-center">
+            <span class="text-caption text-white/70 block mb-1 font-semibold uppercase tracking-wider">Kasir &amp; Pembayaran</span>
+            <span class="text-4xl font-extrabold text-brand-tint font-mono block my-2">K-001</span>
+            <span class="text-caption text-white/60 block">Loket Kasir 1</span>
+          </div>
         </div>
-        <div class="p-space-lg rounded-xl bg-surface/5 border border-white/10 text-center">
-          <span class="text-caption text-white/70 block mb-1 font-semibold uppercase tracking-wider">Poli Penyakit Dalam</span>
-          <span class="text-4xl font-extrabold text-brand-tint font-mono block my-2">A-001</span>
-          <span class="text-caption text-white/60 block">Ruang Periksa 101</span>
+      ` : `
+        <!-- Dedicated Poliklinik Queue Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+          
+          <!-- Column 1: Sedang Dilayani -->
+          <div class="p-space-lg rounded-xl bg-surface/5 border border-brand/40 text-center flex flex-col justify-between">
+            <span class="text-caption text-brand-tint font-bold uppercase tracking-wider block mb-2">
+              🟢 Sedang Dilayani di ${activeDeptObj?.room}
+            </span>
+            <div class="py-4">
+              <span class="text-5xl font-black text-brand-tint font-mono block">
+                ${deptInService[0]?.ticketNo || '-'}
+              </span>
+              <span class="text-caption text-white/60 mt-1 block">
+                ${deptInService[0] ? 'Pemeriksaan Dokter' : 'Menunggu Pasien'}
+              </span>
+            </div>
+            <span class="text-caption text-white/40 font-mono">Status: IN_SERVICE</span>
+          </div>
+
+          <!-- Column 2: Antrian Menunggu Dokter -->
+          <div class="p-space-lg rounded-xl bg-surface/5 border border-white/10 flex flex-col gap-2">
+            <div class="flex items-center justify-between pb-1 border-b border-white/10">
+              <span class="text-caption text-white/80 font-semibold uppercase tracking-wider">Antrian Dokter (Siap Masuk)</span>
+              <span class="font-mono text-caption text-brand-tint font-bold bg-white/10 px-2 py-0.5 rounded">${deptWaitingDoctor.length}</span>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-2">
+              ${deptWaitingDoctor.length === 0 ? '<span class="text-caption text-white/50 italic">Tidak ada antrian menunggu dokter</span>' : ''}
+              ${deptWaitingDoctor.map(v => `
+                <span class="px-3 py-1.5 rounded-lg bg-surface/10 text-brand-tint font-mono font-bold text-lg border border-white/10">
+                  ${v.ticketNo}
+                </span>
+              `).join("")}
+            </div>
+          </div>
+
+          <!-- Column 3: Antrian Triase / TTV -->
+          <div class="p-space-lg rounded-xl bg-surface/5 border border-white/10 flex flex-col gap-2">
+            <div class="flex items-center justify-between pb-1 border-b border-white/10">
+              <span class="text-caption text-white/80 font-semibold uppercase tracking-wider">Antrian Triase &amp; TTV</span>
+              <span class="font-mono text-caption text-brand-tint font-bold bg-white/10 px-2 py-0.5 rounded">${deptWaitingTriage.length}</span>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-2">
+              ${deptWaitingTriage.length === 0 ? '<span class="text-caption text-white/50 italic">Tidak ada antrian triase</span>' : ''}
+              ${deptWaitingTriage.map(v => `
+                <span class="px-3 py-1.5 rounded-lg bg-surface/10 text-white/80 font-mono font-bold text-lg border border-white/10">
+                  ${v.ticketNo}
+                </span>
+              `).join("")}
+            </div>
+          </div>
+
         </div>
-        <div class="p-space-lg rounded-xl bg-surface/5 border border-white/10 text-center">
-          <span class="text-caption text-white/70 block mb-1 font-semibold uppercase tracking-wider">Farmasi / Apotek</span>
-          <span class="text-4xl font-extrabold text-brand-tint font-mono block my-2">F-001</span>
-          <span class="text-caption text-white/60 block">Loket Penyerahan Obat</span>
-        </div>
-        <div class="p-space-lg rounded-xl bg-surface/5 border border-white/10 text-center">
-          <span class="text-caption text-white/70 block mb-1 font-semibold uppercase tracking-wider">Kasir &amp; Pembayaran</span>
-          <span class="text-4xl font-extrabold text-brand-tint font-mono block my-2">K-001</span>
-          <span class="text-caption text-white/60 block">Loket Kasir 1</span>
-        </div>
-      </div>
+      `}
 
       <!-- TV Bottom Status Bar -->
       <div class="pt-space-md border-t border-line/20 flex items-center justify-between text-caption text-white/50">
@@ -2374,6 +3036,7 @@ function handleTriageSubmit(e, visitId) {
     };
 
     TriageService.saveTriageAndVitals(visitId, vitalsData, triageData, true);
+    activeTriageVisitId = null;
     showToast("TTV & Skrining Triase tersimpan. Pasien diteruskan ke dokter.", "success");
     renderWorkspace("triase");
   } catch (err) {
