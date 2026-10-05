@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIMRS Mini — Outpatient Hospital Information System</title>
+  <meta name="description" content="Sistem Informasi Manajemen Rumah Sakit Mini Rawat Jalan. Minimalist, clean, and high-density clinical workstation.">
+
+  <!-- Google Fonts: Atkinson Hyperlegible Next + Material Symbols Outlined + JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:ital,wght@0,200..800;1,200..800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "line": "#D3DEDF",
+            "tertiary": "#384f57",
+            "display-bg": "#0A1A1F",
+            "surface": "#FFFFFF",
+            "on-secondary-container": "#4a6772",
+            "on-primary-fixed": "#001f23",
+            "secondary": "#46626e",
+            "outline": "#6f797a",
+            "secondary-fixed-dim": "#adcbd8",
+            "brand-strong": "#084F57",
+            "on-background": "#181c1d",
+            "on-tertiary-fixed-variant": "#334a52",
+            "danger-tint": "#FDE8E6",
+            "surface-tint": "#006972",
+            "surface-container-highest": "#e0e3e3",
+            "background": "#f7fafa",
+            "outline-variant": "#bec8ca",
+            "on-tertiary-fixed": "#061e25",
+            "success": "#1B7F4B",
+            "surface-container-low": "#f1f4f4",
+            "primary": "#00545c",
+            "secondary-container": "#c6e4f2",
+            "primary-fixed": "#a0effa",
+            "surface-dim": "#d7dbdb",
+            "danger": "#B42318",
+            "surface-container-lowest": "#ffffff",
+            "error": "#ba1a1a",
+            "info-tint": "#E1ECF8",
+            "error-container": "#ffdad6",
+            "inverse-primary": "#84d3de",
+            "ink-soft": "#4A6169",
+            "inverse-on-surface": "#eef1f1",
+            "on-primary": "#ffffff",
+            "on-secondary-fixed": "#001f28",
+            "secondary-fixed": "#c9e7f4",
+            "on-primary-container": "#9eedf9",
+            "brand": "#0B6E78",
+            "info": "#1D5FA8",
+            "display-called": "#FFC247",
+            "inverse-surface": "#2d3131",
+            "on-error": "#ffffff",
+            "brand-tint": "#DDF0F1",
+            "on-tertiary-container": "#cce5ee",
+            "tertiary-fixed": "#cee7f0",
+            "on-surface-variant": "#3f494a",
+            "on-surface": "#181c1d",
+            "on-secondary": "#ffffff",
+            "primary-container": "#0b6e78",
+            "surface-bright": "#f7fafa",
+            "on-secondary-fixed-variant": "#2e4b55",
+            "warning-tint": "#FCEFD6",
+            "ink": "#12303A",
+            "on-primary-fixed-variant": "#004f56",
+            "success-tint": "#DDF3E6",
+            "surface-container": "#ebeeee",
+            "surface-variant": "#e0e3e3",
+            "on-error-container": "#93000a",
+            "on-tertiary": "#ffffff",
+            "warning": "#A15C07",
+            "tertiary-container": "#50676f",
+            "tertiary-fixed-dim": "#b2cbd4",
+            "canvas": "#F3F6F6",
+            "surface-container-high": "#e6e9e9",
+            "display-text": "#FFFFFF",
+            "primary-fixed-dim": "#84d3de"
+          },
+          borderRadius: {
+            "DEFAULT": "0.125rem",
+            "sm": "0.125rem",
+            "md": "0.375rem",
+            "lg": "0.25rem",
+            "xl": "0.5rem",
+            "2xl": "0.75rem",
+            "full": "9999px"
+          },
+          spacing: {
+            "space-lg": "1rem",
+            "space-sm": "0.5rem",
+            "margin": "1.5rem",
+            "space-2xl": "2rem",
+            "margin-kiosk": "2rem",
+            "space-xl": "1.5rem",
+            "space-xs": "0.25rem",
+            "gutter": "1rem",
+            "space-md": "0.75rem",
+            "gutter-dense": "0.75rem"
+          },
+          fontFamily: {
+            "sans": ["Atkinson Hyperlegible Next", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+            "caption": ["Atkinson Hyperlegible Next"],
+            "display-tv-sm": ["Atkinson Hyperlegible Next"],
+            "queue-no": ["Atkinson Hyperlegible Next"],
+            "headline-md": ["Atkinson Hyperlegible Next"],
+            "table-cell": ["Atkinson Hyperlegible Next"],
+            "body-default": ["Atkinson Hyperlegible Next"],
+            "headline-lg": ["Atkinson Hyperlegible Next"],
+            "display-tv": ["Atkinson Hyperlegible Next"],
+            "body-strong": ["Atkinson Hyperlegible Next"],
+            "body-mobile": ["Atkinson Hyperlegible Next"],
+            "mono": ["JetBrains Mono", "monospace"]
+          },
+          fontSize: {
+            "caption": ["12px", { lineHeight: "1.4", letterSpacing: "0.01em", fontWeight: "400" }],
+            "display-tv-sm": ["72px", { lineHeight: "1.1", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "queue-no": ["28px", { lineHeight: "1.0", letterSpacing: "0", fontWeight: "800" }],
+            "headline-md": ["18px", { lineHeight: "1.3", letterSpacing: "0", fontWeight: "700" }],
+            "table-cell": ["13px", { lineHeight: "1.4", letterSpacing: "0", fontWeight: "400" }],
+            "body-default": ["14px", { lineHeight: "1.5", letterSpacing: "0", fontWeight: "400" }],
+            "headline-lg": ["26px", { lineHeight: "1.25", letterSpacing: "-0.01em", fontWeight: "700" }],
+            "display-tv": ["192px", { lineHeight: "1.0", letterSpacing: "-0.02em", fontWeight: "800" }],
+            "body-strong": ["14px", { lineHeight: "1.5", letterSpacing: "0", fontWeight: "600" }],
+            "body-mobile": ["16px", { lineHeight: "1.5", letterSpacing: "0", fontWeight: "400" }]
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-canvas font-body-default text-body-default text-ink antialiased selection:bg-brand-tint selection:text-brand-strong">
+
+  <!-- ========================================================== -->
+  <!-- LOGIN SCREEN / AUTHENTICATION VIEW (Minimalist Clean Desk) -->
+  <!-- ========================================================== -->
+  <div id="login-view" class="fixed inset-0 z-[100] bg-canvas flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-surface rounded-2xl modal-shadow max-w-2xl w-full p-6 sm:p-8 flex flex-col gap-6 border border-line/50">
+      
+      <!-- Hospital Header & Brand -->
+      <div class="flex items-center justify-between border-b border-line/40 pb-5">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-brand text-surface flex items-center justify-center shadow-md">
+            <span class="material-symbols-outlined text-[26px]">local_hospital</span>
+          </div>
+          <div class="flex flex-col leading-tight">
+            <h1 class="font-headline-lg text-[22px] tracking-tight text-ink font-bold">SIMRS Mini</h1>
+            <span class="font-caption text-caption text-ink-soft">RS Sehat Mandiri · Poli Rawat Jalan</span>
+          </div>
+        </div>
+        <div class="hidden sm:flex flex-col text-right">
+          <span class="font-mono text-[11px] font-semibold text-brand bg-brand-tint px-2 py-0.5 rounded-full">Frappe Healthcare v15</span>
+          <span class="text-[11px] text-ink-soft mt-0.5">Asia/Jakarta (WIB)</span>
+        </div>
+      </div>
+
+      <!-- Main Login Form -->
+      <form id="login-form" onsubmit="handleLoginFormSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block font-body-strong mb-1 text-ink text-caption">Username Petugas</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-[20px] text-ink-soft">account_circle</span>
+            <input 
+              type="text" 
+              id="login-username" 
+              required 
+              autocomplete="username"
+              placeholder="contoh: perawat.siti / dokter.hendra" 
+              class="w-full h-11 pl-10 pr-3 bg-canvas rounded-xl font-body-default text-body-default text-ink border border-line/60 focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-inner"
+            >
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-body-strong mb-1 text-ink text-caption">Kata Sandi (Password)</label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-[20px] text-ink-soft">key</span>
+            <input 
+              type="password" 
+              id="login-password" 
+              required 
+              autocomplete="current-password"
+              placeholder="••••••••" 
+              class="w-full h-11 pl-10 pr-10 bg-canvas rounded-xl font-mono text-body-default text-ink border border-line/60 focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-inner"
+            >
+            <button 
+              type="button" 
+              onclick="togglePasswordVisibility()" 
+              class="absolute right-3 top-2.5 text-ink-soft hover:text-ink transition-colors"
+              title="Tampilkan / Sembunyikan Password"
+            >
+              <span class="material-symbols-outlined text-[20px]" id="password-toggle-icon">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div id="login-error-msg" class="hidden p-3 bg-danger-tint border border-danger/20 rounded-xl text-caption font-caption text-danger flex items-center gap-2">
+          <span class="material-symbols-outlined text-[18px]">error</span>
+          <span id="login-error-text">Kredensial tidak valid.</span>
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+          type="submit" 
+          class="w-full h-11 bg-brand hover:bg-brand-strong text-on-primary rounded-xl font-body-strong text-body-strong flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99]"
+        >
+          <span class="material-symbols-outlined text-[20px]">login</span>
+          <span>Masuk ke Workstation</span>
+        </button>
+      </form>
+
+      <!-- Quick 1-Click Demo Login Grid -->
+      <div class="border-t border-line/40 pt-4 flex flex-col gap-2.5">
+        <div class="flex items-center justify-between">
+          <span class="font-body-strong text-caption text-ink font-semibold flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[16px] text-brand">bolt</span>
+            <span>Pilih Akun Demo (1-Klik Masuk Langsung):</span>
+          </span>
+          <button 
+            type="button" 
+            onclick="toggleCredentialsCheatSheet()" 
+            class="text-[12px] text-brand hover:underline font-semibold flex items-center gap-0.5"
+          >
+            <span>Daftar Password</span>
+            <span class="material-symbols-outlined text-[14px]">expand_more</span>
+          </button>
+        </div>
+
+        <!-- Demo Account Pills -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-left">
+          <!-- Dokter -->
+          <button 
+            type="button" 
+            onclick="quickLogin('dokter.hendra')" 
+            class="p-2.5 bg-surface-container-low hover:bg-indigo-50 hover:border-indigo-200 border border-line/40 rounded-xl flex items-center gap-2.5 transition text-left group"
+          >
+            <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-800 flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-surface transition-colors">
+              <span class="material-symbols-outlined text-[18px]">stethoscope</span>
+            </div>
+            <div class="min-w-0">
+              <span class="font-body-strong text-[12px] text-ink block truncate">dr. Hendra Pratama</span>
+              <span class="font-caption text-[11px] text-indigo-700 font-semibold block truncate">Dokter Spesialis</span>
+            </div>
+          </button>
+
+          <!-- Perawat Triase -->
+          <button 
+            type="button" 
+            onclick="quickLogin('perawat.siti')" 
+            class="p-2.5 bg-surface-container-low hover:bg-emerald-50 hover:border-emerald-200 border border-line/40 rounded-xl flex items-center gap-2.5 transition text-left group"
+          >
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-surface transition-colors">
+              <span class="material-symbols-outlined text-[18px]">vital_signs</span>
+            </div>
+            <div class="min-w-0">
+              <span class="font-body-strong text-[12px] text-ink block truncate">Ns. Siti Rahma</span>
+              <span class="font-caption text-[11px] text-emerald-700 font-semibold block truncate">Perawat Triase</span>
+            </div>
+          </button>
+
+          <!-- Staf Pendaftaran -->
+          <button 
+            type="button" 
+            onclick="quickLogin('staf.budi')" 
+            class="p-2.5 bg-surface-container-low hover:bg-blue-50 hover:border-blue-200 border border-line/40 rounded-xl flex items-center gap-2.5 transition text-left group"
+          >
+            <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-800 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:text-surface transition-colors">
+              <span class="material-symbols-outlined text-[18px]">how_to_reg</span>
+            </div>
+            <div class="min-w-0">
+              <span class="font-body-strong text-[12px] text-ink block truncate">Budi Santoso</span>
+              <span class="font-caption text-[11px] text-blue-700 font-semibold block truncate">Staf Pendaftaran</span>
+            </div>
+          </button>
+
+          <!-- Petugas Antrian -->
+          <button 
+            type="button" 
+            onclick="quickLogin('antrian.rian')" 
+            class="p-2.5 bg-surface-container-low hover:bg-cyan-50 hover:border-cyan-200 border border-line/40 rounded-xl flex items-center gap-2.5 transition text-left group"
+          >
+            <div class="w-8 h-8 rounded-lg bg-cyan-100 text-cyan-800 flex items-center justify-center shrink-0 group-hover:bg-cyan-600 group-hover:text-surface transition-colors">
+              <span class="material-symbols-outlined text-[18px]">confirmation_number</span>
+            </div>
+            <div class="min-w-0">
+              <span class="font-body-strong text-[12px] text-ink block truncate">Rian Pratama</span>
+              <span class="font-caption text-[11px] text-cyan-700 font-semibold block truncate">Petugas Antrian</span>
+            </div>
+          </button>
+
+          <!-- Apoteker Farmasi -->
+          <button 
+            type="button" 
+            onclick="quickLogin('apoteker.dewi')" 
+            class="p-2.5 bg-surface-container-low hover:bg-teal-50 hover:border-teal-200 border border-line/40 rounded-xl flex items-center gap-2.5 transition text-left group"
+          >
+            <div class="w-8 h-8 rounded-lg bg-teal-100 text-teal-800 flex items-center justify-center shrink-0 group-hover:bg-teal-600 group-hover:text-surface transition-colors">
+              <span class="material-symbols-outlined text-[18px]">prescriptions</span>
+            </div>
+            <div class="min-w-0">
+              <span class="font-body-strong text-[12px] text-ink block truncate">apt. Dewi Lestari</span>
+              <span class="font-caption text-[11px] text-teal-700 font-semibold block truncate">Apoteker Rawat Jalan</span>
+            </div>
+          </button>
+
+          <!-- Kasir & Billing -->
+          <button 
+            type="button" 
+            onclick="quickLogin('kasir.linda')" 
+            class="p-2.5 bg-surface-container-low hover:bg-emerald-50 hover:border-emerald-200 border border-line/40 rounded-xl flex items-center gap-2.5 transition text-left group"
+          >
+            <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-surface transition-colors">
+              <span class="material-symbols-outlined text-[18px]">payments</span>
+            </div>
+            <div class="min-w-0">
+              <span class="font-body-strong text-[12px] text-ink block truncate">Linda Wijaya</span>
+              <span class="font-caption text-[11px] text-emerald-700 font-semibold block truncate">Kasir & Billing</span>
+            </div>
+          </button>
+
+          <!-- Analis Lab -->
+          <button 
+            type="button" 
+            onclick="quickLogin('lab.fauzi')" 
+            class="p-2.5 bg-surface-container-low hover:bg-amber-50 hover:border-amber-200 border border-line/40 rounded-xl flex items-center gap-2.5 transition text-left group"
+          >
+            <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 group-hover:bg-amber-600 group-hover:text-surface transition-colors">
+              <span class="material-symbols-outlined text-[18px]">science</span>
+            </div>
+            <div class="min-w-0">
+              <span class="font-body-strong text-[12px] text-ink block truncate">Ahmad Fauzi</span>
+              <span class="font-caption text-[11px] text-amber-700 font-semibold block truncate">Analis Laboratorium</span>
+            </div>
+          </button>
+
+          <!-- Supervisor -->
+          <button 
+            type="button" 
+            onclick="quickLogin('spv.rina')" 
+            class="p-2.5 bg-surface-container-low hover:bg-purple-50 hover:border-purple-200 border border-line/40 rounded-xl flex items-center gap-2.5 transition text-left group"
+          >
+            <div class="w-8 h-8 rounded-lg bg-purple-100 text-purple-800 flex items-center justify-center shrink-0 group-hover:bg-purple-600 group-hover:text-surface transition-colors">
+              <span class="material-symbols-outlined text-[18px]">monitoring</span>
+            </div>
+            <div class="min-w-0">
+              <span class="font-body-strong text-[12px] text-ink block truncate">dr. Rina Marlina</span>
+              <span class="font-caption text-[11px] text-purple-700 font-semibold block truncate">Supervisor Rawat Jalan</span>
+            </div>
+          </button>
+
+          <!-- Auditor Medis -->
+          <button 
+            type="button" 
+            onclick="quickLogin('auditor.taufik')" 
+            class="p-2.5 bg-surface-container-low hover:bg-slate-100 hover:border-slate-300 border border-line/40 rounded-xl flex items-center gap-2.5 transition text-left group"
+          >
+            <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-800 flex items-center justify-center shrink-0 group-hover:bg-slate-700 group-hover:text-surface transition-colors">
+              <span class="material-symbols-outlined text-[18px]">fact_check</span>
+            </div>
+            <div class="min-w-0">
+              <span class="font-body-strong text-[12px] text-ink block truncate">dr. Taufik, Sp.PK</span>
+              <span class="font-caption text-[11px] text-slate-700 font-semibold block truncate">Auditor Medis</span>
+            </div>
+          </button>
+        </div>
+
+        <!-- Cheat Sheet Drawer (Tabel Akun & Password) -->
+        <div id="credentials-cheat-sheet" class="hidden mt-2 p-3 bg-surface-container-low rounded-xl border border-line/50 overflow-x-auto text-[11px]">
+          <table class="w-full text-left font-mono">
+            <thead>
+              <tr class="border-b border-line text-ink-soft">
+                <th class="py-1">Username</th>
+                <th class="py-1">Password</th>
+                <th class="py-1">Role / Peran</th>
+                <th class="py-1">Deskripsi Menu</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-line/40 text-ink">
+              <tr>
+                <td class="py-1 text-brand font-bold">dokter.hendra</td>
+                <td class="py-1">dokter123</td>
+                <td class="py-1">Physician (Dokter)</td>
+                <td class="py-1 text-ink-soft">My Queue, SOAP, ICD-10, Lab, E-Resep</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-brand font-bold">perawat.siti</td>
+                <td class="py-1">perawat123</td>
+                <td class="py-1">Nursing User (Perawat)</td>
+                <td class="py-1 text-ink-soft">Antrian Triase, Input TTV, Routing Poli</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-brand font-bold">staf.budi</td>
+                <td class="py-1">registrasi123</td>
+                <td class="py-1">Registration Staff</td>
+                <td class="py-1 text-ink-soft">Walk-in, Pasien Baru, Check-in, Tiket</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-brand font-bold">antrian.rian</td>
+                <td class="py-1">antrian123</td>
+                <td class="py-1">Queue Officer</td>
+                <td class="py-1 text-ink-soft">Panggil Antrian, Recall, Skip Tiket</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-brand font-bold">apoteker.dewi</td>
+                <td class="py-1">farmasi123</td>
+                <td class="py-1">Pharmacist (Apoteker)</td>
+                <td class="py-1 text-ink-soft">Resep Masuk, Telaah 7 Benar, Dispense</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-brand font-bold">kasir.linda</td>
+                <td class="py-1">kasir123</td>
+                <td class="py-1">Cashier (Kasir)</td>
+                <td class="py-1 text-ink-soft">Billing Pasien, Tarif, Kwitansi Pembayaran</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-brand font-bold">lab.fauzi</td>
+                <td class="py-1">lab123</td>
+                <td class="py-1">Laboratory User</td>
+                <td class="py-1 text-ink-soft">Order Lab, Sampel, Input & Validasi Hasil</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-brand font-bold">spv.rina</td>
+                <td class="py-1">spv123</td>
+                <td class="py-1">Outpatient Supervisor</td>
+                <td class="py-1 text-ink-soft">Dashboard SLA, Waktu Tunggu, Laporan</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-brand font-bold">auditor.taufik</td>
+                <td class="py-1">audit123</td>
+                <td class="py-1">Clinical Auditor</td>
+                <td class="py-1 text-ink-soft">Audit Trail, Kelengkapan Resume Medis</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-brand font-bold">display.tv</td>
+                <td class="py-1">display123</td>
+                <td class="py-1">Queue Display</td>
+                <td class="py-1 text-ink-soft">Display TV Publik (Zero PHI)</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-brand font-bold">kiosk.apm</td>
+                <td class="py-1">kiosk123</td>
+                <td class="py-1">Kiosk Device</td>
+                <td class="py-1 text-ink-soft">Check-in Mandiri & Cetak Tiket Kiosk</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- SIDEBAR NAVIGATION (Role Scoped, No Locked Clutter)        -->
+  <!-- ========================================================== -->
+  <aside id="main-sidebar" class="fixed left-0 top-0 h-full w-[232px] bg-surface z-40 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)] border-r border-line/40">
+    <div class="flex flex-col">
+      <!-- Brand Logo Header -->
+      <div class="h-14 px-space-lg flex items-center justify-between border-b border-line/30">
+        <div class="flex items-center gap-space-sm">
+          <div class="w-8 h-8 rounded-xl bg-brand text-surface flex items-center justify-center shadow-sm">
+            <span class="material-symbols-outlined text-[20px]">local_hospital</span>
+          </div>
+          <div class="flex flex-col leading-tight min-w-0">
+            <span class="font-headline-md text-headline-md tracking-tight text-ink font-bold">SIMRS</span>
+            <span class="font-caption text-caption text-ink-soft">Poli Rawat Jalan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Active Persona Card in Sidebar -->
+      <div class="px-space-md py-space-sm border-b border-line/30">
+        <div class="p-space-sm rounded-xl bg-surface-container-low flex items-center gap-space-sm">
+          <div id="sidebar-avatar" class="w-8 h-8 rounded-full bg-primary text-on-primary font-bold text-xs flex items-center justify-center shrink-0">
+            SR
+          </div>
+          <div class="flex flex-col min-w-0">
+            <span id="sidebar-user-name" class="font-body-strong text-[13px] text-ink truncate font-bold">Ns. Siti Rahma</span>
+            <span id="sidebar-role-pill" class="font-caption text-[11px] text-ink-soft truncate font-mono">Nursing User</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Navigation Label -->
+      <div class="px-space-md py-space-xs mt-2">
+        <span class="px-space-sm font-caption text-[11px] uppercase tracking-wider text-ink-soft font-bold">Menu Hak Akses</span>
+      </div>
+
+      <!-- Dynamic Navigation Links (Only Allowed Workspaces Rendered) -->
+      <nav id="sidebar-nav-list" class="px-space-md flex flex-col gap-1 mt-1">
+        <!-- Rendered dynamically by js/app.js -->
+      </nav>
+
+      <!-- Role-Specific Action Links in Sidebar -->
+      <div id="sidebar-sub-nav-container" class="px-space-md mt-4 flex flex-col gap-1 border-t border-line/30 pt-3">
+        <!-- Sub-features for the active role rendered here -->
+      </div>
+    </div>
+
+    <!-- Sidebar Bottom Status Footer -->
+    <div class="p-space-md m-space-md rounded-xl bg-surface-container-low flex items-center justify-between border border-line/30">
+      <div class="flex items-center gap-space-xs truncate">
+        <span class="material-symbols-outlined text-[18px] text-brand">domain</span>
+        <span class="font-caption text-caption text-ink font-semibold truncate">RS Sehat Mandiri</span>
+      </div>
+      <span class="w-2 h-2 rounded-full bg-success shrink-0" title="Sistem Online & Terhubung"></span>
+    </div>
+  </aside>
+
+  <!-- ========================================================== -->
+  <!-- TOP APPLICATION BAR & CONTEXTUAL SERVICE MENU BAR          -->
+  <!-- ========================================================== -->
+  <div class="pl-[232px]">
+    
+    <!-- Primary Header (56px) -->
+    <header class="fixed top-0 left-[232px] right-0 h-14 bg-surface/95 backdrop-blur-md shadow-[0_1px_6px_rgba(0,0,0,0.03)] border-b border-line/40 z-40 px-space-xl flex items-center justify-between gap-space-md">
+      
+      <!-- Left: Role Indicator & Quick Search Bar -->
+      <div class="flex items-center gap-space-md flex-1 max-w-[620px]">
+        
+        <!-- Active Role Badge (Replaces old persona dropdown) -->
+        <div id="header-role-container" class="flex items-center gap-2 px-3 py-1 bg-surface-container-low rounded-xl border border-line/40 shrink-0">
+          <div id="header-avatar" class="w-6 h-6 rounded-full bg-brand text-on-primary font-bold text-[10px] flex items-center justify-center shrink-0">
+            SR
+          </div>
+          <div class="flex flex-col leading-tight min-w-0">
+            <span id="header-user-name" class="font-body-strong text-caption text-ink font-bold truncate max-w-[150px] sm:max-w-[180px]">Ns. Siti Rahma</span>
+            <span id="header-user-dept" class="text-[10px] text-ink-soft truncate max-w-[150px] sm:max-w-[180px]">Triase Rawat Jalan</span>
+          </div>
+          <span id="header-role-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0 uppercase tracking-wider">Perawat Triase</span>
+        </div>
+
+        <!-- Role-Tailored Search Bar -->
+        <div id="header-search-box" class="relative flex items-center flex-1">
+          <span class="material-symbols-outlined absolute left-3 text-[18px] text-ink-soft pointer-events-none">search</span>
+          <input 
+            type="text" 
+            id="global-search" 
+            oninput="handleGlobalSearch(this.value)" 
+            class="w-full h-9 pl-9 pr-3 bg-canvas rounded-xl font-body-default text-caption text-ink placeholder:text-ink-soft focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-inner" 
+            placeholder="Cari Antrian Pasien Triase / No. Tiket..."
+          >
+        </div>
+      </div>
+
+      <!-- Right: Minimalist Controls & Logout -->
+      <div class="flex items-center gap-2.5 shrink-0">
+        
+        <!-- Live WIB Clock -->
+        <div class="hidden xl:flex items-center gap-1.5 px-3 py-1 bg-surface-container-low rounded-xl text-caption font-caption text-ink-soft font-mono">
+          <span class="material-symbols-outlined text-[16px] text-ink-soft">schedule</span>
+          <span id="clock-wib">08:00:00 WIB</span>
+        </div>
+
+        <!-- Audio Voice Call Toggle -->
+        <button 
+          id="audio-toggle-btn" 
+          onclick="toggleAudio()" 
+          class="p-2 rounded-xl text-ink-soft hover:bg-surface-container-low hover:text-brand transition-colors" 
+          type="button" 
+          title="Toggle Suara Panggilan Antrian (Web Speech)"
+        >
+          <span class="material-symbols-outlined text-[20px]" id="audio-icon">volume_up</span>
+        </button>
+
+        <!-- System Architecture & Tools Dropdown / Modal Trigger -->
+        <button 
+          onclick="openRoleInspector()" 
+          class="p-2 rounded-xl text-ink-soft hover:bg-surface-container-low hover:text-brand transition-colors" 
+          type="button" 
+          title="Matriks Hak Akses & Architecture Inspector"
+        >
+          <span class="material-symbols-outlined text-[20px]">shield</span>
+        </button>
+
+        <!-- Logout & Switch Account Button -->
+        <button 
+          onclick="handleLogout()" 
+          class="h-9 px-3 bg-surface-container-low hover:bg-danger-tint hover:text-danger text-ink rounded-xl text-caption font-semibold flex items-center gap-1.5 transition-colors border border-line/40 ml-1" 
+          title="Keluar dari sistem untuk ganti akun demo"
+        >
+          <span class="material-symbols-outlined text-[16px]">logout</span>
+          <span class="hidden sm:inline">Keluar</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Contextual Service Navigation Bar (Top Horizontal Tabs for Role Services) -->
+    <div id="role-contextual-bar" class="fixed top-14 left-[232px] right-0 h-11 bg-surface border-b border-line/40 z-30 px-space-xl flex items-center justify-between shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+      <div class="flex items-center gap-2 overflow-x-auto py-1">
+        <div class="flex items-center gap-1 text-[11px] font-bold text-ink-soft uppercase tracking-wider shrink-0 mr-1">
+          <span class="material-symbols-outlined text-[16px] text-brand">dataset</span>
+          <span>Layanan Role:</span>
+        </div>
+        <!-- Injected dynamically by js/app.js according to role.serviceTabs -->
+        <div id="contextual-tabs-list" class="flex items-center gap-1.5 overflow-x-auto"></div>
+      </div>
+
+      <div class="hidden md:flex items-center gap-2 text-caption text-ink-soft font-mono text-[11px] shrink-0">
+        <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
+        <span id="role-contextual-note">SIMRS Mini · Sesuai Hak Akses</span>
+      </div>
+    </div>
+
+    <!-- ========================================================== -->
+    <!-- MAIN WORKSPACE CONTAINER                                   -->
+    <!-- ========================================================== -->
+    <main class="relative pt-28 w-full px-space-xl py-space-lg min-h-screen">
+      <div id="main-viewport" class="w-full flex flex-col">
+        <!-- Dynamically injected by js/app.js -->
+      </div>
+    </main>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: Role Permission Matrix & Architecture Inspector     -->
+  <!-- ========================================================== -->
+  <div id="modal-role-inspector" class="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface rounded-xl modal-shadow max-w-4xl w-full flex flex-col max-h-[85vh] overflow-hidden border border-line/40">
+      <div class="px-space-xl py-space-md border-b border-line flex items-center justify-between bg-surface">
+        <div class="flex items-center gap-space-sm">
+          <span class="material-symbols-outlined text-[22px] text-brand">verified_user</span>
+          <h3 class="font-headline-md text-headline-md text-ink font-bold">Matriks Hak Akses & Arsitektur (docs/user-role.md)</h3>
+        </div>
+        <button onclick="closeRoleInspector()" class="p-1 rounded-lg hover:bg-surface-container-low text-ink-soft hover:text-ink transition-colors">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <div class="p-space-xl overflow-y-auto space-y-4 font-body-default text-body-default">
+        <div class="p-space-md bg-brand-tint/60 rounded-xl text-brand-strong font-body-default">
+          <strong class="block mb-0.5 font-bold">Prinsip Arsitektur SIMRS Mini (ADR A-00):</strong>
+          <span class="font-caption text-caption text-ink">Satu sistem, satu database, satu login Desk. Hiding menu bukanlah keamanan; setiap akses langsung ke endpoint atau dokumen tetap dicegat di server melalui Role Profile &amp; DocType Permissions.</span>
+        </div>
+
+        <div class="border border-line rounded-xl overflow-hidden shadow-sm">
+          <table class="w-full text-left font-table-cell text-table-cell border-collapse">
+            <thead>
+              <tr class="bg-surface-container-low border-b border-line text-ink-soft font-semibold">
+                <th class="p-space-sm">Peran (Role)</th>
+                <th class="p-space-sm">Landing Workspace</th>
+                <th class="p-space-sm">Registrasi</th>
+                <th class="p-space-sm">Triase</th>
+                <th class="p-space-sm">Dokter</th>
+                <th class="p-space-sm">Farmasi</th>
+                <th class="p-space-sm">Kasir</th>
+                <th class="p-space-sm">Display TV</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-line">
+              <tr>
+                <td class="p-space-sm font-semibold text-ink">Registration Staff</td>
+                <td class="p-space-sm font-mono text-ink-soft">registrasi</td>
+                <td class="p-space-sm text-success font-bold">● Akses</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+              </tr>
+              <tr>
+                <td class="p-space-sm font-semibold text-ink">Nursing User</td>
+                <td class="p-space-sm font-mono text-ink-soft">triase</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-success font-bold">● Akses</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+              </tr>
+              <tr>
+                <td class="p-space-sm font-semibold text-ink">Physician (Dokter)</td>
+                <td class="p-space-sm font-mono text-ink-soft">dokter</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-success font-bold">● Akses</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+              </tr>
+              <tr>
+                <td class="p-space-sm font-semibold text-ink">Pharmacist</td>
+                <td class="p-space-sm font-mono text-ink-soft">farmasi</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-success font-bold">● Akses</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+              </tr>
+              <tr>
+                <td class="p-space-sm font-semibold text-ink">Cashier / Billing</td>
+                <td class="p-space-sm font-mono text-ink-soft">kasir</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-success font-bold">● Akses</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+              </tr>
+              <tr>
+                <td class="p-space-sm font-semibold text-ink">Queue Display (Zero PHI)</td>
+                <td class="p-space-sm font-mono text-ink-soft">display</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-ink-soft">—</td>
+                <td class="p-space-sm text-success font-bold">● Akses</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex items-center justify-between pt-space-sm">
+          <div class="flex items-center gap-space-sm">
+            <button onclick="testUnauthorizedAccess()" class="h-9 px-space-md bg-danger-tint text-danger rounded-xl font-caption text-caption font-semibold hover:bg-danger hover:text-surface transition-colors flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px]">lock</span>
+              <span>Uji Simulasi 403 Forbidden</span>
+            </button>
+            <button onclick="openApiModal()" class="h-9 px-space-md bg-surface-container-low text-ink rounded-xl font-caption text-caption font-semibold hover:bg-surface-container transition-colors flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-brand">api</span>
+              <span>Test API SatuSehat / FHIR</span>
+            </button>
+          </div>
+          <button onclick="closeRoleInspector()" class="h-9 px-space-lg bg-surface-container-high hover:bg-surface-container-highest text-ink rounded-xl font-caption text-caption font-semibold transition-colors">
+            Tutup
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: SatuSehat & API Endpoint Inspector                  -->
+  <!-- ========================================================== -->
+  <div id="modal-api" class="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface rounded-xl modal-shadow max-w-2xl w-full flex flex-col max-h-[85vh] overflow-hidden border border-line/40">
+      <div class="px-space-xl py-space-md border-b border-line flex items-center justify-between bg-surface">
+        <div class="flex items-center gap-space-sm">
+          <span class="material-symbols-outlined text-[22px] text-brand">cloud_sync</span>
+          <h3 class="font-headline-md text-headline-md text-ink font-bold">API SatuSehat &amp; Frappe Backend</h3>
+        </div>
+        <button onclick="closeApiModal()" class="p-1 rounded-lg hover:bg-surface-container-low text-ink-soft hover:text-ink transition-colors">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <div class="p-space-xl overflow-y-auto space-y-4 font-body-default text-body-default">
+        <div>
+          <span class="font-body-strong text-body-strong block text-ink-soft mb-2">Uji Eksekusi Endpoint (api/simrs-update-v2.json):</span>
+          <div class="grid grid-cols-2 gap-space-sm">
+            <button onclick="testApiLogin()" class="p-space-sm text-left bg-surface border border-line rounded-xl hover:bg-surface-container-low transition-colors shadow-sm">
+              <span class="font-body-strong text-ink block">POST /login</span>
+              <span class="font-caption text-caption text-ink-soft">Autentikasi Frappe</span>
+            </button>
+            <button onclick="testApiVitalSigns()" class="p-space-sm text-left bg-surface border border-line rounded-xl hover:bg-surface-container-low transition-colors shadow-sm">
+              <span class="font-body-strong text-ink block">POST /Vital Signs</span>
+              <span class="font-caption text-caption text-ink-soft">Healthcare Resource</span>
+            </button>
+            <button onclick="testApiSatuSehat()" class="p-space-sm text-left bg-surface border border-line rounded-xl hover:bg-surface-container-low transition-colors shadow-sm">
+              <span class="font-body-strong text-ink block">GET /encounter</span>
+              <span class="font-caption text-caption text-ink-soft">SatuSehat FHIR</span>
+            </button>
+            <button onclick="testApiQueue()" class="p-space-sm text-left bg-surface border border-line rounded-xl hover:bg-surface-container-low transition-colors shadow-sm">
+              <span class="font-body-strong text-ink block">GET /Queue Registration</span>
+              <span class="font-caption text-caption text-ink-soft">Status Antrian</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <span class="font-body-strong text-body-strong block text-ink-soft mb-1">Log Response API:</span>
+          <pre id="api-log-viewer" class="p-space-md bg-display-bg text-brand-tint rounded-xl font-mono text-[12px] max-h-40 overflow-x-auto shadow-inner">Ready. Silakan pilih salah satu endpoint untuk diuji.</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: Universal Printable Document Preview                -->
+  <!-- ========================================================== -->
+  <div id="modal-print-preview" class="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface rounded-xl modal-shadow max-w-2xl w-full flex flex-col max-h-[90vh] overflow-hidden border border-line/40">
+      <div class="px-space-xl py-space-md border-b border-line flex items-center justify-between bg-surface">
+        <h3 id="print-modal-title" class="font-headline-md text-headline-md font-bold text-ink">Dokumen Resmi Rumah Sakit</h3>
+        <div class="flex items-center gap-space-sm">
+          <button onclick="window.print()" class="h-9 px-space-md bg-brand text-on-primary rounded-xl font-body-strong text-body-strong flex items-center gap-1.5 hover:bg-brand-strong transition-colors shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">print</span>
+            <span>Cetak</span>
+          </button>
+          <button onclick="closePrintModal()" class="p-1 rounded-lg hover:bg-surface-container-low text-ink-soft hover:text-ink transition-colors">
+            <span class="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+      </div>
+      <div id="print-modal-body" class="p-space-xl overflow-y-auto bg-canvas"></div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: Registrasi Walk-in Berhasil                         -->
+  <!-- ========================================================== -->
+  <div class="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm hidden items-center justify-center p-4" id="success-modal">
+    <div class="bg-surface rounded-xl modal-shadow max-w-md w-full p-space-xl flex flex-col gap-space-md relative border border-line/40">
+      <div class="flex items-center justify-between pb-space-sm">
+        <div class="flex items-center gap-2 text-success">
+          <span class="material-symbols-outlined text-[24px]">task_alt</span>
+          <span class="font-headline-md text-headline-md font-bold text-ink">Pendaftaran Berhasil</span>
+        </div>
+        <button class="text-ink-soft hover:text-ink p-1 rounded-lg" onclick="closeSuccessModal()" type="button">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <!-- Ticket Display Preview -->
+      <div class="p-space-lg bg-surface-container-low rounded-xl flex flex-col items-center justify-center text-center">
+        <span class="font-caption text-caption uppercase tracking-wider text-ink-soft font-semibold">Nomor Antrian Triase</span>
+        <span id="ticket-modal-number" class="font-display-tv-sm text-display-tv-sm text-brand font-extrabold tracking-tight my-1">T-014</span>
+        <div class="flex items-center gap-2 text-caption font-caption text-ink-soft">
+          <span id="ticket-modal-name" class="font-body-strong text-ink">Siti Rahmawati</span>
+          <span>·</span>
+          <span id="ticket-modal-mrn" class="font-mono">MRN-000123</span>
+        </div>
+        <div class="mt-space-md pt-space-sm w-full flex flex-col gap-1 text-[13px] text-ink-soft border-t border-line/40">
+          <div class="flex justify-between">
+            <span>Tujuan:</span>
+            <span id="ticket-modal-poli" class="text-ink font-medium">Poli Penyakit Dalam</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Dokter:</span>
+            <span id="ticket-modal-doctor" class="text-ink font-medium">dr. Andika Pratama, Sp.PD</span>
+          </div>
+          <div class="flex justify-between">
+            <span>Waktu Cetak:</span>
+            <span id="ticket-modal-time" class="font-mono text-ink">05 Okt 2026, 08:25 WIB</span>
+          </div>
+        </div>
+      </div>
+
+      <p class="font-caption text-caption text-ink-soft text-center">
+        Tiket dicetak ke printer loket. Pasien dipersilakan menuju ke meja Triase Rawat Jalan.
+      </p>
+
+      <div class="flex flex-col sm:flex-row gap-space-sm pt-space-xs">
+        <button class="flex-1 h-10 px-space-md rounded-xl bg-brand text-on-primary font-body-strong text-body-strong flex items-center justify-center gap-2 hover:bg-brand-strong transition-colors shadow-sm" onclick="printThermalTicket()" type="button">
+          <span class="material-symbols-outlined text-[18px]">receipt</span>
+          <span>Cetak Ulang</span>
+        </button>
+        <button class="flex-1 h-10 px-space-md rounded-xl bg-surface-container-high text-ink font-body-strong text-body-strong hover:bg-surface-container-highest transition-colors" onclick="closeSuccessModal()" type="button">
+          Selesai
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: 403 Forbidden                                       -->
+  <!-- ========================================================== -->
+  <div id="modal-403" class="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface rounded-xl modal-shadow max-w-md w-full p-space-xl flex flex-col gap-space-md border border-line/40">
+      <div class="flex items-center gap-space-sm text-danger">
+        <span class="material-symbols-outlined text-[28px]">lock</span>
+        <h3 class="font-headline-md text-headline-md font-bold text-ink">403 Akses Ditolak</h3>
+      </div>
+      <p id="error-403-message" class="font-body-default text-body-default text-ink leading-relaxed">
+        Role Anda tidak memiliki izin untuk mengakses resource ini.
+      </p>
+      <div class="p-space-sm bg-danger-tint rounded-xl text-caption font-caption text-danger flex flex-col gap-1 font-mono">
+        <span>Role: <strong id="error-403-role">-</strong></span>
+        <span>Resource: <strong id="error-403-doctype">-</strong></span>
+      </div>
+      <div class="flex justify-end pt-space-xs">
+        <button onclick="close403Modal()" class="h-9 px-space-lg bg-surface-container-high hover:bg-surface-container-highest text-ink rounded-xl font-caption text-caption font-semibold transition-colors">
+          Mengerti
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: Pendaftaran Pasien Baru                             -->
+  <!-- ========================================================== -->
+  <div id="modal-new-patient" class="fixed inset-0 z-50 bg-ink/40 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-surface rounded-xl modal-shadow max-w-lg w-full p-space-xl space-y-4 border border-line/40">
+      <div class="flex items-center justify-between pb-space-sm border-b border-line">
+        <h3 class="font-headline-md text-headline-md font-bold text-ink flex items-center gap-2">
+          <span class="material-symbols-outlined text-[20px] text-brand">person_add</span>
+          <span>Formulir Pasien Baru (Walk-in)</span>
+        </h3>
+        <button onclick="closeNewPatientModal()" class="p-1 rounded-lg hover:bg-surface-container-low text-ink-soft hover:text-ink transition-colors">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <form onsubmit="submitNewPatient(event)" class="space-y-3 font-body-default text-body-default">
+        <div class="grid grid-cols-2 gap-space-sm">
+          <div>
+            <label class="block font-body-strong mb-1 text-ink text-caption">NIK Pasien (16 digit) *</label>
+            <input type="text" id="reg-nik" required maxlength="16" placeholder="3201xxxxxxxxxxxx" class="w-full h-10 px-3 bg-canvas rounded-xl font-mono text-body-default focus:ring-2 focus:ring-brand shadow-inner">
+          </div>
+          <div>
+            <label class="block font-body-strong mb-1 text-ink text-caption">Nama Lengkap *</label>
+            <input type="text" id="reg-name" required placeholder="Sesuai KTP" class="w-full h-10 px-3 bg-canvas rounded-xl font-body-default text-body-default focus:ring-2 focus:ring-brand shadow-inner">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-space-sm">
+          <div>
+            <label class="block font-body-strong mb-1 text-ink text-caption">Jenis Kelamin</label>
+            <select id="reg-gender" class="w-full h-10 px-2.5 bg-canvas rounded-xl font-body-default text-body-default focus:ring-2 focus:ring-brand cursor-pointer">
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-body-strong mb-1 text-ink text-caption">Tanggal Lahir</label>
+            <input type="date" id="reg-birthdate" required class="w-full h-10 px-2.5 bg-canvas rounded-xl font-body-default text-body-default focus:ring-2 focus:ring-brand">
+          </div>
+          <div>
+            <label class="block font-body-strong mb-1 text-ink text-caption">Penjamin</label>
+            <select id="reg-payer" onchange="togglePayerMemberNo(this.value)" class="w-full h-10 px-2.5 bg-canvas rounded-xl font-body-default text-body-default focus:ring-2 focus:ring-brand cursor-pointer">
+              <option value="Umum">Umum</option>
+              <option value="BPJS">BPJS Kesehatan</option>
+              <option value="Asuransi">Asuransi Swasta</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="payer-member-group" class="hidden">
+          <label class="block font-body-strong mb-1 text-ink text-caption">No. Kartu BPJS / Polis</label>
+          <input type="text" id="reg-payer-no" placeholder="0001xxxxxxxx" class="w-full h-10 px-3 bg-canvas rounded-xl font-mono text-body-default focus:ring-2 focus:ring-brand shadow-inner">
+        </div>
+
+        <div class="grid grid-cols-2 gap-space-sm">
+          <div>
+            <label class="block font-body-strong mb-1 text-ink text-caption">Poli Tujuan *</label>
+            <select id="reg-poli" onchange="updateDoctorDropdown(this.value)" class="w-full h-10 px-2.5 bg-canvas rounded-xl font-body-default text-body-default focus:ring-2 focus:ring-brand cursor-pointer">
+              <!-- JS Populated -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-body-strong mb-1 text-ink text-caption">Dokter Praktik *</label>
+            <select id="reg-doctor" class="w-full h-10 px-2.5 bg-canvas rounded-xl font-body-default text-body-default focus:ring-2 focus:ring-brand cursor-pointer">
+              <!-- JS Populated -->
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-body-strong mb-1 text-ink text-caption">No. HP / WhatsApp</label>
+          <input type="tel" id="reg-phone" placeholder="08xxxxxxxx" class="w-full h-10 px-3 bg-canvas rounded-xl font-mono text-body-default focus:ring-2 focus:ring-brand shadow-inner">
+        </div>
+
+        <div class="flex justify-end gap-space-sm pt-space-md border-t border-line">
+          <button type="button" onclick="closeNewPatientModal()" class="h-10 px-space-md rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-ink font-body-strong text-body-strong transition-colors">Batal</button>
+          <button type="submit" class="h-10 px-space-lg bg-brand hover:bg-brand-strong text-on-primary rounded-xl font-body-strong text-body-strong shadow-sm transition-colors">Daftar & Cetak Tiket</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Printable Area for Native window.print() -->
+  <div id="printable-area" class="hidden"></div>
+
+  <!-- Global Toast Notifications -->
+  <div id="toast-notif" class="fixed bottom-6 left-[256px] z-50 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <div class="px-space-md py-space-sm bg-ink text-surface rounded-xl shadow-xl flex items-center gap-space-sm">
+      <span class="material-symbols-outlined text-[18px] text-success">check_circle</span>
+      <span class="font-body-default text-body-default text-surface" id="toast-text">Notifikasi</span>
+    </div>
+  </div>
+
+  <!-- Script Modules -->
+  <script src="js/data.js"></script>
+  <script src="js/permissions.js"></script>
+  <script src="js/services.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

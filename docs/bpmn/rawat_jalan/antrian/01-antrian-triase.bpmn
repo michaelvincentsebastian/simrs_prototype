@@ -1,0 +1,401 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_AntrianTriase" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0">
+  <bpmn:collaboration id="Collab_AntrianTriase">
+    <bpmn:participant id="Part_AntrianTriase" name="Antrian Triase (§2.1, §8.1)" processRef="Proc_AntrianTriase"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Proc_AntrianTriase" name="Antrian Triase" isExecutable="false">
+    <bpmn:documentation>
+      Alur manajemen antrian triase — dari tiket terbit hingga pasien dipanggil perawat.
+      Queue type: TRIAGE. Status tiket: WAITING → CALLED → SERVING → COMPLETED/SKIPPED.
+      Hirarki: §2.1 Daftar Antrian Triase, §8.1 Display Antrian.
+      Aktor: Sistem Antrian, Perawat Triase, Pasien, Display TV.
+    </bpmn:documentation>
+    <bpmn:laneSet id="LS_AntrianTriase">
+      <bpmn:lane id="Lane_Sistem" name="Sistem Antrian SIMRS">
+        <bpmn:flowNodeRef>Start_TiketMasuk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TambahKeAntrian</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HitungEstimasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PublishDisplay</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_UpdateStatusCalled</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PlayAudio</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HighlightDisplay</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Perawat" name="Perawat Triase">
+        <bpmn:flowNodeRef>Task_LihatAntrian</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PanggilPasien</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Event_Tunggu</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_PasienHadir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PanggilUlang</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_PanggilanKe</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SkipPasien</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Merge_Hadir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_MulaiTriase</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_MasukTriase</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Pasien" name="Pasien">
+        <bpmn:flowNodeRef>Task_TungguDipanggil</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DengarPanggilan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_MasukRuangTriase</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Display" name="Display TV (Queue Display)">
+        <bpmn:flowNodeRef>Task_RenderDaftar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AnimasiPanggilan</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_TiketMasuk" name="Tiket antrian triase diterbitkan">
+      <bpmn:documentation>Trigger: check-in selesai, Queue Ticket type=TRIAGE dibuat</bpmn:documentation>
+      <bpmn:outgoing>F01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_TambahKeAntrian" name="Tambah tiket ke antrian triase (FIFO)">
+      <bpmn:documentation>Urutkan berdasarkan waktu check-in. Prioritas: emergency flag.</bpmn:documentation>
+      <bpmn:incoming>F01</bpmn:incoming>
+      <bpmn:outgoing>F02</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_HitungEstimasi" name="Hitung estimasi waktu tunggu">
+      <bpmn:documentation>Berdasarkan: jumlah antrian depan × rata-rata waktu triase (±5 menit)</bpmn:documentation>
+      <bpmn:incoming>F02</bpmn:incoming>
+      <bpmn:outgoing>F03</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_PublishDisplay" name="Publish daftar antrian ke Display TV">
+      <bpmn:documentation>Hirarki: 8.1 Display. Realtime via frappe.publish_realtime. Zero PHI — hanya no. tiket + ruang.</bpmn:documentation>
+      <bpmn:incoming>F03</bpmn:incoming>
+      <bpmn:outgoing>F04</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_RenderDaftar" name="Render daftar antrian di layar TV">
+      <bpmn:documentation>Dark mode display: nomor tiket besar, ruang tujuan, status WAITING/CALLED</bpmn:documentation>
+      <bpmn:incoming>F04</bpmn:incoming>
+      <bpmn:outgoing>F05</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_TungguDipanggil" name="Duduk di ruang tunggu, lihat display">
+      <bpmn:incoming>F05</bpmn:incoming>
+      <bpmn:outgoing>F06</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_LihatAntrian" name="Lihat daftar antrian triase di workstation">
+      <bpmn:documentation>Hirarki: 2.1. Perawat melihat daftar pasien WAITING urut FIFO.</bpmn:documentation>
+      <bpmn:incoming>F06</bpmn:incoming>
+      <bpmn:outgoing>F07</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_PanggilPasien" name="Klik tombol &quot;Panggil Pasien&quot;">
+      <bpmn:documentation>Sistem update status tiket: WAITING → CALLED. Trigger audio + display highlight.</bpmn:documentation>
+      <bpmn:incoming>F07</bpmn:incoming>
+      <bpmn:outgoing>F08</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_UpdateStatusCalled" name="Update tiket: WAITING → CALLED">
+      <bpmn:incoming>F08</bpmn:incoming>
+      <bpmn:outgoing>F09</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_PlayAudio" name="Play audio panggilan (TTS / tone)">
+      <bpmn:documentation>Contoh: "Nomor antrian T-014, silakan ke ruang triase"</bpmn:documentation>
+      <bpmn:incoming>F09</bpmn:incoming>
+      <bpmn:outgoing>F10</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_HighlightDisplay" name="Highlight nomor di Display TV">
+      <bpmn:incoming>F10</bpmn:incoming>
+      <bpmn:outgoing>F11</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_AnimasiPanggilan" name="Animasi panggilan (flash amber, no. besar)">
+      <bpmn:documentation>Warna display-called (#FFC247) + ukuran display-tv (192px)</bpmn:documentation>
+      <bpmn:incoming>F11</bpmn:incoming>
+      <bpmn:outgoing>F12</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_DengarPanggilan" name="Dengar panggilan audio / lihat display">
+      <bpmn:incoming>F12</bpmn:incoming>
+      <bpmn:outgoing>F13</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:intermediateCatchEvent id="Event_Tunggu" name="Tunggu pasien datang (timeout 3 menit)">
+      <bpmn:incoming>F13</bpmn:incoming>
+      <bpmn:outgoing>F14</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="Timer_Tunggu"/>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:exclusiveGateway id="GW_PasienHadir" name="Pasien hadir?" default="F_TidakHadir">
+      <bpmn:incoming>F14</bpmn:incoming>
+      <bpmn:outgoing>F_Hadir</bpmn:outgoing>
+      <bpmn:outgoing>F_TidakHadir</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_PanggilUlang" name="Panggil ulang (maksimal 3x)">
+      <bpmn:incoming>F_TidakHadir</bpmn:incoming>
+      <bpmn:outgoing>F15</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_PanggilanKe" name="Sudah panggil 3x?" default="F_BelumMax">
+      <bpmn:incoming>F15</bpmn:incoming>
+      <bpmn:outgoing>F_BelumMax</bpmn:outgoing>
+      <bpmn:outgoing>F_SudahMax</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_SkipPasien" name="Skip pasien (status: SKIPPED), panggil berikutnya">
+      <bpmn:documentation>Pasien bisa re-queue jika datang kemudian</bpmn:documentation>
+      <bpmn:incoming>F_SudahMax</bpmn:incoming>
+      <bpmn:outgoing>F16</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_MasukRuangTriase" name="Pasien masuk ruang triase">
+      <bpmn:incoming>F_Hadir</bpmn:incoming>
+      <bpmn:outgoing>F17</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Merge_Hadir">
+      <bpmn:incoming>F17</bpmn:incoming>
+      <bpmn:incoming>F_BelumMax</bpmn:incoming>
+      <bpmn:outgoing>F18</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_MulaiTriase" name="Mulai proses triase (status tiket: SERVING)">
+      <bpmn:documentation>Status Visit: ARRIVED → IN_TRIAGE</bpmn:documentation>
+      <bpmn:incoming>F18</bpmn:incoming>
+      <bpmn:outgoing>F19</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End_MasukTriase" name="Pasien dalam proses triase">
+      <bpmn:incoming>F19</bpmn:incoming>
+      <bpmn:incoming>F16</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F01" sourceRef="Start_TiketMasuk" targetRef="Task_TambahKeAntrian"/>
+    <bpmn:sequenceFlow id="F02" sourceRef="Task_TambahKeAntrian" targetRef="Task_HitungEstimasi"/>
+    <bpmn:sequenceFlow id="F03" sourceRef="Task_HitungEstimasi" targetRef="Task_PublishDisplay"/>
+    <bpmn:sequenceFlow id="F04" sourceRef="Task_PublishDisplay" targetRef="Task_RenderDaftar"/>
+    <bpmn:sequenceFlow id="F05" sourceRef="Task_RenderDaftar" targetRef="Task_TungguDipanggil"/>
+    <bpmn:sequenceFlow id="F06" sourceRef="Task_TungguDipanggil" targetRef="Task_LihatAntrian"/>
+    <bpmn:sequenceFlow id="F07" sourceRef="Task_LihatAntrian" targetRef="Task_PanggilPasien"/>
+    <bpmn:sequenceFlow id="F08" sourceRef="Task_PanggilPasien" targetRef="Task_UpdateStatusCalled"/>
+    <bpmn:sequenceFlow id="F09" sourceRef="Task_UpdateStatusCalled" targetRef="Task_PlayAudio"/>
+    <bpmn:sequenceFlow id="F10" sourceRef="Task_PlayAudio" targetRef="Task_HighlightDisplay"/>
+    <bpmn:sequenceFlow id="F11" sourceRef="Task_HighlightDisplay" targetRef="Task_AnimasiPanggilan"/>
+    <bpmn:sequenceFlow id="F12" sourceRef="Task_AnimasiPanggilan" targetRef="Task_DengarPanggilan"/>
+    <bpmn:sequenceFlow id="F13" sourceRef="Task_DengarPanggilan" targetRef="Event_Tunggu"/>
+    <bpmn:sequenceFlow id="F14" sourceRef="Event_Tunggu" targetRef="GW_PasienHadir"/>
+    <bpmn:sequenceFlow id="F_Hadir" name="Ya" sourceRef="GW_PasienHadir" targetRef="Task_MasukRuangTriase"/>
+    <bpmn:sequenceFlow id="F_TidakHadir" name="Tidak" sourceRef="GW_PasienHadir" targetRef="Task_PanggilUlang"/>
+    <bpmn:sequenceFlow id="F15" sourceRef="Task_PanggilUlang" targetRef="GW_PanggilanKe"/>
+    <bpmn:sequenceFlow id="F_BelumMax" name="Belum 3x" sourceRef="GW_PanggilanKe" targetRef="Merge_Hadir"/>
+    <bpmn:sequenceFlow id="F_SudahMax" name="Sudah 3x" sourceRef="GW_PanggilanKe" targetRef="Task_SkipPasien"/>
+    <bpmn:sequenceFlow id="F16" sourceRef="Task_SkipPasien" targetRef="End_MasukTriase"/>
+    <bpmn:sequenceFlow id="F17" sourceRef="Task_MasukRuangTriase" targetRef="Merge_Hadir"/>
+    <bpmn:sequenceFlow id="F18" sourceRef="Merge_Hadir" targetRef="Task_MulaiTriase"/>
+    <bpmn:sequenceFlow id="F19" sourceRef="Task_MulaiTriase" targetRef="End_MasukTriase"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Proc_AntrianTriase">
+    <bpmndi:BPMNPlane id="BPMNPlane_Proc_AntrianTriase" bpmnElement="Collab_AntrianTriase">
+      <bpmndi:BPMNShape id="Part_AntrianTriase_di" bpmnElement="Part_AntrianTriase" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="3976" height="720"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Sistem_di" bpmnElement="Lane_Sistem" isHorizontal="true">
+        <dc:Bounds x="190" y="60" width="3916" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Perawat_di" bpmnElement="Lane_Perawat" isHorizontal="true">
+        <dc:Bounds x="190" y="220" width="3916" height="240"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Pasien_di" bpmnElement="Lane_Pasien" isHorizontal="true">
+        <dc:Bounds x="190" y="460" width="3916" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Display_di" bpmnElement="Lane_Display" isHorizontal="true">
+        <dc:Bounds x="190" y="620" width="3916" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_TiketMasuk_di" bpmnElement="Start_TiketMasuk">
+        <dc:Bounds x="260" y="122" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="235" y="163" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TambahKeAntrian_di" bpmnElement="Task_TambahKeAntrian">
+        <dc:Bounds x="440" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HitungEstimasi_di" bpmnElement="Task_HitungEstimasi">
+        <dc:Bounds x="620" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PublishDisplay_di" bpmnElement="Task_PublishDisplay">
+        <dc:Bounds x="800" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RenderDaftar_di" bpmnElement="Task_RenderDaftar">
+        <dc:Bounds x="980" y="660" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TungguDipanggil_di" bpmnElement="Task_TungguDipanggil">
+        <dc:Bounds x="1160" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_LihatAntrian_di" bpmnElement="Task_LihatAntrian">
+        <dc:Bounds x="1340" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PanggilPasien_di" bpmnElement="Task_PanggilPasien">
+        <dc:Bounds x="1520" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_UpdateStatusCalled_di" bpmnElement="Task_UpdateStatusCalled">
+        <dc:Bounds x="1700" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PlayAudio_di" bpmnElement="Task_PlayAudio">
+        <dc:Bounds x="1880" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HighlightDisplay_di" bpmnElement="Task_HighlightDisplay">
+        <dc:Bounds x="2060" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AnimasiPanggilan_di" bpmnElement="Task_AnimasiPanggilan">
+        <dc:Bounds x="2240" y="660" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DengarPanggilan_di" bpmnElement="Task_DengarPanggilan">
+        <dc:Bounds x="2420" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_Tunggu_di" bpmnElement="Event_Tunggu">
+        <dc:Bounds x="2600" y="262" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2575" y="303" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_PasienHadir_di" bpmnElement="GW_PasienHadir" isMarkerVisible="true">
+        <dc:Bounds x="2780" y="255" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2760" y="225" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MasukRuangTriase_di" bpmnElement="Task_MasukRuangTriase">
+        <dc:Bounds x="2960" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PanggilUlang_di" bpmnElement="Task_PanggilUlang">
+        <dc:Bounds x="2960" y="350" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_PanggilanKe_di" bpmnElement="GW_PanggilanKe" isMarkerVisible="true">
+        <dc:Bounds x="3140" y="255" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3120" y="225" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Merge_Hadir_di" bpmnElement="Merge_Hadir" isMarkerVisible="true">
+        <dc:Bounds x="3320" y="255" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SkipPasien_di" bpmnElement="Task_SkipPasien">
+        <dc:Bounds x="3500" y="350" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MulaiTriase_di" bpmnElement="Task_MulaiTriase">
+        <dc:Bounds x="3680" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_MasukTriase_di" bpmnElement="End_MasukTriase">
+        <dc:Bounds x="3860" y="262" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3835" y="303" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F01_di" bpmnElement="F01">
+        <di:waypoint x="296" y="140"/>
+        <di:waypoint x="440" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F02_di" bpmnElement="F02">
+        <di:waypoint x="560" y="140"/>
+        <di:waypoint x="620" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F03_di" bpmnElement="F03">
+        <di:waypoint x="740" y="140"/>
+        <di:waypoint x="800" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F04_di" bpmnElement="F04">
+        <di:waypoint x="920" y="140"/>
+        <di:waypoint x="950" y="140"/>
+        <di:waypoint x="950" y="700"/>
+        <di:waypoint x="980" y="700"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F05_di" bpmnElement="F05">
+        <di:waypoint x="1100" y="700"/>
+        <di:waypoint x="1130" y="700"/>
+        <di:waypoint x="1130" y="540"/>
+        <di:waypoint x="1160" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F06_di" bpmnElement="F06">
+        <di:waypoint x="1280" y="540"/>
+        <di:waypoint x="1310" y="540"/>
+        <di:waypoint x="1310" y="280"/>
+        <di:waypoint x="1340" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F07_di" bpmnElement="F07">
+        <di:waypoint x="1460" y="280"/>
+        <di:waypoint x="1520" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F08_di" bpmnElement="F08">
+        <di:waypoint x="1640" y="280"/>
+        <di:waypoint x="1670" y="280"/>
+        <di:waypoint x="1670" y="140"/>
+        <di:waypoint x="1700" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F09_di" bpmnElement="F09">
+        <di:waypoint x="1820" y="140"/>
+        <di:waypoint x="1880" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10">
+        <di:waypoint x="2000" y="140"/>
+        <di:waypoint x="2060" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F11_di" bpmnElement="F11">
+        <di:waypoint x="2180" y="140"/>
+        <di:waypoint x="2210" y="140"/>
+        <di:waypoint x="2210" y="700"/>
+        <di:waypoint x="2240" y="700"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F12_di" bpmnElement="F12">
+        <di:waypoint x="2360" y="700"/>
+        <di:waypoint x="2390" y="700"/>
+        <di:waypoint x="2390" y="540"/>
+        <di:waypoint x="2420" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F13_di" bpmnElement="F13">
+        <di:waypoint x="2540" y="540"/>
+        <di:waypoint x="2570" y="540"/>
+        <di:waypoint x="2570" y="280"/>
+        <di:waypoint x="2600" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F14_di" bpmnElement="F14">
+        <di:waypoint x="2636" y="280"/>
+        <di:waypoint x="2780" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_Hadir_di" bpmnElement="F_Hadir">
+        <di:waypoint x="2830" y="280"/>
+        <di:waypoint x="2895" y="280"/>
+        <di:waypoint x="2895" y="540"/>
+        <di:waypoint x="2960" y="540"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2847" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_TidakHadir_di" bpmnElement="F_TidakHadir">
+        <di:waypoint x="2830" y="280"/>
+        <di:waypoint x="2895" y="280"/>
+        <di:waypoint x="2895" y="390"/>
+        <di:waypoint x="2960" y="390"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2847" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F15_di" bpmnElement="F15">
+        <di:waypoint x="3080" y="390"/>
+        <di:waypoint x="3110" y="390"/>
+        <di:waypoint x="3110" y="280"/>
+        <di:waypoint x="3140" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_BelumMax_di" bpmnElement="F_BelumMax">
+        <di:waypoint x="3190" y="280"/>
+        <di:waypoint x="3320" y="280"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3240" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_SudahMax_di" bpmnElement="F_SudahMax">
+        <di:waypoint x="3190" y="280"/>
+        <di:waypoint x="3345" y="280"/>
+        <di:waypoint x="3345" y="390"/>
+        <di:waypoint x="3500" y="390"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3252" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F16_di" bpmnElement="F16">
+        <di:waypoint x="3620" y="390"/>
+        <di:waypoint x="3740" y="390"/>
+        <di:waypoint x="3740" y="280"/>
+        <di:waypoint x="3860" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F17_di" bpmnElement="F17">
+        <di:waypoint x="3080" y="540"/>
+        <di:waypoint x="3200" y="540"/>
+        <di:waypoint x="3200" y="280"/>
+        <di:waypoint x="3320" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F18_di" bpmnElement="F18">
+        <di:waypoint x="3370" y="280"/>
+        <di:waypoint x="3680" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F19_di" bpmnElement="F19">
+        <di:waypoint x="3800" y="280"/>
+        <di:waypoint x="3860" y="280"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

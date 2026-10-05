@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_AntrianFarmasiKasir" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0">
+  <bpmn:collaboration id="Collab_AntrianFarmasiKasir">
+    <bpmn:participant id="Part_AntrianFarmasiKasir" name="Antrian Farmasi dan Kasir (§5.1, §6.1, §8.1)" processRef="Proc_AntrianFarmasiKasir"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Proc_AntrianFarmasiKasir" name="Antrian Farmasi dan Kasir" isExecutable="false">
+    <bpmn:documentation>
+      Alur manajemen antrian farmasi dan kasir setelah pelayanan dokter selesai.
+      Queue types: PHARMACY (Farmasi) &amp; CASHIER (Kasir/Billing).
+      Status tiket: WAITING → CALLED → IN_SERVICE → COMPLETED.
+      Hirarki: §5.1 Antrian Resep Farmasi, §6.1 Antrian Pembayaran Kasir, §8.1 Queue Display.
+    </bpmn:documentation>
+    <bpmn:laneSet id="LS_AntrianFarmasiKasir">
+      <bpmn:lane id="Lane_Sistem" name="Sistem Antrian SIMRS">
+        <bpmn:flowNodeRef>Start_DariDokter</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_JenisAntrian</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_GenerateTiketFarmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_GenerateTiketKasir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PublishDisplayFarmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PublishDisplayKasir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PanggilAudioFarmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PanggilAudioKasir</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_PetugasFarmasi" name="Petugas Farmasi / Apoteker">
+        <bpmn:flowNodeRef>Task_LihatAntrianFarmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PanggilPasienFarmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SerahkanObat</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Kasir" name="Kasir / Billing">
+        <bpmn:flowNodeRef>Task_LihatAntrianKasir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PanggilPasienKasir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ProsesBayar</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Pasien" name="Pasien / Keluarga">
+        <bpmn:flowNodeRef>Task_MenungguFarmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_MenujuLoketFarmasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_MenungguKasir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_MenujuLoketKasir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_SelesaiLayanan</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_DariDokter" name="Pelayanan dokter difinalisasi">
+      <bpmn:documentation>Trigger: Doctor Encounter status = COMPLETED / Finalized</bpmn:documentation>
+      <bpmn:outgoing>F01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="GW_JenisAntrian" name="Apakah ada resep obat?">
+      <bpmn:incoming>F01</bpmn:incoming>
+      <bpmn:outgoing>F_AdaResep</bpmn:outgoing>
+      <bpmn:outgoing>F_TanpaResep</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_GenerateTiketFarmasi" name="Generate Tiket Antrian Farmasi">
+      <bpmn:documentation>Queue Ticket type = PHARMACY, prefix 'F', status = WAITING</bpmn:documentation>
+      <bpmn:incoming>F_AdaResep</bpmn:incoming>
+      <bpmn:outgoing>F02</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_PublishDisplayFarmasi" name="Publish ke Queue Display Farmasi">
+      <bpmn:documentation>Realtime event: queue_update untuk layar tunggu farmasi</bpmn:documentation>
+      <bpmn:incoming>F02</bpmn:incoming>
+      <bpmn:outgoing>F03</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_MenungguFarmasi" name="Pasien menunggu di ruang tunggu farmasi">
+      <bpmn:incoming>F03</bpmn:incoming>
+      <bpmn:outgoing>F04</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_LihatAntrianFarmasi" name="Petugas monitor daftar antrian farmasi">
+      <bpmn:documentation>Menu 5.1: Daftar antrian resep &amp; status peracikan obat</bpmn:documentation>
+      <bpmn:incoming>F04</bpmn:incoming>
+      <bpmn:outgoing>F05</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_PanggilPasienFarmasi" name="Panggil nomor antrian pasien farmasi">
+      <bpmn:documentation>Tombol 'Panggil': status tiket diupdate menjadi CALLED</bpmn:documentation>
+      <bpmn:incoming>F05</bpmn:incoming>
+      <bpmn:outgoing>F06</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_PanggilAudioFarmasi" name="Bunyikan audio bell &amp; TTS loket farmasi">
+      <bpmn:incoming>F06</bpmn:incoming>
+      <bpmn:outgoing>F07</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_MenujuLoketFarmasi" name="Pasien menuju loket penyerahan obat">
+      <bpmn:incoming>F07</bpmn:incoming>
+      <bpmn:outgoing>F08</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_SerahkanObat" name="Verifikasi identitas, KIE &amp; serahkan obat">
+      <bpmn:documentation>Menu 5.4: Penyerahan obat, tiket farmasi COMPLETED</bpmn:documentation>
+      <bpmn:incoming>F08</bpmn:incoming>
+      <bpmn:outgoing>F09</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_GenerateTiketKasir" name="Generate Tiket Antrian Kasir">
+      <bpmn:documentation>Queue Ticket type = CASHIER, prefix 'K', status = WAITING</bpmn:documentation>
+      <bpmn:incoming>F_TanpaResep</bpmn:incoming>
+      <bpmn:incoming>F09</bpmn:incoming>
+      <bpmn:outgoing>F10</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_PublishDisplayKasir" name="Publish ke Queue Display Kasir">
+      <bpmn:documentation>Realtime event: queue_update untuk layar kasir</bpmn:documentation>
+      <bpmn:incoming>F10</bpmn:incoming>
+      <bpmn:outgoing>F11</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_MenungguKasir" name="Pasien menunggu antrian pembayaran">
+      <bpmn:incoming>F11</bpmn:incoming>
+      <bpmn:outgoing>F12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_LihatAntrianKasir" name="Kasir monitor daftar tagihan siap bayar">
+      <bpmn:documentation>Menu 6.1: Antrian kasir &amp; rekap invoice</bpmn:documentation>
+      <bpmn:incoming>F12</bpmn:incoming>
+      <bpmn:outgoing>F13</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_PanggilPasienKasir" name="Kasir panggil nomor antrian kasir">
+      <bpmn:documentation>Status tiket: CALLED, update ke display</bpmn:documentation>
+      <bpmn:incoming>F13</bpmn:incoming>
+      <bpmn:outgoing>F14</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_PanggilAudioKasir" name="Bunyikan audio bell &amp; TTS loket kasir">
+      <bpmn:incoming>F14</bpmn:incoming>
+      <bpmn:outgoing>F15</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_MenujuLoketKasir" name="Pasien menuju loket kasir">
+      <bpmn:incoming>F15</bpmn:incoming>
+      <bpmn:outgoing>F16</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_ProsesBayar" name="Proses pembayaran &amp; cetak kuitansi">
+      <bpmn:documentation>Menu 6.4-6.5: Pelunasan invoice, tiket COMPLETED, Visit CLOSED</bpmn:documentation>
+      <bpmn:incoming>F16</bpmn:incoming>
+      <bpmn:outgoing>F17</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End_SelesaiLayanan" name="Pelayanan Farmasi &amp; Kasir Selesai">
+      <bpmn:incoming>F17</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F01" sourceRef="Start_DariDokter" targetRef="GW_JenisAntrian"/>
+    <bpmn:sequenceFlow id="F_AdaResep" name="Ada Resep" sourceRef="GW_JenisAntrian" targetRef="Task_GenerateTiketFarmasi"/>
+    <bpmn:sequenceFlow id="F_TanpaResep" name="Tanpa Resep" sourceRef="GW_JenisAntrian" targetRef="Task_GenerateTiketKasir"/>
+    <bpmn:sequenceFlow id="F02" sourceRef="Task_GenerateTiketFarmasi" targetRef="Task_PublishDisplayFarmasi"/>
+    <bpmn:sequenceFlow id="F03" sourceRef="Task_PublishDisplayFarmasi" targetRef="Task_MenungguFarmasi"/>
+    <bpmn:sequenceFlow id="F04" sourceRef="Task_MenungguFarmasi" targetRef="Task_LihatAntrianFarmasi"/>
+    <bpmn:sequenceFlow id="F05" sourceRef="Task_LihatAntrianFarmasi" targetRef="Task_PanggilPasienFarmasi"/>
+    <bpmn:sequenceFlow id="F06" sourceRef="Task_PanggilPasienFarmasi" targetRef="Task_PanggilAudioFarmasi"/>
+    <bpmn:sequenceFlow id="F07" sourceRef="Task_PanggilAudioFarmasi" targetRef="Task_MenujuLoketFarmasi"/>
+    <bpmn:sequenceFlow id="F08" sourceRef="Task_MenujuLoketFarmasi" targetRef="Task_SerahkanObat"/>
+    <bpmn:sequenceFlow id="F09" sourceRef="Task_SerahkanObat" targetRef="Task_GenerateTiketKasir"/>
+    <bpmn:sequenceFlow id="F10" sourceRef="Task_GenerateTiketKasir" targetRef="Task_PublishDisplayKasir"/>
+    <bpmn:sequenceFlow id="F11" sourceRef="Task_PublishDisplayKasir" targetRef="Task_MenungguKasir"/>
+    <bpmn:sequenceFlow id="F12" sourceRef="Task_MenungguKasir" targetRef="Task_LihatAntrianKasir"/>
+    <bpmn:sequenceFlow id="F13" sourceRef="Task_LihatAntrianKasir" targetRef="Task_PanggilPasienKasir"/>
+    <bpmn:sequenceFlow id="F14" sourceRef="Task_PanggilPasienKasir" targetRef="Task_PanggilAudioKasir"/>
+    <bpmn:sequenceFlow id="F15" sourceRef="Task_PanggilAudioKasir" targetRef="Task_MenujuLoketKasir"/>
+    <bpmn:sequenceFlow id="F16" sourceRef="Task_MenujuLoketKasir" targetRef="Task_ProsesBayar"/>
+    <bpmn:sequenceFlow id="F17" sourceRef="Task_ProsesBayar" targetRef="End_SelesaiLayanan"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Proc_AntrianFarmasiKasir">
+    <bpmndi:BPMNPlane id="BPMNPlane_Proc_AntrianFarmasiKasir" bpmnElement="Collab_AntrianFarmasiKasir">
+      <bpmndi:BPMNShape id="Part_AntrianFarmasiKasir_di" bpmnElement="Part_AntrianFarmasiKasir" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="3616" height="640"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Sistem_di" bpmnElement="Lane_Sistem" isHorizontal="true">
+        <dc:Bounds x="190" y="60" width="3556" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_PetugasFarmasi_di" bpmnElement="Lane_PetugasFarmasi" isHorizontal="true">
+        <dc:Bounds x="190" y="220" width="3556" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Kasir_di" bpmnElement="Lane_Kasir" isHorizontal="true">
+        <dc:Bounds x="190" y="380" width="3556" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Pasien_di" bpmnElement="Lane_Pasien" isHorizontal="true">
+        <dc:Bounds x="190" y="540" width="3556" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_DariDokter_di" bpmnElement="Start_DariDokter">
+        <dc:Bounds x="260" y="122" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="235" y="163" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_JenisAntrian_di" bpmnElement="GW_JenisAntrian" isMarkerVisible="true">
+        <dc:Bounds x="440" y="115" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="420" y="85" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GenerateTiketFarmasi_di" bpmnElement="Task_GenerateTiketFarmasi">
+        <dc:Bounds x="620" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PublishDisplayFarmasi_di" bpmnElement="Task_PublishDisplayFarmasi">
+        <dc:Bounds x="800" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MenungguFarmasi_di" bpmnElement="Task_MenungguFarmasi">
+        <dc:Bounds x="980" y="580" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_LihatAntrianFarmasi_di" bpmnElement="Task_LihatAntrianFarmasi">
+        <dc:Bounds x="1160" y="260" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PanggilPasienFarmasi_di" bpmnElement="Task_PanggilPasienFarmasi">
+        <dc:Bounds x="1340" y="260" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PanggilAudioFarmasi_di" bpmnElement="Task_PanggilAudioFarmasi">
+        <dc:Bounds x="1520" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MenujuLoketFarmasi_di" bpmnElement="Task_MenujuLoketFarmasi">
+        <dc:Bounds x="1700" y="580" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SerahkanObat_di" bpmnElement="Task_SerahkanObat">
+        <dc:Bounds x="1880" y="260" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GenerateTiketKasir_di" bpmnElement="Task_GenerateTiketKasir">
+        <dc:Bounds x="2060" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PublishDisplayKasir_di" bpmnElement="Task_PublishDisplayKasir">
+        <dc:Bounds x="2240" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MenungguKasir_di" bpmnElement="Task_MenungguKasir">
+        <dc:Bounds x="2420" y="580" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_LihatAntrianKasir_di" bpmnElement="Task_LihatAntrianKasir">
+        <dc:Bounds x="2600" y="420" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PanggilPasienKasir_di" bpmnElement="Task_PanggilPasienKasir">
+        <dc:Bounds x="2780" y="420" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PanggilAudioKasir_di" bpmnElement="Task_PanggilAudioKasir">
+        <dc:Bounds x="2960" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MenujuLoketKasir_di" bpmnElement="Task_MenujuLoketKasir">
+        <dc:Bounds x="3140" y="580" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ProsesBayar_di" bpmnElement="Task_ProsesBayar">
+        <dc:Bounds x="3320" y="420" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_SelesaiLayanan_di" bpmnElement="End_SelesaiLayanan">
+        <dc:Bounds x="3500" y="602" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3475" y="643" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F01_di" bpmnElement="F01">
+        <di:waypoint x="296" y="140"/>
+        <di:waypoint x="440" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_AdaResep_di" bpmnElement="F_AdaResep">
+        <di:waypoint x="490" y="140"/>
+        <di:waypoint x="620" y="140"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="540" y="122" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_TanpaResep_di" bpmnElement="F_TanpaResep">
+        <di:waypoint x="490" y="140"/>
+        <di:waypoint x="2060" y="140"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1260" y="122" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F02_di" bpmnElement="F02">
+        <di:waypoint x="740" y="140"/>
+        <di:waypoint x="800" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F03_di" bpmnElement="F03">
+        <di:waypoint x="920" y="140"/>
+        <di:waypoint x="950" y="140"/>
+        <di:waypoint x="950" y="620"/>
+        <di:waypoint x="980" y="620"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F04_di" bpmnElement="F04">
+        <di:waypoint x="1100" y="620"/>
+        <di:waypoint x="1130" y="620"/>
+        <di:waypoint x="1130" y="300"/>
+        <di:waypoint x="1160" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F05_di" bpmnElement="F05">
+        <di:waypoint x="1280" y="300"/>
+        <di:waypoint x="1340" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F06_di" bpmnElement="F06">
+        <di:waypoint x="1460" y="300"/>
+        <di:waypoint x="1490" y="300"/>
+        <di:waypoint x="1490" y="140"/>
+        <di:waypoint x="1520" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F07_di" bpmnElement="F07">
+        <di:waypoint x="1640" y="140"/>
+        <di:waypoint x="1670" y="140"/>
+        <di:waypoint x="1670" y="620"/>
+        <di:waypoint x="1700" y="620"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F08_di" bpmnElement="F08">
+        <di:waypoint x="1820" y="620"/>
+        <di:waypoint x="1850" y="620"/>
+        <di:waypoint x="1850" y="300"/>
+        <di:waypoint x="1880" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F09_di" bpmnElement="F09">
+        <di:waypoint x="2000" y="300"/>
+        <di:waypoint x="2030" y="300"/>
+        <di:waypoint x="2030" y="140"/>
+        <di:waypoint x="2060" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10">
+        <di:waypoint x="2180" y="140"/>
+        <di:waypoint x="2240" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F11_di" bpmnElement="F11">
+        <di:waypoint x="2360" y="140"/>
+        <di:waypoint x="2390" y="140"/>
+        <di:waypoint x="2390" y="620"/>
+        <di:waypoint x="2420" y="620"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F12_di" bpmnElement="F12">
+        <di:waypoint x="2540" y="620"/>
+        <di:waypoint x="2570" y="620"/>
+        <di:waypoint x="2570" y="460"/>
+        <di:waypoint x="2600" y="460"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F13_di" bpmnElement="F13">
+        <di:waypoint x="2720" y="460"/>
+        <di:waypoint x="2780" y="460"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F14_di" bpmnElement="F14">
+        <di:waypoint x="2900" y="460"/>
+        <di:waypoint x="2930" y="460"/>
+        <di:waypoint x="2930" y="140"/>
+        <di:waypoint x="2960" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F15_di" bpmnElement="F15">
+        <di:waypoint x="3080" y="140"/>
+        <di:waypoint x="3110" y="140"/>
+        <di:waypoint x="3110" y="620"/>
+        <di:waypoint x="3140" y="620"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F16_di" bpmnElement="F16">
+        <di:waypoint x="3260" y="620"/>
+        <di:waypoint x="3290" y="620"/>
+        <di:waypoint x="3290" y="460"/>
+        <di:waypoint x="3320" y="460"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F17_di" bpmnElement="F17">
+        <di:waypoint x="3440" y="460"/>
+        <di:waypoint x="3470" y="460"/>
+        <di:waypoint x="3470" y="620"/>
+        <di:waypoint x="3500" y="620"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

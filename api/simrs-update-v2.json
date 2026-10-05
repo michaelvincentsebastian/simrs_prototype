@@ -1,0 +1,2647 @@
+{
+  "info": {
+    "name": "satusehat-bridging-frappe",
+    "description": null,
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "{{BASE_URL}}/api/method/login",
+              "protocol": "",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "method",
+                "login"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usr\": \"Administrator\",\n  \"pwd\": \"1212\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "{{BASE_URL}}/api/method/logout",
+              "protocol": "",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "method",
+                "logout"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usr\": \"Administrator\",\n  \"pwd\": \"1212\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "get session user",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "",
+            "url": {
+              "raw": "{{BASE_URL}}/api/method/frappe.auth.get_logged_user",
+              "protocol": "",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "method",
+                "frappe.auth.get_logged_user"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "master data",
+      "item": [
+        {
+          "name": "patient encounter",
+          "item": [
+            {
+              "name": "get all patient encounter",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Patient Encounter",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Patient Encounter"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get patient encounter detail",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Patient Encounter/HLC-ENC-2026-00011",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Patient Encounter",
+                    "HLC-ENC-2026-00011"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "patient",
+          "item": [
+            {
+              "name": "get all patient",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Patient",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Patient"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get patient detail",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Patient/Rakha",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Patient",
+                    "Rakha"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "create patient",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Patient",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Patient"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"first_name\": \"Budi\",\n  \"last_name\": \"Santoso\",\n  \"sex\": \"Male\",\n  \"blood_group\": \"A Positive\",\n  \"status\": \"Active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "edit patient",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Patient/Joko Santoso",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Patient",
+                    "Joko Santoso"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"first_name\": \"Joko\",\n  \"last_name\": \"Mulyo\",\n  \"sex\": \"Male\",\n  \"blood_group\": \"A Positive\",\n  \"status\": \"Active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "delete patient",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Patient/Joko Santoso",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Patient",
+                    "Joko Santoso"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "practitioner",
+          "item": [
+            {
+              "name": "get all practitioner",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Healthcare Practitioner",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Healthcare Practitioner"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get practitioner detail",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Healthcare Practitioner/HLC-PRAC-2026-00003",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Healthcare Practitioner",
+                    "HLC-PRAC-2026-00003"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "create practitioner",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Healthcare Practitioner",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Healthcare Practitioner"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"first_name\": \"Dr. Fulan\",\n  \"sex\": \"Male\",\n  \"status\": \"Active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "edit practitioner",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Healthcare Practitioner/HLC-PRAC-2026-00004",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Healthcare Practitioner",
+                    "HLC-PRAC-2026-00004"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"first_name\": \"Dr. Fulin\",\n  \"sex\": \"Male\",\n  \"status\": \"Active\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "delete practitioner",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Healthcare Practitioner/HLC-PRAC-2026-00004",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Healthcare Practitioner",
+                    "HLC-PRAC-2026-00004"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "send satusehat",
+      "item": [
+        {
+          "name": "encounter satusehat",
+          "item": [
+            {
+              "name": "get encounter satusehat",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Encounter SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Encounter SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get encounter satusehat by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Encounter SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Encounter SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir encounter",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Encounter SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"ENC-SS-2026-07-0508\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Encounter SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"ENC-SS-2026-07-0508\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"ENC-SS-2026-07-0508\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "condition satusehat",
+          "item": [
+            {
+              "name": "get condition satusehat",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Condition SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Condition SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get condition satusehat by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Condition SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Condition SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir condition",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Condition SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"CND-SS-2026-07-0502\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Condition SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"CND-SS-2026-07-0502\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"CND-SS-2026-07-0502\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "observation satusehat",
+          "item": [
+            {
+              "name": "get observation satusehat",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Observation SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Observation SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get observation satusehat by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Observation SatuSehat/OBS-SS-2026-07-0507",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Observation SatuSehat",
+                    "OBS-SS-2026-07-0507"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir observation",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Observation SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"OBS-SS-2026-07-0507\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Observation SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"OBS-SS-2026-07-0507\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"OBS-SS-2026-07-0507\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "procedure satusehat",
+          "item": [
+            {
+              "name": "get procedure satusehat",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Procedure SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Procedure SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get procedure satusehat by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Procedure SatuSehat/PRO-SS-2026-07-0509",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Procedure SatuSehat",
+                    "PRO-SS-2026-07-0509"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir procedure",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Procedure SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"PRO-SS-2026-07-0509\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Procedure SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"PRO-SS-2026-07-0509\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"PRO-SS-2026-07-0509\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "composition satusehat",
+          "item": [
+            {
+              "name": "get composition satusehat",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Composition SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Composition SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get composition satusehat by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Composition SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Composition SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir composition satusehat",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Composition SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"COM-SS-2026-07-0510\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Composition SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"COM-SS-2026-07-0510\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"COM-SS-2026-07-0510\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "medication",
+          "item": [
+            {
+              "name": "get medication",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Item",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Item"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get medication by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Composition SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Composition SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "medication request",
+          "item": [
+            {
+              "name": "get medication request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Item",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Item"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get medication by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/MedicationRequest SatuSehat/MED-REQ-2026-07-0514",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "MedicationRequest SatuSehat",
+                    "MED-REQ-2026-07-0514"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir medication request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/MedicationRequest SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"MED-REQ-2026-07-0514\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "MedicationRequest SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"MED-REQ-2026-07-0514\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"MED-REQ-2026-07-0514\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "medication dispense",
+          "item": [
+            {
+              "name": "get medication dispense",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Item",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Item"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get medication dispense by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/MedicationRequest SatuSehat/MED-REQ-2026-07-0514",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "MedicationRequest SatuSehat",
+                    "MED-REQ-2026-07-0514"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir medication dispense",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/MedicationDispense SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"MED-DIS-2026-07-0515\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "MedicationDispense SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"MED-DIS-2026-07-0515\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"MED-DIS-2026-07-0515\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "alergy intolerance",
+          "item": [
+            {
+              "name": "get allergy intolerance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/AllergyIntolerance SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "AllergyIntolerance SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get allergy intolerance by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/AllergyIntolerance SatuSehat/ALGI-2026-07-0516",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "AllergyIntolerance SatuSehat",
+                    "ALGI-2026-07-0516"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir allergy intolerance",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/AllergyIntolerance SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"ALGI-2026-07-0516\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "AllergyIntolerance SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"ALGI-2026-07-0516\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"ALGI-2026-07-0516\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "imaging study",
+          "item": [
+            {
+              "name": "get imaging study",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/ImagingStudy SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "ImagingStudy SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get imaging study by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/AllergyIntolerance SatuSehat/ALGI-2026-07-0516",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "AllergyIntolerance SatuSehat",
+                    "ALGI-2026-07-0516"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir imaging study",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/ImagingStudy SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"IMG-2026-07-0518\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "ImagingStudy SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"IMG-2026-07-0518\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"IMG-2026-07-0518\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "service request",
+          "item": [
+            {
+              "name": "get service request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/AllergyIntolerance SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "AllergyIntolerance SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get service request by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/AllergyIntolerance SatuSehat/ALGI-2026-07-0516",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "AllergyIntolerance SatuSehat",
+                    "ALGI-2026-07-0516"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir service request",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/ServiceRequest SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"SRV-2026-07-0517\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "ServiceRequest SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"SRV-2026-07-0517\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"SRV-2026-07-0517\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "clinical impression",
+          "item": [
+            {
+              "name": "get clinical impression",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/AllergyIntolerance SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "AllergyIntolerance SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get clinical impression by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/ClinicalImpression SatuSehat/IMP-2026-07-0519",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "ClinicalImpression SatuSehat",
+                    "IMP-2026-07-0519"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir clinical impression",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/ClincialImpression SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"IMP-2026-07-0519\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "ClincialImpression SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"IMP-2026-07-0519\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"IMP-2026-07-0519\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "immunization",
+          "item": [
+            {
+              "name": "get immunization",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/AllergyIntolerance SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "AllergyIntolerance SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get immunization by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Immunization SatuSehat/IMM-2026-07-0520",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Immunization SatuSehat",
+                    "IMM-2026-07-0520"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir immunization",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Immunization SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"IMM-2026-07-0520\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Immunization SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"IMM-2026-07-0520\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"IMM-2026-07-0520\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "questionaire response",
+          "item": [
+            {
+              "name": "get questionnaire",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/QuestionnaireResponse SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "QuestionnaireResponse SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get questionnaire by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/QuestionnaireResponse SatuSehat/QRE-2026-07-0521",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "QuestionnaireResponse SatuSehat",
+                    "QRE-2026-07-0521"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir questionnaire",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Immunization SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"IMM-2026-07-0520\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Immunization SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"IMM-2026-07-0520\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"IMM-2026-07-0520\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "medication statement",
+          "item": [
+            {
+              "name": "get medication statement",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/QuestionnaireResponse SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "QuestionnaireResponse SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get medication statement by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/MedicationStatement SatuSehat/MST-2026-07-0522",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "MedicationStatement SatuSehat",
+                    "MST-2026-07-0522"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir medication statement",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/MedicationStatement SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"MST-2026-07-0522\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "MedicationStatement SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"MST-2026-07-0522\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"MST-2026-07-0522\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "careplan",
+          "item": [
+            {
+              "name": "get careplan",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/QuestionnaireResponse SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "QuestionnaireResponse SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get careplan by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/CarePlan SatuSehat/CPL-2026-07-0523",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "CarePlan SatuSehat",
+                    "CPL-2026-07-0523"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir careplan",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/CarePlan SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"CPL-2026-07-0523\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "CarePlan SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"CPL-2026-07-0523\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"CPL-2026-07-0523\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "specimen",
+          "item": [
+            {
+              "name": "get specimen",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/QuestionnaireResponse SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "QuestionnaireResponse SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get specimen by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Specimen SatuSehat/SPC-2026-07-0524",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Specimen SatuSehat",
+                    "SPC-2026-07-0524"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir specimen",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/CarePlan SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"CPL-2026-07-0523\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "CarePlan SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"CPL-2026-07-0523\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"CPL-2026-07-0523\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "diagnostic report",
+          "item": [
+            {
+              "name": "get diagnostic report",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/QuestionnaireResponse SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "QuestionnaireResponse SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get diagnostic report by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/DiagnosticReport SatuSehat/DGR-2026-07-0526",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "DiagnosticReport SatuSehat",
+                    "DGR-2026-07-0526"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir diagnostic report",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/DiagnosticReport SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"DGR-2026-07-0526\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "DiagnosticReport SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"DGR-2026-07-0526\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"DGR-2026-07-0526\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "episode of care",
+          "item": [
+            {
+              "name": "get episode of care",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/EpisodeOfCare SatuSehat",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "EpisodeOfCare SatuSehat"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get episode of care by id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/EpisodeOfCare SatuSehat/EOC-2026-07-0529",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "EpisodeOfCare SatuSehat",
+                    "EOC-2026-07-0529"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get fhir episode of care",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "auth": {
+                  "type": "noauth"
+                },
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/EpisodeOfCare SatuSehat/?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"EOC-2026-07-0529\"]]",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "EpisodeOfCare SatuSehat",
+                    "?fields=[\"name\",\"payload_json\"]&filters=[[\"name\",\"=\",\"EOC-2026-07-0529\"]]"
+                  ],
+                  "query": [
+                    {
+                      "key": "fields",
+                      "value": "[\"name\",\"payload_json\"]"
+                    },
+                    {
+                      "key": "filters",
+                      "value": "[[\"name\",\"=\",\"EOC-2026-07-0529\"]]"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "appointment flow",
+      "item": [
+        {
+          "name": "create patient appointment",
+          "item": [
+            {
+              "name": "patient appointment doctor",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Patient Appointment",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Patient Appointment"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"appointment_type\": \"Doctor Appointment\",\n  \"patient\": \"Ardianto Putra\",\n  \"department\": \"Microbiology\",\n  \"practitioner\": \"HLC-PRAC-2026-00005\",\n  \"appointment_date\": \"2026-09-11\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "patient appointment department",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Patient Appointment",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Patient Appointment"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"appointment_type\": \"Department Appointment\",\n  \"patient\": \"Claudia Sintia\",\n  \"department\": \"Microbiology\",\n  \"appointment_date\": \"2026-09-11\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "name": "patient appointment service unit",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Patient Appointment",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Patient Appointment"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"appointment_type\": \"Service Unit Appointment\",\n  \"patient\": \"Elizabeth Dior\",\n  \"service_unit\": \"Instalasi Gawat Darurat (IGD) - S\",\n  \"appointment_date\": \"2026-09-11\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "check availability",
+          "item": [
+            {
+              "name": "filter doctor",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/method/clinic_satusehat.api.get_practitioners_by_department?department=Microbiology",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "method",
+                    "clinic_satusehat.api.get_practitioners_by_department?department=Microbiology"
+                  ],
+                  "query": [
+                    {
+                      "key": "department",
+                      "value": "Microbiology"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "doctor schedule",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/method/clinic_satusehat.api.appointment.get_practitioner_available_slots?practitioner=HLC-PRAC-2026-00006&date=2026-09-09",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "method",
+                    "clinic_satusehat.api.appointment.get_practitioner_available_slots?practitioner=HLC-PRAC-2026-00006&date=2026-09-09"
+                  ],
+                  "query": [
+                    {
+                      "key": "practitioner",
+                      "value": "HLC-PRAC-2026-00006"
+                    },
+                    {
+                      "key": "date",
+                      "value": "2026-09-09"
+                    }
+                  ],
+                  "variable": []
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "get appointment type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "",
+            "url": {
+              "raw": "{{BASE_URL}}/api/resource/Appointment Type",
+              "protocol": "",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "resource",
+                "Appointment Type"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "get patient appointment",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "",
+            "url": {
+              "raw": "{{BASE_URL}}/api/resource/Patient Appointment",
+              "protocol": "",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "resource",
+                "Patient Appointment"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "get payment mode",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "",
+            "url": {
+              "raw": "{{BASE_URL}}/api/resource/Mode of Payment",
+              "protocol": "",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "resource",
+                "Mode of Payment"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        },
+        {
+          "name": "get medical department",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "description": "",
+            "url": {
+              "raw": "{{BASE_URL}}/api/resource/Medical Department",
+              "protocol": "",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "resource",
+                "Medical Department"
+              ],
+              "query": [],
+              "variable": []
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "patient auth",
+      "item": [
+        {
+          "name": "send otp",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "description": "",
+            "url": {
+              "raw": "{{BASE_URL}}/api/method/clinic_satusehat.api.patient_auth.send_patient_otp",
+              "protocol": "",
+              "host": [
+                "{{BASE_URL}}"
+              ],
+              "path": [
+                "api",
+                "method",
+                "clinic_satusehat.api.patient_auth.send_patient_otp"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"rakhafausta07@gmail.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "nurse station",
+      "item": [
+        {
+          "name": "TTV",
+          "item": [
+            {
+              "name": "get vital signs",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Vital Signs",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Vital Signs"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "create vital signs",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Vital Signs",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Vital Signs"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"signs_date\": \"2026-10-01\",\n  \"signs_time\": \"09:30:00\",\n  \"queue_registration\": \"QUE-REG-2026-00010\",\n\n  \"bp_systolic\": \"120\",\n  \"bp_diastolic\": \"80\",\n  \"pulse\": \"80\",\n  \"temperature\": \"36.5\",\n  \"respiratory_rate\": \"18\",\n  \"vital_signs_note\": \"Pasien tenang, tanda vital dalam batas normal.\",\n\n  \"tongue\": \"Normal\",\n  \"abdomen\": \"Normal\",\n  \"reflexes\": \"Normal\",\n\n  \"height\": 1.70,\n  \"weight\": 65.5,\n  \"nutrition_note\": \"Status gizi baik (Normoweight).\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "name": "queue",
+          "item": [
+            {
+              "name": "get queue registration",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Queue Registration",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Queue Registration"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              }
+            },
+            {
+              "name": "get queue registration status",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Queue Registration/:id",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Queue Registration",
+                    ":id"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "QUE-REG-2026-00010"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "update queue registration status",
+              "request": {
+                "method": "PUT",
+                "header": [],
+                "description": "",
+                "url": {
+                  "raw": "{{BASE_URL}}/api/resource/Queue Registration/:id",
+                  "protocol": "",
+                  "host": [
+                    "{{BASE_URL}}"
+                  ],
+                  "path": [
+                    "api",
+                    "resource",
+                    "Queue Registration",
+                    ":id"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "key": "id",
+                      "value": "QUE-REG-2026-00010"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status_doctor\": \"Called\" //Waiting, Called, Completed\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "BASE_URL",
+      "value": "http://satusehat.site:8000",
+      "type": "default"
+    }
+  ]
+}

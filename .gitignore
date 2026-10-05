@@ -1,0 +1,13 @@
+.postman/
+postman/
+
+instructions/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS / Editor
+.DS_Store
+Thumbs.db

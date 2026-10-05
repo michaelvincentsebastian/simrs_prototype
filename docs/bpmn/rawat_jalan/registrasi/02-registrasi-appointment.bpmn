@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_RegAppt" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0">
+  <bpmn:collaboration id="Collab_RegAppt">
+    <bpmn:participant id="Part_RegAppt" name="Registrasi via Appointment (§1.1)" processRef="Proc_RegAppt"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Proc_RegAppt" name="Registrasi via Appointment" isExecutable="false">
+    <bpmn:documentation>
+      Alur detail pasien yang sudah memiliki appointment (booking via Kanal Appointment).
+      Mencakup: booking → notifikasi → datang ke RS → scan QR / konfirmasi manual.
+      Hirarki: §1.1 Appointment, §1.4 Check-in.
+      Aktor: Pasien, Kanal Appointment (aplikasi terpisah), Sistem SIMRS, Staf Registrasi (opsional).
+    </bpmn:documentation>
+    <bpmn:laneSet id="LS_RegAppt">
+      <bpmn:lane id="Lane_Pasien" name="Pasien">
+        <bpmn:flowNodeRef>Start_Appointment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_BukaKanal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CariJadwal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PilihSlot</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_IsiData</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_KonfirmasiBooking</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TerimaNotif</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DatangRS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_MetodeCheckin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ScanQR</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_DatangLoket</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Kanal" name="Kanal Appointment (Aplikasi Terpisah)">
+        <bpmn:flowNodeRef>Task_TampilJadwal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ValidasiSlot</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_KirimBooking</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Sistem" name="Sistem SIMRS (Appointment API)">
+        <bpmn:flowNodeRef>Task_TerimaAPI</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_BuatAppointment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_GenerateQR</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_KirimNotifikasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ValidasiQR</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Merge_Checkin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_StatusArrived</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_CheckedIn</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Reg" name="Staf Registrasi (Fallback Manual)">
+        <bpmn:flowNodeRef>Task_CariBooking</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_KonfirmasiManual</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_Appointment" name="Pasien ingin booking appointment">
+      <bpmn:outgoing>F01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_BukaKanal" name="Buka Kanal Appointment (Web / Mobile / WhatsApp)">
+      <bpmn:documentation>Hirarki: 1.1.6 — Kanal terpisah, patient-facing</bpmn:documentation>
+      <bpmn:incoming>F01</bpmn:incoming>
+      <bpmn:outgoing>F02</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_CariJadwal" name="Cari jadwal dokter (poli, tanggal)">
+      <bpmn:incoming>F02</bpmn:incoming>
+      <bpmn:outgoing>F03</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_TampilJadwal" name="Tampilkan jadwal tersedia dari API">
+      <bpmn:incoming>F03</bpmn:incoming>
+      <bpmn:outgoing>F04</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_PilihSlot" name="Pilih slot waktu &amp; dokter">
+      <bpmn:incoming>F04</bpmn:incoming>
+      <bpmn:outgoing>F05</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_IsiData" name="Isi data identitas (NIK, nama, no. HP)">
+      <bpmn:incoming>F05</bpmn:incoming>
+      <bpmn:outgoing>F06</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_KonfirmasiBooking" name="Konfirmasi booking">
+      <bpmn:incoming>F06</bpmn:incoming>
+      <bpmn:outgoing>F07</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_ValidasiSlot" name="Validasi ketersediaan slot (race condition check)">
+      <bpmn:incoming>F07</bpmn:incoming>
+      <bpmn:outgoing>F08</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_KirimBooking" name="Kirim booking ke Appointment API">
+      <bpmn:documentation>POST /api/method/simrs_mini.api.appointment.create_appointment</bpmn:documentation>
+      <bpmn:incoming>F08</bpmn:incoming>
+      <bpmn:outgoing>F09</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_TerimaAPI" name="Terima &amp; validasi request API">
+      <bpmn:documentation>Validasi: slot masih ada, data lengkap, pasien tidak duplikat hari sama</bpmn:documentation>
+      <bpmn:incoming>F09</bpmn:incoming>
+      <bpmn:outgoing>F10</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_BuatAppointment" name="Buat Patient Appointment (status: BOOKED)">
+      <bpmn:incoming>F10</bpmn:incoming>
+      <bpmn:outgoing>F11</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_GenerateQR" name="Generate booking ID &amp; QR code">
+      <bpmn:incoming>F11</bpmn:incoming>
+      <bpmn:outgoing>F12</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_KirimNotifikasi" name="Kirim notifikasi (SMS / WhatsApp / email)">
+      <bpmn:documentation>Hirarki: X3 Notification. Isi: booking ID, QR, tanggal, jam, poli, dokter.</bpmn:documentation>
+      <bpmn:incoming>F12</bpmn:incoming>
+      <bpmn:outgoing>F13</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_TerimaNotif" name="Terima notifikasi booking (QR code)">
+      <bpmn:incoming>F13</bpmn:incoming>
+      <bpmn:outgoing>F14</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_DatangRS" name="Datang ke RS pada hari appointment">
+      <bpmn:incoming>F14</bpmn:incoming>
+      <bpmn:outgoing>F15</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_MetodeCheckin" name="Metode check-in?" default="F_Manual">
+      <bpmn:incoming>F15</bpmn:incoming>
+      <bpmn:outgoing>F_QR</bpmn:outgoing>
+      <bpmn:outgoing>F_Manual</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_ScanQR" name="Scan QR di mesin APM / kiosk">
+      <bpmn:documentation>Hirarki: 1.3 Kiosk / APM (P2) — atau scan di loket</bpmn:documentation>
+      <bpmn:incoming>F_QR</bpmn:incoming>
+      <bpmn:outgoing>F16</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_ValidasiQR" name="Validasi QR &amp; cocokkan appointment">
+      <bpmn:incoming>F16</bpmn:incoming>
+      <bpmn:outgoing>F17</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_DatangLoket" name="Datang ke loket &amp; sebutkan booking ID">
+      <bpmn:incoming>F_Manual</bpmn:incoming>
+      <bpmn:outgoing>F18</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_CariBooking" name="Cari booking ID di sistem">
+      <bpmn:incoming>F18</bpmn:incoming>
+      <bpmn:outgoing>F19</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_KonfirmasiManual" name="Verifikasi identitas &amp; konfirmasi kehadiran">
+      <bpmn:incoming>F19</bpmn:incoming>
+      <bpmn:outgoing>F20</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Merge_Checkin">
+      <bpmn:incoming>F17</bpmn:incoming>
+      <bpmn:incoming>F20</bpmn:incoming>
+      <bpmn:outgoing>F21</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="Task_StatusArrived" name="Update status: BOOKED → CHECK_IN (ARRIVED)">
+      <bpmn:documentation>Hirarki: 1.4 Check-in. Buat Outpatient Visit + Queue Ticket.</bpmn:documentation>
+      <bpmn:incoming>F21</bpmn:incoming>
+      <bpmn:outgoing>F22</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_CheckedIn" name="Pasien checked-in — masuk antrian triase">
+      <bpmn:incoming>F22</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F01" sourceRef="Start_Appointment" targetRef="Task_BukaKanal"/>
+    <bpmn:sequenceFlow id="F02" sourceRef="Task_BukaKanal" targetRef="Task_CariJadwal"/>
+    <bpmn:sequenceFlow id="F03" sourceRef="Task_CariJadwal" targetRef="Task_TampilJadwal"/>
+    <bpmn:sequenceFlow id="F04" sourceRef="Task_TampilJadwal" targetRef="Task_PilihSlot"/>
+    <bpmn:sequenceFlow id="F05" sourceRef="Task_PilihSlot" targetRef="Task_IsiData"/>
+    <bpmn:sequenceFlow id="F06" sourceRef="Task_IsiData" targetRef="Task_KonfirmasiBooking"/>
+    <bpmn:sequenceFlow id="F07" sourceRef="Task_KonfirmasiBooking" targetRef="Task_ValidasiSlot"/>
+    <bpmn:sequenceFlow id="F08" sourceRef="Task_ValidasiSlot" targetRef="Task_KirimBooking"/>
+    <bpmn:sequenceFlow id="F09" sourceRef="Task_KirimBooking" targetRef="Task_TerimaAPI"/>
+    <bpmn:sequenceFlow id="F10" sourceRef="Task_TerimaAPI" targetRef="Task_BuatAppointment"/>
+    <bpmn:sequenceFlow id="F11" sourceRef="Task_BuatAppointment" targetRef="Task_GenerateQR"/>
+    <bpmn:sequenceFlow id="F12" sourceRef="Task_GenerateQR" targetRef="Task_KirimNotifikasi"/>
+    <bpmn:sequenceFlow id="F13" sourceRef="Task_KirimNotifikasi" targetRef="Task_TerimaNotif"/>
+    <bpmn:sequenceFlow id="F14" sourceRef="Task_TerimaNotif" targetRef="Task_DatangRS"/>
+    <bpmn:sequenceFlow id="F15" sourceRef="Task_DatangRS" targetRef="GW_MetodeCheckin"/>
+    <bpmn:sequenceFlow id="F_QR" name="Scan QR (APM)" sourceRef="GW_MetodeCheckin" targetRef="Task_ScanQR"/>
+    <bpmn:sequenceFlow id="F_Manual" name="Manual (loket)" sourceRef="GW_MetodeCheckin" targetRef="Task_DatangLoket"/>
+    <bpmn:sequenceFlow id="F16" sourceRef="Task_ScanQR" targetRef="Task_ValidasiQR"/>
+    <bpmn:sequenceFlow id="F17" sourceRef="Task_ValidasiQR" targetRef="Merge_Checkin"/>
+    <bpmn:sequenceFlow id="F18" sourceRef="Task_DatangLoket" targetRef="Task_CariBooking"/>
+    <bpmn:sequenceFlow id="F19" sourceRef="Task_CariBooking" targetRef="Task_KonfirmasiManual"/>
+    <bpmn:sequenceFlow id="F20" sourceRef="Task_KonfirmasiManual" targetRef="Merge_Checkin"/>
+    <bpmn:sequenceFlow id="F21" sourceRef="Merge_Checkin" targetRef="Task_StatusArrived"/>
+    <bpmn:sequenceFlow id="F22" sourceRef="Task_StatusArrived" targetRef="End_CheckedIn"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Proc_RegAppt">
+    <bpmndi:BPMNPlane id="BPMNPlane_Proc_RegAppt" bpmnElement="Collab_RegAppt">
+      <bpmndi:BPMNShape id="Part_RegAppt_di" bpmnElement="Part_RegAppt" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="4156" height="720"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Pasien_di" bpmnElement="Lane_Pasien" isHorizontal="true">
+        <dc:Bounds x="190" y="60" width="4096" height="240"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Kanal_di" bpmnElement="Lane_Kanal" isHorizontal="true">
+        <dc:Bounds x="190" y="300" width="4096" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Sistem_di" bpmnElement="Lane_Sistem" isHorizontal="true">
+        <dc:Bounds x="190" y="460" width="4096" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Reg_di" bpmnElement="Lane_Reg" isHorizontal="true">
+        <dc:Bounds x="190" y="620" width="4096" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_Appointment_di" bpmnElement="Start_Appointment">
+        <dc:Bounds x="260" y="102" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="235" y="143" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_BukaKanal_di" bpmnElement="Task_BukaKanal">
+        <dc:Bounds x="440" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CariJadwal_di" bpmnElement="Task_CariJadwal">
+        <dc:Bounds x="620" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TampilJadwal_di" bpmnElement="Task_TampilJadwal">
+        <dc:Bounds x="800" y="340" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PilihSlot_di" bpmnElement="Task_PilihSlot">
+        <dc:Bounds x="980" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_IsiData_di" bpmnElement="Task_IsiData">
+        <dc:Bounds x="1160" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_KonfirmasiBooking_di" bpmnElement="Task_KonfirmasiBooking">
+        <dc:Bounds x="1340" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ValidasiSlot_di" bpmnElement="Task_ValidasiSlot">
+        <dc:Bounds x="1520" y="340" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_KirimBooking_di" bpmnElement="Task_KirimBooking">
+        <dc:Bounds x="1700" y="340" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TerimaAPI_di" bpmnElement="Task_TerimaAPI">
+        <dc:Bounds x="1880" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_BuatAppointment_di" bpmnElement="Task_BuatAppointment">
+        <dc:Bounds x="2060" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GenerateQR_di" bpmnElement="Task_GenerateQR">
+        <dc:Bounds x="2240" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_KirimNotifikasi_di" bpmnElement="Task_KirimNotifikasi">
+        <dc:Bounds x="2420" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TerimaNotif_di" bpmnElement="Task_TerimaNotif">
+        <dc:Bounds x="2600" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DatangRS_di" bpmnElement="Task_DatangRS">
+        <dc:Bounds x="2780" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_MetodeCheckin_di" bpmnElement="GW_MetodeCheckin" isMarkerVisible="true">
+        <dc:Bounds x="2960" y="95" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2940" y="65" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_DatangLoket_di" bpmnElement="Task_DatangLoket">
+        <dc:Bounds x="3140" y="190" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ScanQR_di" bpmnElement="Task_ScanQR">
+        <dc:Bounds x="3320" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CariBooking_di" bpmnElement="Task_CariBooking">
+        <dc:Bounds x="3320" y="660" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ValidasiQR_di" bpmnElement="Task_ValidasiQR">
+        <dc:Bounds x="3500" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_KonfirmasiManual_di" bpmnElement="Task_KonfirmasiManual">
+        <dc:Bounds x="3500" y="660" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Merge_Checkin_di" bpmnElement="Merge_Checkin" isMarkerVisible="true">
+        <dc:Bounds x="3680" y="515" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_StatusArrived_di" bpmnElement="Task_StatusArrived">
+        <dc:Bounds x="3860" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_CheckedIn_di" bpmnElement="End_CheckedIn">
+        <dc:Bounds x="4040" y="522" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4015" y="563" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F01_di" bpmnElement="F01">
+        <di:waypoint x="296" y="120"/>
+        <di:waypoint x="440" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F02_di" bpmnElement="F02">
+        <di:waypoint x="560" y="120"/>
+        <di:waypoint x="620" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F03_di" bpmnElement="F03">
+        <di:waypoint x="740" y="120"/>
+        <di:waypoint x="770" y="120"/>
+        <di:waypoint x="770" y="380"/>
+        <di:waypoint x="800" y="380"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F04_di" bpmnElement="F04">
+        <di:waypoint x="920" y="380"/>
+        <di:waypoint x="950" y="380"/>
+        <di:waypoint x="950" y="120"/>
+        <di:waypoint x="980" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F05_di" bpmnElement="F05">
+        <di:waypoint x="1100" y="120"/>
+        <di:waypoint x="1160" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F06_di" bpmnElement="F06">
+        <di:waypoint x="1280" y="120"/>
+        <di:waypoint x="1340" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F07_di" bpmnElement="F07">
+        <di:waypoint x="1460" y="120"/>
+        <di:waypoint x="1490" y="120"/>
+        <di:waypoint x="1490" y="380"/>
+        <di:waypoint x="1520" y="380"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F08_di" bpmnElement="F08">
+        <di:waypoint x="1640" y="380"/>
+        <di:waypoint x="1700" y="380"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F09_di" bpmnElement="F09">
+        <di:waypoint x="1820" y="380"/>
+        <di:waypoint x="1850" y="380"/>
+        <di:waypoint x="1850" y="540"/>
+        <di:waypoint x="1880" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10">
+        <di:waypoint x="2000" y="540"/>
+        <di:waypoint x="2060" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F11_di" bpmnElement="F11">
+        <di:waypoint x="2180" y="540"/>
+        <di:waypoint x="2240" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F12_di" bpmnElement="F12">
+        <di:waypoint x="2360" y="540"/>
+        <di:waypoint x="2420" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F13_di" bpmnElement="F13">
+        <di:waypoint x="2540" y="540"/>
+        <di:waypoint x="2570" y="540"/>
+        <di:waypoint x="2570" y="120"/>
+        <di:waypoint x="2600" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F14_di" bpmnElement="F14">
+        <di:waypoint x="2720" y="120"/>
+        <di:waypoint x="2780" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F15_di" bpmnElement="F15">
+        <di:waypoint x="2900" y="120"/>
+        <di:waypoint x="2960" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_QR_di" bpmnElement="F_QR">
+        <di:waypoint x="3010" y="120"/>
+        <di:waypoint x="3320" y="120"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3150" y="102" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_Manual_di" bpmnElement="F_Manual">
+        <di:waypoint x="3010" y="120"/>
+        <di:waypoint x="3075" y="120"/>
+        <di:waypoint x="3075" y="230"/>
+        <di:waypoint x="3140" y="230"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3027" y="102" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F16_di" bpmnElement="F16">
+        <di:waypoint x="3440" y="120"/>
+        <di:waypoint x="3470" y="120"/>
+        <di:waypoint x="3470" y="540"/>
+        <di:waypoint x="3500" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F17_di" bpmnElement="F17">
+        <di:waypoint x="3620" y="540"/>
+        <di:waypoint x="3680" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F18_di" bpmnElement="F18">
+        <di:waypoint x="3260" y="230"/>
+        <di:waypoint x="3290" y="230"/>
+        <di:waypoint x="3290" y="700"/>
+        <di:waypoint x="3320" y="700"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F19_di" bpmnElement="F19">
+        <di:waypoint x="3440" y="700"/>
+        <di:waypoint x="3500" y="700"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F20_di" bpmnElement="F20">
+        <di:waypoint x="3620" y="700"/>
+        <di:waypoint x="3650" y="700"/>
+        <di:waypoint x="3650" y="540"/>
+        <di:waypoint x="3680" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F21_di" bpmnElement="F21">
+        <di:waypoint x="3730" y="540"/>
+        <di:waypoint x="3860" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F22_di" bpmnElement="F22">
+        <di:waypoint x="3980" y="540"/>
+        <di:waypoint x="4040" y="540"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

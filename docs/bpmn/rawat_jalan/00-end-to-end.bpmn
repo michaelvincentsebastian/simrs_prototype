@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_E2E" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0">
+  <bpmn:collaboration id="Collab_E2E">
+    <bpmn:participant id="Part_E2E" name="SIMRS Mini — Rawat Jalan End-to-End (Ringkasan)" processRef="Proc_E2E"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Proc_E2E" name="Rawat Jalan End-to-End (High-Level)" isExecutable="false">
+    <bpmn:documentation>
+      Diagram ringkasan alur Rawat Jalan end-to-end.
+      Setiap sub-proses (collapsed) merujuk ke file BPMN detail di folder masing-masing.
+      Lane = aktor/role dalam satu sistem SIMRS Mini.
+    </bpmn:documentation>
+    <bpmn:laneSet id="LS_E2E">
+      <bpmn:lane id="Lane_Pasien" name="Pasien">
+        <bpmn:flowNodeRef>Start_Pasien</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_Appointment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_Selesai</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Registrasi" name="Registrasi / Front Office">
+        <bpmn:flowNodeRef>Sub_RegAppointment</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Sub_RegWalkin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Merge_Reg</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Sub_Checkin</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Antrian" name="Sistem Antrian">
+        <bpmn:flowNodeRef>Sub_AntrianTriase</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Perawat" name="Perawat (Triase)">
+        <bpmn:flowNodeRef>Sub_Triase</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_Eskalasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_IGD</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Dokter" name="Dokter">
+        <bpmn:flowNodeRef>Sub_AntrianDokter</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Sub_Dokter</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Fork_PostDokter</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Farmasi" name="Farmasi">
+        <bpmn:flowNodeRef>Sub_Farmasi</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Kasir" name="Kasir / Billing">
+        <bpmn:flowNodeRef>Sub_Kasir</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Penyelesaian" name="Penyelesaian">
+        <bpmn:flowNodeRef>Join_FarmasiKasir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Penyelesaian</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_Pasien" name="Pasien ingin berobat rawat jalan">
+      <bpmn:outgoing>Flow_01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:exclusiveGateway id="GW_Appointment" name="Sudah punya appointment?" default="Flow_WalkIn">
+      <bpmn:incoming>Flow_01</bpmn:incoming>
+      <bpmn:outgoing>Flow_Appt</bpmn:outgoing>
+      <bpmn:outgoing>Flow_WalkIn</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:subProcess id="Sub_RegAppointment" name="Registrasi via Appointment" triggeredByEvent="false">
+      <bpmn:documentation>Detail: registrasi/02-registrasi-appointment.bpmn (§1.1)</bpmn:documentation>
+      <bpmn:incoming>Flow_Appt</bpmn:incoming>
+      <bpmn:outgoing>Flow_MergeAppt</bpmn:outgoing>
+    </bpmn:subProcess>
+    <bpmn:subProcess id="Sub_RegWalkin" name="Registrasi Walk-in" triggeredByEvent="false">
+      <bpmn:documentation>Detail: registrasi/01-registrasi-walkin.bpmn (§1.2)</bpmn:documentation>
+      <bpmn:incoming>Flow_WalkIn</bpmn:incoming>
+      <bpmn:outgoing>Flow_MergeWalkin</bpmn:outgoing>
+    </bpmn:subProcess>
+    <bpmn:exclusiveGateway id="Merge_Reg">
+      <bpmn:incoming>Flow_MergeAppt</bpmn:incoming>
+      <bpmn:incoming>Flow_MergeWalkin</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToCheckin</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:subProcess id="Sub_Checkin" name="Check-in &amp; Verifikasi" triggeredByEvent="false">
+      <bpmn:documentation>Detail: registrasi/03-checkin-verifikasi.bpmn (§1.4-1.6)</bpmn:documentation>
+      <bpmn:incoming>Flow_ToCheckin</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToAntrianTriase</bpmn:outgoing>
+    </bpmn:subProcess>
+    <bpmn:subProcess id="Sub_AntrianTriase" name="Antrian Triase" triggeredByEvent="false">
+      <bpmn:documentation>Detail: antrian/01-antrian-triase.bpmn (§2.1, §8.1)</bpmn:documentation>
+      <bpmn:incoming>Flow_ToAntrianTriase</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToTriase</bpmn:outgoing>
+    </bpmn:subProcess>
+    <bpmn:subProcess id="Sub_Triase" name="Triase &amp; Tanda Vital (TTV)" triggeredByEvent="false">
+      <bpmn:documentation>Detail: ttv/01-triase-ttv.bpmn (§2.1-2.5)</bpmn:documentation>
+      <bpmn:incoming>Flow_ToTriase</bpmn:incoming>
+      <bpmn:outgoing>Flow_PostTriase</bpmn:outgoing>
+    </bpmn:subProcess>
+    <bpmn:exclusiveGateway id="GW_Eskalasi" name="Eskalasi IGD?" default="Flow_ToDokter">
+      <bpmn:incoming>Flow_PostTriase</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToDokter</bpmn:outgoing>
+      <bpmn:outgoing>Flow_ToIGD</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="End_IGD" name="Dialihkan ke IGD">
+      <bpmn:incoming>Flow_ToIGD</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:subProcess id="Sub_AntrianDokter" name="Antrian Dokter" triggeredByEvent="false">
+      <bpmn:documentation>Detail: antrian/02-antrian-dokter.bpmn (§3.1-3.2)</bpmn:documentation>
+      <bpmn:incoming>Flow_ToDokter</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToPelayananDokter</bpmn:outgoing>
+    </bpmn:subProcess>
+    <bpmn:subProcess id="Sub_Dokter" name="Pelayanan Dokter (SOAP, Diagnosis, Order, Resep, Plan)" triggeredByEvent="false">
+      <bpmn:documentation>Detail: dokter/01-pelayanan-dokter.bpmn (§3.1-3.12)</bpmn:documentation>
+      <bpmn:incoming>Flow_ToPelayananDokter</bpmn:incoming>
+      <bpmn:outgoing>Flow_PostDokter</bpmn:outgoing>
+    </bpmn:subProcess>
+    <bpmn:parallelGateway id="Fork_PostDokter" name="Fork: Farmasi ∥ Kasir">
+      <bpmn:incoming>Flow_PostDokter</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToFarmasi</bpmn:outgoing>
+      <bpmn:outgoing>Flow_ToKasir</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:subProcess id="Sub_Farmasi" name="Farmasi (Verifikasi, Dispensing, Penyerahan)" triggeredByEvent="false">
+      <bpmn:documentation>Detail: farmasi/01-farmasi.bpmn (§5.1-5.5)</bpmn:documentation>
+      <bpmn:incoming>Flow_ToFarmasi</bpmn:incoming>
+      <bpmn:outgoing>Flow_FarmasiDone</bpmn:outgoing>
+    </bpmn:subProcess>
+    <bpmn:subProcess id="Sub_Kasir" name="Kasir / Billing (Tagihan, Pembayaran, Kwitansi)" triggeredByEvent="false">
+      <bpmn:documentation>Detail: kasir/01-kasir-billing.bpmn (§6.1-6.7)</bpmn:documentation>
+      <bpmn:incoming>Flow_ToKasir</bpmn:incoming>
+      <bpmn:outgoing>Flow_KasirDone</bpmn:outgoing>
+    </bpmn:subProcess>
+    <bpmn:parallelGateway id="Join_FarmasiKasir" name="Join: Farmasi + Kasir selesai">
+      <bpmn:incoming>Flow_FarmasiDone</bpmn:incoming>
+      <bpmn:incoming>Flow_KasirDone</bpmn:incoming>
+      <bpmn:outgoing>Flow_ToPenyelesaian</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:serviceTask id="Task_Penyelesaian" name="Penyelesaian kunjungan (follow-up, edukasi, tutup CLOSED)">
+      <bpmn:documentation>Hirarki: 7.1-7.6 Penyelesaian Kunjungan</bpmn:documentation>
+      <bpmn:incoming>Flow_ToPenyelesaian</bpmn:incoming>
+      <bpmn:outgoing>Flow_Selesai</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_Selesai" name="Kunjungan selesai (CLOSED)">
+      <bpmn:incoming>Flow_Selesai</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_01" sourceRef="Start_Pasien" targetRef="GW_Appointment"/>
+    <bpmn:sequenceFlow id="Flow_Appt" name="Ya" sourceRef="GW_Appointment" targetRef="Sub_RegAppointment"/>
+    <bpmn:sequenceFlow id="Flow_WalkIn" name="Tidak (walk-in)" sourceRef="GW_Appointment" targetRef="Sub_RegWalkin"/>
+    <bpmn:sequenceFlow id="Flow_MergeAppt" sourceRef="Sub_RegAppointment" targetRef="Merge_Reg"/>
+    <bpmn:sequenceFlow id="Flow_MergeWalkin" sourceRef="Sub_RegWalkin" targetRef="Merge_Reg"/>
+    <bpmn:sequenceFlow id="Flow_ToCheckin" sourceRef="Merge_Reg" targetRef="Sub_Checkin"/>
+    <bpmn:sequenceFlow id="Flow_ToAntrianTriase" sourceRef="Sub_Checkin" targetRef="Sub_AntrianTriase"/>
+    <bpmn:sequenceFlow id="Flow_ToTriase" sourceRef="Sub_AntrianTriase" targetRef="Sub_Triase"/>
+    <bpmn:sequenceFlow id="Flow_PostTriase" sourceRef="Sub_Triase" targetRef="GW_Eskalasi"/>
+    <bpmn:sequenceFlow id="Flow_ToIGD" name="Ya (gawat darurat)" sourceRef="GW_Eskalasi" targetRef="End_IGD"/>
+    <bpmn:sequenceFlow id="Flow_ToDokter" name="Tidak" sourceRef="GW_Eskalasi" targetRef="Sub_AntrianDokter"/>
+    <bpmn:sequenceFlow id="Flow_ToPelayananDokter" sourceRef="Sub_AntrianDokter" targetRef="Sub_Dokter"/>
+    <bpmn:sequenceFlow id="Flow_PostDokter" sourceRef="Sub_Dokter" targetRef="Fork_PostDokter"/>
+    <bpmn:sequenceFlow id="Flow_ToFarmasi" sourceRef="Fork_PostDokter" targetRef="Sub_Farmasi"/>
+    <bpmn:sequenceFlow id="Flow_ToKasir" sourceRef="Fork_PostDokter" targetRef="Sub_Kasir"/>
+    <bpmn:sequenceFlow id="Flow_FarmasiDone" sourceRef="Sub_Farmasi" targetRef="Join_FarmasiKasir"/>
+    <bpmn:sequenceFlow id="Flow_KasirDone" sourceRef="Sub_Kasir" targetRef="Join_FarmasiKasir"/>
+    <bpmn:sequenceFlow id="Flow_ToPenyelesaian" sourceRef="Join_FarmasiKasir" targetRef="Task_Penyelesaian"/>
+    <bpmn:sequenceFlow id="Flow_Selesai" sourceRef="Task_Penyelesaian" targetRef="End_Selesai"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Proc_E2E">
+    <bpmndi:BPMNPlane id="BPMNPlane_Proc_E2E" bpmnElement="Collab_E2E">
+      <bpmndi:BPMNShape id="Part_E2E_di" bpmnElement="Part_E2E" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="2896" height="1360"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Pasien_di" bpmnElement="Lane_Pasien" isHorizontal="true">
+        <dc:Bounds x="190" y="60" width="2836" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Registrasi_di" bpmnElement="Lane_Registrasi" isHorizontal="true">
+        <dc:Bounds x="190" y="220" width="2836" height="240"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Antrian_di" bpmnElement="Lane_Antrian" isHorizontal="true">
+        <dc:Bounds x="190" y="460" width="2836" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Perawat_di" bpmnElement="Lane_Perawat" isHorizontal="true">
+        <dc:Bounds x="190" y="620" width="2836" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Dokter_di" bpmnElement="Lane_Dokter" isHorizontal="true">
+        <dc:Bounds x="190" y="780" width="2836" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Farmasi_di" bpmnElement="Lane_Farmasi" isHorizontal="true">
+        <dc:Bounds x="190" y="940" width="2836" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Kasir_di" bpmnElement="Lane_Kasir" isHorizontal="true">
+        <dc:Bounds x="190" y="1100" width="2836" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Penyelesaian_di" bpmnElement="Lane_Penyelesaian" isHorizontal="true">
+        <dc:Bounds x="190" y="1260" width="2836" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_Pasien_di" bpmnElement="Start_Pasien">
+        <dc:Bounds x="260" y="122" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="235" y="163" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_Appointment_di" bpmnElement="GW_Appointment" isMarkerVisible="true">
+        <dc:Bounds x="440" y="115" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="420" y="85" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_RegAppointment_di" bpmnElement="Sub_RegAppointment">
+        <dc:Bounds x="620" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_RegWalkin_di" bpmnElement="Sub_RegWalkin">
+        <dc:Bounds x="800" y="350" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Merge_Reg_di" bpmnElement="Merge_Reg" isMarkerVisible="true">
+        <dc:Bounds x="980" y="255" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_Checkin_di" bpmnElement="Sub_Checkin">
+        <dc:Bounds x="1160" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_AntrianTriase_di" bpmnElement="Sub_AntrianTriase">
+        <dc:Bounds x="1340" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_Triase_di" bpmnElement="Sub_Triase">
+        <dc:Bounds x="1520" y="660" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_Eskalasi_di" bpmnElement="GW_Eskalasi" isMarkerVisible="true">
+        <dc:Bounds x="1700" y="675" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1680" y="645" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_IGD_di" bpmnElement="End_IGD">
+        <dc:Bounds x="1810" y="682" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1785" y="723" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_AntrianDokter_di" bpmnElement="Sub_AntrianDokter">
+        <dc:Bounds x="1810" y="820" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_Dokter_di" bpmnElement="Sub_Dokter">
+        <dc:Bounds x="1990" y="820" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Fork_PostDokter_di" bpmnElement="Fork_PostDokter" isMarkerVisible="true">
+        <dc:Bounds x="2170" y="835" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2150" y="805" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_Farmasi_di" bpmnElement="Sub_Farmasi">
+        <dc:Bounds x="2280" y="980" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Sub_Kasir_di" bpmnElement="Sub_Kasir">
+        <dc:Bounds x="2280" y="1140" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Join_FarmasiKasir_di" bpmnElement="Join_FarmasiKasir" isMarkerVisible="true">
+        <dc:Bounds x="2460" y="1315" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2440" y="1285" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Penyelesaian_di" bpmnElement="Task_Penyelesaian">
+        <dc:Bounds x="2600" y="1300" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_Selesai_di" bpmnElement="End_Selesai">
+        <dc:Bounds x="2780" y="122" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2755" y="163" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_01_di" bpmnElement="Flow_01">
+        <di:waypoint x="296" y="140"/>
+        <di:waypoint x="440" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Appt_di" bpmnElement="Flow_Appt">
+        <di:waypoint x="490" y="140"/>
+        <di:waypoint x="555" y="140"/>
+        <di:waypoint x="555" y="280"/>
+        <di:waypoint x="620" y="280"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="507" y="122" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_WalkIn_di" bpmnElement="Flow_WalkIn">
+        <di:waypoint x="490" y="140"/>
+        <di:waypoint x="645" y="140"/>
+        <di:waypoint x="645" y="390"/>
+        <di:waypoint x="800" y="390"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="552" y="122" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_MergeAppt_di" bpmnElement="Flow_MergeAppt">
+        <di:waypoint x="740" y="280"/>
+        <di:waypoint x="980" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_MergeWalkin_di" bpmnElement="Flow_MergeWalkin">
+        <di:waypoint x="920" y="390"/>
+        <di:waypoint x="950" y="390"/>
+        <di:waypoint x="950" y="280"/>
+        <di:waypoint x="980" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToCheckin_di" bpmnElement="Flow_ToCheckin">
+        <di:waypoint x="1030" y="280"/>
+        <di:waypoint x="1160" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToAntrianTriase_di" bpmnElement="Flow_ToAntrianTriase">
+        <di:waypoint x="1280" y="280"/>
+        <di:waypoint x="1310" y="280"/>
+        <di:waypoint x="1310" y="540"/>
+        <di:waypoint x="1340" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToTriase_di" bpmnElement="Flow_ToTriase">
+        <di:waypoint x="1460" y="540"/>
+        <di:waypoint x="1490" y="540"/>
+        <di:waypoint x="1490" y="700"/>
+        <di:waypoint x="1520" y="700"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PostTriase_di" bpmnElement="Flow_PostTriase">
+        <di:waypoint x="1640" y="700"/>
+        <di:waypoint x="1700" y="700"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToIGD_di" bpmnElement="Flow_ToIGD">
+        <di:waypoint x="1750" y="700"/>
+        <di:waypoint x="1810" y="700"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1765" y="682" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToDokter_di" bpmnElement="Flow_ToDokter">
+        <di:waypoint x="1750" y="700"/>
+        <di:waypoint x="1780" y="700"/>
+        <di:waypoint x="1780" y="860"/>
+        <di:waypoint x="1810" y="860"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1750" y="682" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToPelayananDokter_di" bpmnElement="Flow_ToPelayananDokter">
+        <di:waypoint x="1930" y="860"/>
+        <di:waypoint x="1990" y="860"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_PostDokter_di" bpmnElement="Flow_PostDokter">
+        <di:waypoint x="2110" y="860"/>
+        <di:waypoint x="2170" y="860"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToFarmasi_di" bpmnElement="Flow_ToFarmasi">
+        <di:waypoint x="2220" y="860"/>
+        <di:waypoint x="2250" y="860"/>
+        <di:waypoint x="2250" y="1020"/>
+        <di:waypoint x="2280" y="1020"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToKasir_di" bpmnElement="Flow_ToKasir">
+        <di:waypoint x="2220" y="860"/>
+        <di:waypoint x="2250" y="860"/>
+        <di:waypoint x="2250" y="1180"/>
+        <di:waypoint x="2280" y="1180"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_FarmasiDone_di" bpmnElement="Flow_FarmasiDone">
+        <di:waypoint x="2400" y="1020"/>
+        <di:waypoint x="2430" y="1020"/>
+        <di:waypoint x="2430" y="1340"/>
+        <di:waypoint x="2460" y="1340"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_KasirDone_di" bpmnElement="Flow_KasirDone">
+        <di:waypoint x="2400" y="1180"/>
+        <di:waypoint x="2430" y="1180"/>
+        <di:waypoint x="2430" y="1340"/>
+        <di:waypoint x="2460" y="1340"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ToPenyelesaian_di" bpmnElement="Flow_ToPenyelesaian">
+        <di:waypoint x="2510" y="1340"/>
+        <di:waypoint x="2600" y="1340"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Selesai_di" bpmnElement="Flow_Selesai">
+        <di:waypoint x="2720" y="1340"/>
+        <di:waypoint x="2750" y="1340"/>
+        <di:waypoint x="2750" y="140"/>
+        <di:waypoint x="2780" y="140"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

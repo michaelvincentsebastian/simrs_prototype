@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_TriaseTTV" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0">
+  <bpmn:collaboration id="Collab_TriaseTTV">
+    <bpmn:participant id="Part_TriaseTTV" name="Modul Triase dan Pengukuran TTV (§2.1-2.5)" processRef="Proc_TriaseTTV"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Proc_TriaseTTV" name="Triase dan Pengukuran TTV" isExecutable="false">
+    <bpmn:documentation>
+      Alur lengkap pemeriksaan triase dan tanda-tanda vital (TTV) keperawatan di Rawat Jalan.
+      Mencakup penerimaan antrian, asesmen klinis awal, deteksi kegawatan, pengisian TTV lengkap,
+      skrining nyeri, penentuan kategori triase, serta routing ke ruang periksa poli dokter.
+      Hirarki: §2.1 Antrian Triase, §2.2 Pengukuran TTV, §2.3 Asesmen Keperawatan, §2.4 Kategori Triase, §2.5 Routing Dokter.
+    </bpmn:documentation>
+    <bpmn:laneSet id="LS_TriaseTTV">
+      <bpmn:lane id="Lane_Sistem" name="Sistem SIMRS Mini">
+        <bpmn:flowNodeRef>Start_CheckinSelesai</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_UpdateInTriage</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_HitungBMI</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ValidasiBatasNormal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_KegawatanKritis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_NotifikasiEmergency</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SaveTTVTriase</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_UpdateTriageDone</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_EmergencyIGD</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_SelesaiKeDokter</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Perawat" name="Perawat Triase / Rawat Jalan">
+        <bpmn:flowNodeRef>Task_PanggilAntrianTriase</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VerifikasiIdentitas</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InputTTV</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AsesmenKeperawatan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AsesmenNyeriAlergi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TentukanKategoriTriase</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RujukKeIGD</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_KonfirmasiRoutingPoli</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Pasien" name="Pasien / Keluarga">
+        <bpmn:flowNodeRef>Task_MenujuRuangTriase</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PemeriksaanFisikAwal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_JawabAnamnesisAwal</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_CheckinSelesai" name="Pasien selesai check-in (Status: WAITING_TRIAGE)">
+      <bpmn:documentation>Trigger: Check-in berhasil, tiket triase diterbitkan</bpmn:documentation>
+      <bpmn:outgoing>F01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_PanggilAntrianTriase" name="Perawat memanggil nomor antrian triase (§2.1)">
+      <bpmn:incoming>F01</bpmn:incoming>
+      <bpmn:outgoing>F02</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_UpdateInTriage" name="Update Status: IN_TRIAGE">
+      <bpmn:documentation>DocType Clinical Visit: status berubah menjadi IN_TRIAGE</bpmn:documentation>
+      <bpmn:incoming>F02</bpmn:incoming>
+      <bpmn:outgoing>F03</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_MenujuRuangTriase" name="Pasien masuk ke ruang pemeriksaan triase">
+      <bpmn:incoming>F03</bpmn:incoming>
+      <bpmn:outgoing>F04</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_VerifikasiIdentitas" name="Verifikasi identitas pasien (Nama, Tanggal Lahir, No. RM)">
+      <bpmn:incoming>F04</bpmn:incoming>
+      <bpmn:outgoing>F05</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_PemeriksaanFisikAwal" name="Pasien menjalani pengukuran fisik">
+      <bpmn:incoming>F05</bpmn:incoming>
+      <bpmn:outgoing>F06</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_InputTTV" name="Input Vital Signs / TTV (§2.2)">
+      <bpmn:documentation>
+        Parameter:
+        - Tekanan Darah (Sistol/Diastol mmHg)
+        - Nadi (kali/menit)
+        - Pernapasan (kali/menit)
+        - Suhu Tubuh (°C)
+        - Saturasi O2 (SpO2 %)
+        - Berat Badan (kg) &amp; Tinggi Badan (cm)
+      </bpmn:documentation>
+      <bpmn:incoming>F06</bpmn:incoming>
+      <bpmn:outgoing>F07</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_HitungBMI" name="Kalkulasi otomatis IMT / BMI &amp; Kategori">
+      <bpmn:documentation>BMI = BB (kg) / (TB (m))^2, tentukan status gizi</bpmn:documentation>
+      <bpmn:incoming>F07</bpmn:incoming>
+      <bpmn:outgoing>F08</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_ValidasiBatasNormal" name="Validasi batas normal vital signs &amp; early warning">
+      <bpmn:documentation>Deteksi nilai kritis: hipotensi, takikardia berat, desaturasi SpO2 &lt; 90%</bpmn:documentation>
+      <bpmn:incoming>F08</bpmn:incoming>
+      <bpmn:outgoing>F09</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_JawabAnamnesisAwal" name="Pasien menyampaikan keluhan utama &amp; riwayat">
+      <bpmn:incoming>F09</bpmn:incoming>
+      <bpmn:outgoing>F10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_AsesmenKeperawatan" name="Input Asesmen Keperawatan (§2.3)">
+      <bpmn:documentation>Keluhan utama, riwayat penyakit dahulu, kondisi umum</bpmn:documentation>
+      <bpmn:incoming>F10</bpmn:incoming>
+      <bpmn:outgoing>F11</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_AsesmenNyeriAlergi" name="Input Skala Nyeri &amp; Riwayat Alergi (§2.3)">
+      <bpmn:documentation>Skala nyeri (NRS 0-10), alergi obat/makanan (warning merah bila ada)</bpmn:documentation>
+      <bpmn:incoming>F11</bpmn:incoming>
+      <bpmn:outgoing>F12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_TentukanKategoriTriase" name="Penentuan Kategori Triase (§2.4)">
+      <bpmn:documentation>Kategori: Hijau (Non-urgent), Kuning (Urgent), Merah (Gawat Darurat / Immediate)</bpmn:documentation>
+      <bpmn:incoming>F12</bpmn:incoming>
+      <bpmn:outgoing>F13</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_KegawatanKritis" name="Apakah kondisi gawat darurat (Kategori Merah)?">
+      <bpmn:incoming>F13</bpmn:incoming>
+      <bpmn:outgoing>F_Kritis</bpmn:outgoing>
+      <bpmn:outgoing>F_Stabil</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_RujukKeIGD" name="Eskalasi segera: Transfer ke IGD / Ruang Resusitasi">
+      <bpmn:incoming>F_Kritis</bpmn:incoming>
+      <bpmn:outgoing>F14</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_NotifikasiEmergency" name="Notifikasi alert IGD &amp; update status Visit: TRANSFERRED_TO_ED">
+      <bpmn:incoming>F14</bpmn:incoming>
+      <bpmn:outgoing>F15</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_EmergencyIGD" name="Pasien ditransfer ke IGD">
+      <bpmn:incoming>F15</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_KonfirmasiRoutingPoli" name="Konfirmasi Poli Tujuan &amp; Routing Dokter (§2.5)">
+      <bpmn:incoming>F_Stabil</bpmn:incoming>
+      <bpmn:outgoing>F16</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_SaveTTVTriase" name="Simpan Vital Signs &amp; Asesmen Triase">
+      <bpmn:documentation>DocType Vital Signs tersimpan &amp; terhubung dengan Clinical Visit</bpmn:documentation>
+      <bpmn:incoming>F16</bpmn:incoming>
+      <bpmn:outgoing>F17</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_UpdateTriageDone" name="Update Status Visit: WAITING_DOCTOR &amp; Tiket Triase COMPLETED">
+      <bpmn:incoming>F17</bpmn:incoming>
+      <bpmn:outgoing>F18</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_SelesaiKeDokter" name="Triase Selesai — Pasien Masuk Antrian Dokter">
+      <bpmn:incoming>F18</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F01" sourceRef="Start_CheckinSelesai" targetRef="Task_PanggilAntrianTriase"/>
+    <bpmn:sequenceFlow id="F02" sourceRef="Task_PanggilAntrianTriase" targetRef="Task_UpdateInTriage"/>
+    <bpmn:sequenceFlow id="F03" sourceRef="Task_UpdateInTriage" targetRef="Task_MenujuRuangTriase"/>
+    <bpmn:sequenceFlow id="F04" sourceRef="Task_MenujuRuangTriase" targetRef="Task_VerifikasiIdentitas"/>
+    <bpmn:sequenceFlow id="F05" sourceRef="Task_VerifikasiIdentitas" targetRef="Task_PemeriksaanFisikAwal"/>
+    <bpmn:sequenceFlow id="F06" sourceRef="Task_PemeriksaanFisikAwal" targetRef="Task_InputTTV"/>
+    <bpmn:sequenceFlow id="F07" sourceRef="Task_InputTTV" targetRef="Task_HitungBMI"/>
+    <bpmn:sequenceFlow id="F08" sourceRef="Task_HitungBMI" targetRef="Task_ValidasiBatasNormal"/>
+    <bpmn:sequenceFlow id="F09" sourceRef="Task_ValidasiBatasNormal" targetRef="Task_JawabAnamnesisAwal"/>
+    <bpmn:sequenceFlow id="F10" sourceRef="Task_JawabAnamnesisAwal" targetRef="Task_AsesmenKeperawatan"/>
+    <bpmn:sequenceFlow id="F11" sourceRef="Task_AsesmenKeperawatan" targetRef="Task_AsesmenNyeriAlergi"/>
+    <bpmn:sequenceFlow id="F12" sourceRef="Task_AsesmenNyeriAlergi" targetRef="Task_TentukanKategoriTriase"/>
+    <bpmn:sequenceFlow id="F13" sourceRef="Task_TentukanKategoriTriase" targetRef="GW_KegawatanKritis"/>
+    <bpmn:sequenceFlow id="F_Kritis" name="Kritis / Merah" sourceRef="GW_KegawatanKritis" targetRef="Task_RujukKeIGD"/>
+    <bpmn:sequenceFlow id="F_Stabil" name="Stabil / Kuning-Hijau" sourceRef="GW_KegawatanKritis" targetRef="Task_KonfirmasiRoutingPoli"/>
+    <bpmn:sequenceFlow id="F14" sourceRef="Task_RujukKeIGD" targetRef="Task_NotifikasiEmergency"/>
+    <bpmn:sequenceFlow id="F15" sourceRef="Task_NotifikasiEmergency" targetRef="End_EmergencyIGD"/>
+    <bpmn:sequenceFlow id="F16" sourceRef="Task_KonfirmasiRoutingPoli" targetRef="Task_SaveTTVTriase"/>
+    <bpmn:sequenceFlow id="F17" sourceRef="Task_SaveTTVTriase" targetRef="Task_UpdateTriageDone"/>
+    <bpmn:sequenceFlow id="F18" sourceRef="Task_UpdateTriageDone" targetRef="End_SelesaiKeDokter"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Proc_TriaseTTV">
+    <bpmndi:BPMNPlane id="BPMNPlane_Proc_TriaseTTV" bpmnElement="Collab_TriaseTTV">
+      <bpmndi:BPMNShape id="Part_TriaseTTV_di" bpmnElement="Part_TriaseTTV" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="3796" height="640"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Sistem_di" bpmnElement="Lane_Sistem" isHorizontal="true">
+        <dc:Bounds x="190" y="60" width="3736" height="240"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Perawat_di" bpmnElement="Lane_Perawat" isHorizontal="true">
+        <dc:Bounds x="190" y="300" width="3736" height="240"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Pasien_di" bpmnElement="Lane_Pasien" isHorizontal="true">
+        <dc:Bounds x="190" y="540" width="3736" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_CheckinSelesai_di" bpmnElement="Start_CheckinSelesai">
+        <dc:Bounds x="260" y="102" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="235" y="143" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PanggilAntrianTriase_di" bpmnElement="Task_PanggilAntrianTriase">
+        <dc:Bounds x="440" y="320" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_UpdateInTriage_di" bpmnElement="Task_UpdateInTriage">
+        <dc:Bounds x="620" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MenujuRuangTriase_di" bpmnElement="Task_MenujuRuangTriase">
+        <dc:Bounds x="800" y="580" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_VerifikasiIdentitas_di" bpmnElement="Task_VerifikasiIdentitas">
+        <dc:Bounds x="980" y="320" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PemeriksaanFisikAwal_di" bpmnElement="Task_PemeriksaanFisikAwal">
+        <dc:Bounds x="1160" y="580" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_InputTTV_di" bpmnElement="Task_InputTTV">
+        <dc:Bounds x="1340" y="320" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_HitungBMI_di" bpmnElement="Task_HitungBMI">
+        <dc:Bounds x="1520" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ValidasiBatasNormal_di" bpmnElement="Task_ValidasiBatasNormal">
+        <dc:Bounds x="1700" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_JawabAnamnesisAwal_di" bpmnElement="Task_JawabAnamnesisAwal">
+        <dc:Bounds x="1880" y="580" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AsesmenKeperawatan_di" bpmnElement="Task_AsesmenKeperawatan">
+        <dc:Bounds x="2060" y="320" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AsesmenNyeriAlergi_di" bpmnElement="Task_AsesmenNyeriAlergi">
+        <dc:Bounds x="2240" y="320" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TentukanKategoriTriase_di" bpmnElement="Task_TentukanKategoriTriase">
+        <dc:Bounds x="2420" y="320" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_KegawatanKritis_di" bpmnElement="GW_KegawatanKritis" isMarkerVisible="true">
+        <dc:Bounds x="2600" y="95" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2580" y="65" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_KonfirmasiRoutingPoli_di" bpmnElement="Task_KonfirmasiRoutingPoli">
+        <dc:Bounds x="2780" y="430" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RujukKeIGD_di" bpmnElement="Task_RujukKeIGD">
+        <dc:Bounds x="2960" y="320" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_NotifikasiEmergency_di" bpmnElement="Task_NotifikasiEmergency">
+        <dc:Bounds x="3140" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SaveTTVTriase_di" bpmnElement="Task_SaveTTVTriase">
+        <dc:Bounds x="3140" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_EmergencyIGD_di" bpmnElement="End_EmergencyIGD">
+        <dc:Bounds x="3320" y="102" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3295" y="143" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_UpdateTriageDone_di" bpmnElement="Task_UpdateTriageDone">
+        <dc:Bounds x="3500" y="80" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_SelesaiKeDokter_di" bpmnElement="End_SelesaiKeDokter">
+        <dc:Bounds x="3680" y="102" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3655" y="143" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F01_di" bpmnElement="F01">
+        <di:waypoint x="296" y="120"/>
+        <di:waypoint x="368" y="120"/>
+        <di:waypoint x="368" y="360"/>
+        <di:waypoint x="440" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F02_di" bpmnElement="F02">
+        <di:waypoint x="560" y="360"/>
+        <di:waypoint x="590" y="360"/>
+        <di:waypoint x="590" y="120"/>
+        <di:waypoint x="620" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F03_di" bpmnElement="F03">
+        <di:waypoint x="740" y="120"/>
+        <di:waypoint x="770" y="120"/>
+        <di:waypoint x="770" y="620"/>
+        <di:waypoint x="800" y="620"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F04_di" bpmnElement="F04">
+        <di:waypoint x="920" y="620"/>
+        <di:waypoint x="950" y="620"/>
+        <di:waypoint x="950" y="360"/>
+        <di:waypoint x="980" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F05_di" bpmnElement="F05">
+        <di:waypoint x="1100" y="360"/>
+        <di:waypoint x="1130" y="360"/>
+        <di:waypoint x="1130" y="620"/>
+        <di:waypoint x="1160" y="620"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F06_di" bpmnElement="F06">
+        <di:waypoint x="1280" y="620"/>
+        <di:waypoint x="1310" y="620"/>
+        <di:waypoint x="1310" y="360"/>
+        <di:waypoint x="1340" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F07_di" bpmnElement="F07">
+        <di:waypoint x="1460" y="360"/>
+        <di:waypoint x="1490" y="360"/>
+        <di:waypoint x="1490" y="120"/>
+        <di:waypoint x="1520" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F08_di" bpmnElement="F08">
+        <di:waypoint x="1640" y="120"/>
+        <di:waypoint x="1700" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F09_di" bpmnElement="F09">
+        <di:waypoint x="1820" y="120"/>
+        <di:waypoint x="1850" y="120"/>
+        <di:waypoint x="1850" y="620"/>
+        <di:waypoint x="1880" y="620"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10">
+        <di:waypoint x="2000" y="620"/>
+        <di:waypoint x="2030" y="620"/>
+        <di:waypoint x="2030" y="360"/>
+        <di:waypoint x="2060" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F11_di" bpmnElement="F11">
+        <di:waypoint x="2180" y="360"/>
+        <di:waypoint x="2240" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F12_di" bpmnElement="F12">
+        <di:waypoint x="2360" y="360"/>
+        <di:waypoint x="2420" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F13_di" bpmnElement="F13">
+        <di:waypoint x="2540" y="360"/>
+        <di:waypoint x="2570" y="360"/>
+        <di:waypoint x="2570" y="120"/>
+        <di:waypoint x="2600" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_Kritis_di" bpmnElement="F_Kritis">
+        <di:waypoint x="2650" y="120"/>
+        <di:waypoint x="2805" y="120"/>
+        <di:waypoint x="2805" y="360"/>
+        <di:waypoint x="2960" y="360"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2712" y="102" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_Stabil_di" bpmnElement="F_Stabil">
+        <di:waypoint x="2650" y="120"/>
+        <di:waypoint x="2715" y="120"/>
+        <di:waypoint x="2715" y="470"/>
+        <di:waypoint x="2780" y="470"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2667" y="102" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F14_di" bpmnElement="F14">
+        <di:waypoint x="3080" y="360"/>
+        <di:waypoint x="3110" y="360"/>
+        <di:waypoint x="3110" y="120"/>
+        <di:waypoint x="3140" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F15_di" bpmnElement="F15">
+        <di:waypoint x="3260" y="120"/>
+        <di:waypoint x="3320" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F16_di" bpmnElement="F16">
+        <di:waypoint x="2900" y="470"/>
+        <di:waypoint x="3020" y="470"/>
+        <di:waypoint x="3020" y="120"/>
+        <di:waypoint x="3140" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F17_di" bpmnElement="F17">
+        <di:waypoint x="3260" y="120"/>
+        <di:waypoint x="3500" y="120"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F18_di" bpmnElement="F18">
+        <di:waypoint x="3620" y="120"/>
+        <di:waypoint x="3680" y="120"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

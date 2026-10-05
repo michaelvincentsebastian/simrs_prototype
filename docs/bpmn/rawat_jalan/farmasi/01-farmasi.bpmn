@@ -1,0 +1,365 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Farmasi" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0">
+  <bpmn:collaboration id="Collab_Farmasi">
+    <bpmn:participant id="Part_Farmasi" name="Pelayanan Farmasi dan Dispensing Obat (§5.1-5.5)" processRef="Proc_Farmasi"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Proc_Farmasi" name="Pelayanan Farmasi" isExecutable="false">
+    <bpmn:documentation>
+      Alur lengkap pemrosesan resep obat di instalasi farmasi rawat jalan.
+      Mencakup penerimaan resep elektronik, telaah resep (administratif, farmasetis, klinis),
+      konfirmasi interaksi obat ke dokter jika ada masalah, penyiapan/peracikan obat, pencetakan etiket,
+      penyerahan obat dengan KIE (Konseling, Informasi, Edukasi), dan verifikasi 5 Tepat.
+      Hirarki: §5.1-§5.5 Modul Pelayanan Farmasi.
+    </bpmn:documentation>
+    <bpmn:laneSet id="LS_Farmasi">
+      <bpmn:lane id="Lane_Sistem" name="Sistem SIMRS Mini">
+        <bpmn:flowNodeRef>Start_ResepMasuk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PotongStokOtomatis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_UpdateStatusDispensed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RouteKeKasir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_SelesaiFarmasi</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Apoteker" name="Apoteker / Asisten Apoteker (AA)">
+        <bpmn:flowNodeRef>Task_AmbilAntrianResep</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TelaahResep</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_TelaahLolos</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_KlarifikasiDokter</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_AdaRacikan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AmbilObatNonRacikan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_RacikObat</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Merge_SiapKemas</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CetakEtiketKemas</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PemeriksaanAkhir5T</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PanggilPasienAmbilObat</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_EdukasiKIE</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Dokter" name="Dokter Penulis Resep">
+        <bpmn:flowNodeRef>Task_RevisiResep</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Pasien" name="Pasien / Keluarga">
+        <bpmn:flowNodeRef>Task_MenungguObat</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TerimaObatDanKIE</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_ResepMasuk" name="Resep e-Prescription diterima dari dokter">
+      <bpmn:documentation>Trigger: Encounter selesai, order obat terbit</bpmn:documentation>
+      <bpmn:outgoing>F01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:userTask id="Task_AmbilAntrianResep" name="Petugas farmasi menerima resep pada antrian (§5.1)">
+      <bpmn:incoming>F01</bpmn:incoming>
+      <bpmn:outgoing>F02</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_TelaahResep" name="Telaah Resep Administratif, Farmasetik &amp; Klinis (§5.2)">
+      <bpmn:documentation>
+        Kriteria:
+        - Administratif: kelengkapan data pasien, dokter, tanggal
+        - Farmasetik: bentuk sediaan, dosis, aturan pakai, stabilitas
+        - Klinis: ketepatan indikasi, alergi, duplikasi, interaksi obat
+      </bpmn:documentation>
+      <bpmn:incoming>F02</bpmn:incoming>
+      <bpmn:outgoing>F03</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_TelaahLolos" name="Apakah telaah resep lolos?">
+      <bpmn:incoming>F03</bpmn:incoming>
+      <bpmn:outgoing>F_Lolos</bpmn:outgoing>
+      <bpmn:outgoing>F_TidakLolos</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_KlarifikasiDokter" name="Apoteker menghubungi dokter penulis resep untuk klarifikasi">
+      <bpmn:incoming>F_TidakLolos</bpmn:incoming>
+      <bpmn:outgoing>F04</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_RevisiResep" name="Dokter merevisi e-prescription sesuai telaah farmasi">
+      <bpmn:incoming>F04</bpmn:incoming>
+      <bpmn:outgoing>F05</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_AdaRacikan" name="Apakah ada obat racikan?">
+      <bpmn:incoming>F_Lolos</bpmn:incoming>
+      <bpmn:incoming>F05</bpmn:incoming>
+      <bpmn:outgoing>F_Racikan</bpmn:outgoing>
+      <bpmn:outgoing>F_NonRacikan</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_RacikObat" name="Peracikan obat (puyer/kapsul/sirup/salep) (§5.3)">
+      <bpmn:incoming>F_Racikan</bpmn:incoming>
+      <bpmn:outgoing>F06</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_AmbilObatNonRacikan" name="Pengambilan obat jadi dari depo farmasi (§5.3)">
+      <bpmn:incoming>F_NonRacikan</bpmn:incoming>
+      <bpmn:outgoing>F07</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Merge_SiapKemas">
+      <bpmn:incoming>F06</bpmn:incoming>
+      <bpmn:incoming>F07</bpmn:incoming>
+      <bpmn:outgoing>F08</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_CetakEtiketKemas" name="Cetak etiket aturan pakai &amp; kemas obat (§5.4)">
+      <bpmn:documentation>Etiket putih (oral) / biru (luar) berisi nama, signa, tgl expired, cara simpan</bpmn:documentation>
+      <bpmn:incoming>F08</bpmn:incoming>
+      <bpmn:outgoing>F09</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_PemeriksaanAkhir5T" name="Double check verifikasi akhir (5 Tepat)">
+      <bpmn:documentation>1. Tepat Pasien, 2. Tepat Obat, 3. Tepat Dosis, 4. Tepat Rute, 5. Tepat Waktu</bpmn:documentation>
+      <bpmn:incoming>F09</bpmn:incoming>
+      <bpmn:outgoing>F10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_PanggilPasienAmbilObat" name="Panggil nomor antrian pasien ke loket penyerahan (§5.5)">
+      <bpmn:incoming>F10</bpmn:incoming>
+      <bpmn:outgoing>F11</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_MenungguObat" name="Pasien menunggu panggilan obat di ruang farmasi">
+      <bpmn:incoming>F11</bpmn:incoming>
+      <bpmn:outgoing>F12</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_EdukasiKIE" name="Penyerahan obat disertai KIE (Konseling, Informasi, Edukasi) (§5.5)">
+      <bpmn:documentation>Menjelaskan dosis, aturan pakai, kemungkinan efek samping, cara simpan</bpmn:documentation>
+      <bpmn:incoming>F12</bpmn:incoming>
+      <bpmn:outgoing>F13</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_TerimaObatDanKIE" name="Pasien menerima obat dan memahami aturan pakai">
+      <bpmn:incoming>F13</bpmn:incoming>
+      <bpmn:outgoing>F14</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_PotongStokOtomatis" name="Sistem potong stok obat otomatis (Stock Entry/Ledger)">
+      <bpmn:incoming>F14</bpmn:incoming>
+      <bpmn:outgoing>F15</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_UpdateStatusDispensed" name="Update Status: Medication Request / Dispense COMPLETED">
+      <bpmn:incoming>F15</bpmn:incoming>
+      <bpmn:outgoing>F16</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_RouteKeKasir" name="Routing ke Loket Kasir untuk Billing / Tutup Kunjungan">
+      <bpmn:incoming>F16</bpmn:incoming>
+      <bpmn:outgoing>F17</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_SelesaiFarmasi" name="Pelayanan Farmasi Selesai">
+      <bpmn:incoming>F17</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F01" sourceRef="Start_ResepMasuk" targetRef="Task_AmbilAntrianResep"/>
+    <bpmn:sequenceFlow id="F02" sourceRef="Task_AmbilAntrianResep" targetRef="Task_TelaahResep"/>
+    <bpmn:sequenceFlow id="F03" sourceRef="Task_TelaahResep" targetRef="GW_TelaahLolos"/>
+    <bpmn:sequenceFlow id="F_Lolos" name="Ya (Sesuai)" sourceRef="GW_TelaahLolos" targetRef="GW_AdaRacikan"/>
+    <bpmn:sequenceFlow id="F_TidakLolos" name="Tidak (Perlu Konfirmasi)" sourceRef="GW_TelaahLolos" targetRef="Task_KlarifikasiDokter"/>
+    <bpmn:sequenceFlow id="F04" sourceRef="Task_KlarifikasiDokter" targetRef="Task_RevisiResep"/>
+    <bpmn:sequenceFlow id="F05" sourceRef="Task_RevisiResep" targetRef="GW_AdaRacikan"/>
+    <bpmn:sequenceFlow id="F_Racikan" name="Ada Racikan" sourceRef="GW_AdaRacikan" targetRef="Task_RacikObat"/>
+    <bpmn:sequenceFlow id="F_NonRacikan" name="Non Racikan" sourceRef="GW_AdaRacikan" targetRef="Task_AmbilObatNonRacikan"/>
+    <bpmn:sequenceFlow id="F06" sourceRef="Task_RacikObat" targetRef="Merge_SiapKemas"/>
+    <bpmn:sequenceFlow id="F07" sourceRef="Task_AmbilObatNonRacikan" targetRef="Merge_SiapKemas"/>
+    <bpmn:sequenceFlow id="F08" sourceRef="Merge_SiapKemas" targetRef="Task_CetakEtiketKemas"/>
+    <bpmn:sequenceFlow id="F09" sourceRef="Task_CetakEtiketKemas" targetRef="Task_PemeriksaanAkhir5T"/>
+    <bpmn:sequenceFlow id="F10" sourceRef="Task_PemeriksaanAkhir5T" targetRef="Task_PanggilPasienAmbilObat"/>
+    <bpmn:sequenceFlow id="F11" sourceRef="Task_PanggilPasienAmbilObat" targetRef="Task_MenungguObat"/>
+    <bpmn:sequenceFlow id="F12" sourceRef="Task_MenungguObat" targetRef="Task_EdukasiKIE"/>
+    <bpmn:sequenceFlow id="F13" sourceRef="Task_EdukasiKIE" targetRef="Task_TerimaObatDanKIE"/>
+    <bpmn:sequenceFlow id="F14" sourceRef="Task_TerimaObatDanKIE" targetRef="Task_PotongStokOtomatis"/>
+    <bpmn:sequenceFlow id="F15" sourceRef="Task_PotongStokOtomatis" targetRef="Task_UpdateStatusDispensed"/>
+    <bpmn:sequenceFlow id="F16" sourceRef="Task_UpdateStatusDispensed" targetRef="Task_RouteKeKasir"/>
+    <bpmn:sequenceFlow id="F17" sourceRef="Task_RouteKeKasir" targetRef="End_SelesaiFarmasi"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Proc_Farmasi">
+    <bpmndi:BPMNPlane id="BPMNPlane_Proc_Farmasi" bpmnElement="Collab_Farmasi">
+      <bpmndi:BPMNShape id="Part_Farmasi_di" bpmnElement="Part_Farmasi" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="3796" height="720"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Sistem_di" bpmnElement="Lane_Sistem" isHorizontal="true">
+        <dc:Bounds x="190" y="60" width="3736" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Apoteker_di" bpmnElement="Lane_Apoteker" isHorizontal="true">
+        <dc:Bounds x="190" y="220" width="3736" height="240"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Dokter_di" bpmnElement="Lane_Dokter" isHorizontal="true">
+        <dc:Bounds x="190" y="460" width="3736" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Pasien_di" bpmnElement="Lane_Pasien" isHorizontal="true">
+        <dc:Bounds x="190" y="620" width="3736" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_ResepMasuk_di" bpmnElement="Start_ResepMasuk">
+        <dc:Bounds x="260" y="122" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="235" y="163" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AmbilAntrianResep_di" bpmnElement="Task_AmbilAntrianResep">
+        <dc:Bounds x="440" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TelaahResep_di" bpmnElement="Task_TelaahResep">
+        <dc:Bounds x="620" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_TelaahLolos_di" bpmnElement="GW_TelaahLolos" isMarkerVisible="true">
+        <dc:Bounds x="800" y="255" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="780" y="225" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_KlarifikasiDokter_di" bpmnElement="Task_KlarifikasiDokter">
+        <dc:Bounds x="980" y="350" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RevisiResep_di" bpmnElement="Task_RevisiResep">
+        <dc:Bounds x="1160" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_AdaRacikan_di" bpmnElement="GW_AdaRacikan" isMarkerVisible="true">
+        <dc:Bounds x="1340" y="255" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1320" y="225" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AmbilObatNonRacikan_di" bpmnElement="Task_AmbilObatNonRacikan">
+        <dc:Bounds x="1520" y="350" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RacikObat_di" bpmnElement="Task_RacikObat">
+        <dc:Bounds x="1700" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Merge_SiapKemas_di" bpmnElement="Merge_SiapKemas" isMarkerVisible="true">
+        <dc:Bounds x="1880" y="255" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CetakEtiketKemas_di" bpmnElement="Task_CetakEtiketKemas">
+        <dc:Bounds x="2060" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PemeriksaanAkhir5T_di" bpmnElement="Task_PemeriksaanAkhir5T">
+        <dc:Bounds x="2240" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PanggilPasienAmbilObat_di" bpmnElement="Task_PanggilPasienAmbilObat">
+        <dc:Bounds x="2420" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MenungguObat_di" bpmnElement="Task_MenungguObat">
+        <dc:Bounds x="2600" y="660" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_EdukasiKIE_di" bpmnElement="Task_EdukasiKIE">
+        <dc:Bounds x="2780" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TerimaObatDanKIE_di" bpmnElement="Task_TerimaObatDanKIE">
+        <dc:Bounds x="2960" y="660" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PotongStokOtomatis_di" bpmnElement="Task_PotongStokOtomatis">
+        <dc:Bounds x="3140" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_UpdateStatusDispensed_di" bpmnElement="Task_UpdateStatusDispensed">
+        <dc:Bounds x="3320" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_RouteKeKasir_di" bpmnElement="Task_RouteKeKasir">
+        <dc:Bounds x="3500" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_SelesaiFarmasi_di" bpmnElement="End_SelesaiFarmasi">
+        <dc:Bounds x="3680" y="122" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3655" y="163" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F01_di" bpmnElement="F01">
+        <di:waypoint x="296" y="140"/>
+        <di:waypoint x="368" y="140"/>
+        <di:waypoint x="368" y="280"/>
+        <di:waypoint x="440" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F02_di" bpmnElement="F02">
+        <di:waypoint x="560" y="280"/>
+        <di:waypoint x="620" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F03_di" bpmnElement="F03">
+        <di:waypoint x="740" y="280"/>
+        <di:waypoint x="800" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_Lolos_di" bpmnElement="F_Lolos">
+        <di:waypoint x="850" y="280"/>
+        <di:waypoint x="1340" y="280"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1080" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_TidakLolos_di" bpmnElement="F_TidakLolos">
+        <di:waypoint x="850" y="280"/>
+        <di:waypoint x="915" y="280"/>
+        <di:waypoint x="915" y="390"/>
+        <di:waypoint x="980" y="390"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="867" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F04_di" bpmnElement="F04">
+        <di:waypoint x="1100" y="390"/>
+        <di:waypoint x="1130" y="390"/>
+        <di:waypoint x="1130" y="540"/>
+        <di:waypoint x="1160" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F05_di" bpmnElement="F05">
+        <di:waypoint x="1280" y="540"/>
+        <di:waypoint x="1310" y="540"/>
+        <di:waypoint x="1310" y="280"/>
+        <di:waypoint x="1340" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_Racikan_di" bpmnElement="F_Racikan">
+        <di:waypoint x="1390" y="280"/>
+        <di:waypoint x="1700" y="280"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1530" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_NonRacikan_di" bpmnElement="F_NonRacikan">
+        <di:waypoint x="1390" y="280"/>
+        <di:waypoint x="1455" y="280"/>
+        <di:waypoint x="1455" y="390"/>
+        <di:waypoint x="1520" y="390"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1407" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F06_di" bpmnElement="F06">
+        <di:waypoint x="1820" y="280"/>
+        <di:waypoint x="1880" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F07_di" bpmnElement="F07">
+        <di:waypoint x="1640" y="390"/>
+        <di:waypoint x="1760" y="390"/>
+        <di:waypoint x="1760" y="280"/>
+        <di:waypoint x="1880" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F08_di" bpmnElement="F08">
+        <di:waypoint x="1930" y="280"/>
+        <di:waypoint x="2060" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F09_di" bpmnElement="F09">
+        <di:waypoint x="2180" y="280"/>
+        <di:waypoint x="2240" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10">
+        <di:waypoint x="2360" y="280"/>
+        <di:waypoint x="2420" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F11_di" bpmnElement="F11">
+        <di:waypoint x="2540" y="280"/>
+        <di:waypoint x="2570" y="280"/>
+        <di:waypoint x="2570" y="700"/>
+        <di:waypoint x="2600" y="700"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F12_di" bpmnElement="F12">
+        <di:waypoint x="2720" y="700"/>
+        <di:waypoint x="2750" y="700"/>
+        <di:waypoint x="2750" y="280"/>
+        <di:waypoint x="2780" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F13_di" bpmnElement="F13">
+        <di:waypoint x="2900" y="280"/>
+        <di:waypoint x="2930" y="280"/>
+        <di:waypoint x="2930" y="700"/>
+        <di:waypoint x="2960" y="700"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F14_di" bpmnElement="F14">
+        <di:waypoint x="3080" y="700"/>
+        <di:waypoint x="3110" y="700"/>
+        <di:waypoint x="3110" y="140"/>
+        <di:waypoint x="3140" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F15_di" bpmnElement="F15">
+        <di:waypoint x="3260" y="140"/>
+        <di:waypoint x="3320" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F16_di" bpmnElement="F16">
+        <di:waypoint x="3440" y="140"/>
+        <di:waypoint x="3500" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F17_di" bpmnElement="F17">
+        <di:waypoint x="3620" y="140"/>
+        <di:waypoint x="3680" y="140"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

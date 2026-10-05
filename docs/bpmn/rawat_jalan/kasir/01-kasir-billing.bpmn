@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_KasirBilling" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0">
+  <bpmn:collaboration id="Collab_KasirBilling">
+    <bpmn:participant id="Part_KasirBilling" name="Kasir, Billing dan Penutupan Kunjungan (§6.1-6.7)" processRef="Proc_KasirBilling"/>
+  </bpmn:collaboration>
+  <bpmn:process id="Proc_KasirBilling" name="Kasir dan Billing" isExecutable="false">
+    <bpmn:documentation>
+      Alur lengkap administrasi keuangan, pembayaran, dan penutupan kunjungan rawat jalan.
+      Mencakup kompilasi otomatis seluruh komponen biaya (registrasi, konsultasi, tindakan, farmasi),
+      verifikasi penjamin (BPJS, Asuransi Swasta, Umum), transaksi multi-metode pembayaran,
+      pencetakan kuitansi &amp; rincian biaya resmi, serta penutupan status kunjungan (CLOSED).
+      Hirarki: §6.1-§6.7 Modul Kasir &amp; Billing.
+    </bpmn:documentation>
+    <bpmn:laneSet id="LS_KasirBilling">
+      <bpmn:lane id="Lane_Sistem" name="Sistem SIMRS &amp; ERPNext">
+        <bpmn:flowNodeRef>Start_MenujuKasir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_KompilasiInvoiceOtomatis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ProsesJurnalERPNext</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_UpdateVisitClosed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_KunjunganSelesai</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_PetugasKasir" name="Kasir / Billing Officer">
+        <bpmn:flowNodeRef>Task_PanggilAntrianKasir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_ReviewRincianTagihan</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_TipePenjamin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VerifikasiKlaimBPJS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_VerifikasiAsuransiSwasta</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Merge_HitungSisaBayar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_AdaIurBayar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TerimaPembayaran</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CetakKuitansiInvoice</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SerahkanBuktiBayar</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Pasien" name="Pasien / Keluarga">
+        <bpmn:flowNodeRef>Task_MenujuLoketKasir</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_KonfirmasiRincianBiaya</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_MelakukanPembayaran</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_MenerimaKuitansiPulang</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="Start_MenujuKasir" name="Pasien masuk antrian pembayaran (Status: WAITING_BILLING)">
+      <bpmn:outgoing>F01</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_KompilasiInvoiceOtomatis" name="Sistem kompilasi Sales Invoice otomatis dari seluruh modul (§6.2)">
+      <bpmn:documentation>Kompilasi: Biaya Pendaftaran, Jasa Dokter, Tindakan Prosedur, Resep Obat</bpmn:documentation>
+      <bpmn:incoming>F01</bpmn:incoming>
+      <bpmn:outgoing>F02</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_PanggilAntrianKasir" name="Kasir memanggil antrian pasien (§6.1)">
+      <bpmn:incoming>F02</bpmn:incoming>
+      <bpmn:outgoing>F03</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_MenujuLoketKasir" name="Pasien menuju loket kasir">
+      <bpmn:incoming>F03</bpmn:incoming>
+      <bpmn:outgoing>F04</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_ReviewRincianTagihan" name="Kasir review rincian tagihan &amp; kelengkapan berkas (§6.2)">
+      <bpmn:incoming>F04</bpmn:incoming>
+      <bpmn:outgoing>F05</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_TipePenjamin" name="Jenis Penjamin Pasien? (§6.3)">
+      <bpmn:incoming>F05</bpmn:incoming>
+      <bpmn:outgoing>F_BPJS</bpmn:outgoing>
+      <bpmn:outgoing>F_Asuransi</bpmn:outgoing>
+      <bpmn:outgoing>F_Umum</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_VerifikasiKlaimBPJS" name="Validasi SEP &amp; paket INA-CBG BPJS">
+      <bpmn:incoming>F_BPJS</bpmn:incoming>
+      <bpmn:outgoing>F06</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_VerifikasiAsuransiSwasta" name="Validasi cover limit asuransi swasta &amp; excess fee">
+      <bpmn:incoming>F_Asuransi</bpmn:incoming>
+      <bpmn:outgoing>F07</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Merge_HitungSisaBayar">
+      <bpmn:incoming>F06</bpmn:incoming>
+      <bpmn:incoming>F07</bpmn:incoming>
+      <bpmn:incoming>F_Umum</bpmn:incoming>
+      <bpmn:outgoing>F08</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:exclusiveGateway id="GW_AdaIurBayar" name="Apakah ada sisa tagihan yang harus dibayar tunai/mandiri?">
+      <bpmn:incoming>F08</bpmn:incoming>
+      <bpmn:outgoing>F_AdaBayar</bpmn:outgoing>
+      <bpmn:outgoing>F_NolRupiah</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_KonfirmasiRincianBiaya" name="Kasir konfirmasi rincian biaya kepada pasien">
+      <bpmn:incoming>F_AdaBayar</bpmn:incoming>
+      <bpmn:outgoing>F09</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_MelakukanPembayaran" name="Pasien memilih metode bayar &amp; melunasi (Tunai, Debit/Kredit, QRIS) (§6.4)">
+      <bpmn:incoming>F09</bpmn:incoming>
+      <bpmn:outgoing>F10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_TerimaPembayaran" name="Kasir input Payment Entry ke sistem">
+      <bpmn:incoming>F10</bpmn:incoming>
+      <bpmn:outgoing>F11</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_ProsesJurnalERPNext" name="Sistem catat Payment Entry, alokasi piutang, dan update Sales Invoice PAID">
+      <bpmn:incoming>F11</bpmn:incoming>
+      <bpmn:incoming>F_NolRupiah</bpmn:incoming>
+      <bpmn:outgoing>F12</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:userTask id="Task_CetakKuitansiInvoice" name="Kasir cetak kuitansi resmi &amp; rincian tagihan (§6.5)">
+      <bpmn:incoming>F12</bpmn:incoming>
+      <bpmn:outgoing>F13</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_SerahkanBuktiBayar" name="Kasir serahkan bukti pembayaran &amp; berkas kepulangan">
+      <bpmn:incoming>F13</bpmn:incoming>
+      <bpmn:outgoing>F14</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_MenerimaKuitansiPulang" name="Pasien menerima berkas &amp; meninggalkan rumah sakit">
+      <bpmn:incoming>F14</bpmn:incoming>
+      <bpmn:outgoing>F15</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:serviceTask id="Task_UpdateVisitClosed" name="Update Status Visit: CLOSED &amp; Tiket Kasir COMPLETED (§6.6)">
+      <bpmn:documentation>Kunjungan rawat jalan selesai secara klinis dan administratif</bpmn:documentation>
+      <bpmn:incoming>F15</bpmn:incoming>
+      <bpmn:outgoing>F16</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="End_KunjunganSelesai" name="Kunjungan Rawat Jalan Selesai &amp; Ditutup">
+      <bpmn:incoming>F16</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="F01" sourceRef="Start_MenujuKasir" targetRef="Task_KompilasiInvoiceOtomatis"/>
+    <bpmn:sequenceFlow id="F02" sourceRef="Task_KompilasiInvoiceOtomatis" targetRef="Task_PanggilAntrianKasir"/>
+    <bpmn:sequenceFlow id="F03" sourceRef="Task_PanggilAntrianKasir" targetRef="Task_MenujuLoketKasir"/>
+    <bpmn:sequenceFlow id="F04" sourceRef="Task_MenujuLoketKasir" targetRef="Task_ReviewRincianTagihan"/>
+    <bpmn:sequenceFlow id="F05" sourceRef="Task_ReviewRincianTagihan" targetRef="GW_TipePenjamin"/>
+    <bpmn:sequenceFlow id="F_BPJS" name="BPJS Kesehatan" sourceRef="GW_TipePenjamin" targetRef="Task_VerifikasiKlaimBPJS"/>
+    <bpmn:sequenceFlow id="F_Asuransi" name="Asuransi Swasta" sourceRef="GW_TipePenjamin" targetRef="Task_VerifikasiAsuransiSwasta"/>
+    <bpmn:sequenceFlow id="F_Umum" name="Pasien Umum" sourceRef="GW_TipePenjamin" targetRef="Merge_HitungSisaBayar"/>
+    <bpmn:sequenceFlow id="F06" sourceRef="Task_VerifikasiKlaimBPJS" targetRef="Merge_HitungSisaBayar"/>
+    <bpmn:sequenceFlow id="F07" sourceRef="Task_VerifikasiAsuransiSwasta" targetRef="Merge_HitungSisaBayar"/>
+    <bpmn:sequenceFlow id="F08" sourceRef="Merge_HitungSisaBayar" targetRef="GW_AdaIurBayar"/>
+    <bpmn:sequenceFlow id="F_AdaBayar" name="Ada Sisa Tagihan" sourceRef="GW_AdaIurBayar" targetRef="Task_KonfirmasiRincianBiaya"/>
+    <bpmn:sequenceFlow id="F_NolRupiah" name="Lunas Dijamin (Rp 0)" sourceRef="GW_AdaIurBayar" targetRef="Task_ProsesJurnalERPNext"/>
+    <bpmn:sequenceFlow id="F09" sourceRef="Task_KonfirmasiRincianBiaya" targetRef="Task_MelakukanPembayaran"/>
+    <bpmn:sequenceFlow id="F10" sourceRef="Task_MelakukanPembayaran" targetRef="Task_TerimaPembayaran"/>
+    <bpmn:sequenceFlow id="F11" sourceRef="Task_TerimaPembayaran" targetRef="Task_ProsesJurnalERPNext"/>
+    <bpmn:sequenceFlow id="F12" sourceRef="Task_ProsesJurnalERPNext" targetRef="Task_CetakKuitansiInvoice"/>
+    <bpmn:sequenceFlow id="F13" sourceRef="Task_CetakKuitansiInvoice" targetRef="Task_SerahkanBuktiBayar"/>
+    <bpmn:sequenceFlow id="F14" sourceRef="Task_SerahkanBuktiBayar" targetRef="Task_MenerimaKuitansiPulang"/>
+    <bpmn:sequenceFlow id="F15" sourceRef="Task_MenerimaKuitansiPulang" targetRef="Task_UpdateVisitClosed"/>
+    <bpmn:sequenceFlow id="F16" sourceRef="Task_UpdateVisitClosed" targetRef="End_KunjunganSelesai"/>
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Proc_KasirBilling">
+    <bpmndi:BPMNPlane id="BPMNPlane_Proc_KasirBilling" bpmnElement="Collab_KasirBilling">
+      <bpmndi:BPMNShape id="Part_KasirBilling_di" bpmnElement="Part_KasirBilling" isHorizontal="true">
+        <dc:Bounds x="160" y="60" width="3546" height="560"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Sistem_di" bpmnElement="Lane_Sistem" isHorizontal="true">
+        <dc:Bounds x="190" y="60" width="3486" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_PetugasKasir_di" bpmnElement="Lane_PetugasKasir" isHorizontal="true">
+        <dc:Bounds x="190" y="220" width="3486" height="240"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Pasien_di" bpmnElement="Lane_Pasien" isHorizontal="true">
+        <dc:Bounds x="190" y="460" width="3486" height="160"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Start_MenujuKasir_di" bpmnElement="Start_MenujuKasir">
+        <dc:Bounds x="260" y="122" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="235" y="163" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_KompilasiInvoiceOtomatis_di" bpmnElement="Task_KompilasiInvoiceOtomatis">
+        <dc:Bounds x="440" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_PanggilAntrianKasir_di" bpmnElement="Task_PanggilAntrianKasir">
+        <dc:Bounds x="620" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MenujuLoketKasir_di" bpmnElement="Task_MenujuLoketKasir">
+        <dc:Bounds x="800" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ReviewRincianTagihan_di" bpmnElement="Task_ReviewRincianTagihan">
+        <dc:Bounds x="980" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_TipePenjamin_di" bpmnElement="GW_TipePenjamin" isMarkerVisible="true">
+        <dc:Bounds x="1160" y="255" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1140" y="225" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_VerifikasiAsuransiSwasta_di" bpmnElement="Task_VerifikasiAsuransiSwasta">
+        <dc:Bounds x="1340" y="350" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_VerifikasiKlaimBPJS_di" bpmnElement="Task_VerifikasiKlaimBPJS">
+        <dc:Bounds x="1520" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Merge_HitungSisaBayar_di" bpmnElement="Merge_HitungSisaBayar" isMarkerVisible="true">
+        <dc:Bounds x="1700" y="365" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_AdaIurBayar_di" bpmnElement="GW_AdaIurBayar" isMarkerVisible="true">
+        <dc:Bounds x="1880" y="255" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1860" y="225" width="90" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_KonfirmasiRincianBiaya_di" bpmnElement="Task_KonfirmasiRincianBiaya">
+        <dc:Bounds x="1990" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MelakukanPembayaran_di" bpmnElement="Task_MelakukanPembayaran">
+        <dc:Bounds x="2170" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TerimaPembayaran_di" bpmnElement="Task_TerimaPembayaran">
+        <dc:Bounds x="2350" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_ProsesJurnalERPNext_di" bpmnElement="Task_ProsesJurnalERPNext">
+        <dc:Bounds x="2530" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CetakKuitansiInvoice_di" bpmnElement="Task_CetakKuitansiInvoice">
+        <dc:Bounds x="2710" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_SerahkanBuktiBayar_di" bpmnElement="Task_SerahkanBuktiBayar">
+        <dc:Bounds x="2890" y="240" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_MenerimaKuitansiPulang_di" bpmnElement="Task_MenerimaKuitansiPulang">
+        <dc:Bounds x="3070" y="500" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_UpdateVisitClosed_di" bpmnElement="Task_UpdateVisitClosed">
+        <dc:Bounds x="3250" y="100" width="120" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="End_KunjunganSelesai_di" bpmnElement="End_KunjunganSelesai">
+        <dc:Bounds x="3430" y="122" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3405" y="163" width="86" height="24"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="F01_di" bpmnElement="F01">
+        <di:waypoint x="296" y="140"/>
+        <di:waypoint x="440" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F02_di" bpmnElement="F02">
+        <di:waypoint x="560" y="140"/>
+        <di:waypoint x="590" y="140"/>
+        <di:waypoint x="590" y="280"/>
+        <di:waypoint x="620" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F03_di" bpmnElement="F03">
+        <di:waypoint x="740" y="280"/>
+        <di:waypoint x="770" y="280"/>
+        <di:waypoint x="770" y="540"/>
+        <di:waypoint x="800" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F04_di" bpmnElement="F04">
+        <di:waypoint x="920" y="540"/>
+        <di:waypoint x="950" y="540"/>
+        <di:waypoint x="950" y="280"/>
+        <di:waypoint x="980" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F05_di" bpmnElement="F05">
+        <di:waypoint x="1100" y="280"/>
+        <di:waypoint x="1160" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_BPJS_di" bpmnElement="F_BPJS">
+        <di:waypoint x="1210" y="280"/>
+        <di:waypoint x="1520" y="280"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1350" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_Asuransi_di" bpmnElement="F_Asuransi">
+        <di:waypoint x="1210" y="280"/>
+        <di:waypoint x="1275" y="280"/>
+        <di:waypoint x="1275" y="390"/>
+        <di:waypoint x="1340" y="390"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1227" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_Umum_di" bpmnElement="F_Umum">
+        <di:waypoint x="1210" y="280"/>
+        <di:waypoint x="1455" y="280"/>
+        <di:waypoint x="1455" y="390"/>
+        <di:waypoint x="1700" y="390"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1317" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F06_di" bpmnElement="F06">
+        <di:waypoint x="1640" y="280"/>
+        <di:waypoint x="1670" y="280"/>
+        <di:waypoint x="1670" y="390"/>
+        <di:waypoint x="1700" y="390"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F07_di" bpmnElement="F07">
+        <di:waypoint x="1460" y="390"/>
+        <di:waypoint x="1700" y="390"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F08_di" bpmnElement="F08">
+        <di:waypoint x="1750" y="390"/>
+        <di:waypoint x="1815" y="390"/>
+        <di:waypoint x="1815" y="280"/>
+        <di:waypoint x="1880" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_AdaBayar_di" bpmnElement="F_AdaBayar">
+        <di:waypoint x="1930" y="280"/>
+        <di:waypoint x="1960" y="280"/>
+        <di:waypoint x="1960" y="540"/>
+        <di:waypoint x="1990" y="540"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1930" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_NolRupiah_di" bpmnElement="F_NolRupiah">
+        <di:waypoint x="1930" y="280"/>
+        <di:waypoint x="2230" y="280"/>
+        <di:waypoint x="2230" y="140"/>
+        <di:waypoint x="2530" y="140"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="2065" y="262" width="40" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F09_di" bpmnElement="F09">
+        <di:waypoint x="2110" y="540"/>
+        <di:waypoint x="2170" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10">
+        <di:waypoint x="2290" y="540"/>
+        <di:waypoint x="2320" y="540"/>
+        <di:waypoint x="2320" y="280"/>
+        <di:waypoint x="2350" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F11_di" bpmnElement="F11">
+        <di:waypoint x="2470" y="280"/>
+        <di:waypoint x="2500" y="280"/>
+        <di:waypoint x="2500" y="140"/>
+        <di:waypoint x="2530" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F12_di" bpmnElement="F12">
+        <di:waypoint x="2650" y="140"/>
+        <di:waypoint x="2680" y="140"/>
+        <di:waypoint x="2680" y="280"/>
+        <di:waypoint x="2710" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F13_di" bpmnElement="F13">
+        <di:waypoint x="2830" y="280"/>
+        <di:waypoint x="2890" y="280"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F14_di" bpmnElement="F14">
+        <di:waypoint x="3010" y="280"/>
+        <di:waypoint x="3040" y="280"/>
+        <di:waypoint x="3040" y="540"/>
+        <di:waypoint x="3070" y="540"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F15_di" bpmnElement="F15">
+        <di:waypoint x="3190" y="540"/>
+        <di:waypoint x="3220" y="540"/>
+        <di:waypoint x="3220" y="140"/>
+        <di:waypoint x="3250" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F16_di" bpmnElement="F16">
+        <di:waypoint x="3370" y="140"/>
+        <di:waypoint x="3430" y="140"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
