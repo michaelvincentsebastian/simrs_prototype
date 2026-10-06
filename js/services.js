@@ -168,6 +168,35 @@ class RegistrationService {
     return JSON.parse(localStorage.getItem("SIMRS_PATIENTS") || "[]");
   }
 
+  static checkDuplicateNik(nik) {
+    if (!nik) return null;
+    const cleanNik = String(nik).trim();
+    if (!cleanNik) return null;
+    const patients = this.getPatients();
+    return patients.find(p => p.nik === cleanNik) || null;
+  }
+
+  static searchPatients({ query = "", birthDate = "", gender = "" } = {}) {
+    const patients = this.getPatients();
+    const q = (query || "").trim().toLowerCase();
+
+    return patients.filter(p => {
+      // 1. Text Search (matches name, NIK, or MRN)
+      const matchQuery = !q || 
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.nik && p.nik.includes(q)) ||
+        (p.mrNo && p.mrNo.toLowerCase().includes(q));
+
+      // 2. Filter Tanggal Lahir (exact match if provided)
+      const matchBirthDate = !birthDate || p.birthDate === birthDate;
+
+      // 3. Filter Jenis Kelamin (Semua / Laki-laki / Perempuan)
+      const matchGender = !gender || gender === "ALL" || p.gender === gender;
+
+      return matchQuery && matchBirthDate && matchGender;
+    });
+  }
+
   static createPatient(patientData) {
     permissionEngine.assertPermission("Patient", "create");
     const patients = this.getPatients();
@@ -202,31 +231,54 @@ class RegistrationService {
   static registerWalkIn(registration) {
     permissionEngine.assertPermission("Outpatient Visit", "create");
     const visits = VisitStateService.getVisits();
-    const department = SIMRS_MASTER_DATA.departments.find(d => d.id === registration.departmentId);
-    const practitioner = SIMRS_MASTER_DATA.practitioners.find(p => p.id === registration.practitionerId);
-    const patient = this.getPatients().find(p => p.id === registration.patientId);
+    
+    // Flexible department lookup (by id, code, or name match)
+    let department = SIMRS_MASTER_DATA.departments.find(d => d.id === registration.departmentId || d.code === registration.departmentId);
+    if (!department) {
+      const targetName = (registration.departmentName || registration.departmentId || "").toLowerCase();
+      department = SIMRS_MASTER_DATA.departments.find(d => d.name.toLowerCase().includes(targetName) || targetName.includes(d.code.toLowerCase()));
+    }
+    if (!department) department = SIMRS_MASTER_DATA.departments[0];
 
-    if (!department || !practitioner || !patient) {
+    // Flexible practitioner lookup
+    let practitioner = SIMRS_MASTER_DATA.practitioners.find(p => p.id === registration.practitionerId);
+    if (!practitioner) {
+      const targetDoc = (registration.practitionerName || registration.practitionerId || "").toLowerCase();
+      practitioner = SIMRS_MASTER_DATA.practitioners.find(p => p.name.toLowerCase().includes(targetDoc) || p.department === department.id);
+    }
+    if (!practitioner) practitioner = SIMRS_MASTER_DATA.practitioners[0];
+
+    // Patient lookup
+    const patient = this.getPatients().find(p => p.id === registration.patientId || p.mrNo === registration.mrNo);
+
+    if (!department || !practitioner || (!patient && !registration.patientName)) {
       throw new Error("Data pasien, poli, atau dokter tidak valid.");
     }
+
+    const patientName = patient ? patient.name : registration.patientName;
+    const mrNo = patient ? patient.mrNo : (registration.mrNo || `RM-2026-WALK`);
+    const patientId = patient ? patient.id : `PAT-WALK`;
 
     const nextOpvNum = visits.length + 1;
     const opvId = `OPV-2026-${String(nextOpvNum).padStart(4, "0")}`;
     const ticketNo = QueueService.getNextSequence(department.prefix);
 
+    const payerType = registration.payerType || (patient ? patient.payerType : "Umum");
+    const payerMemberNo = registration.payerMemberNo || (patient ? patient.payerMemberNo : "-");
+
     const newVisit = {
       id: opvId,
-      patientId: patient.id,
-      patientName: patient.name,
-      mrNo: patient.mrNo,
+      patientId: patientId,
+      patientName: patientName,
+      mrNo: mrNo,
       departmentId: department.id,
       departmentName: department.name,
       practitionerId: practitioner.id,
       practitionerName: practitioner.name,
       registrationSource: registration.source || "Walk-in",
-      payerType: registration.payerType || patient.payerType,
-      payerMemberNo: registration.payerMemberNo || patient.payerMemberNo,
-      eligibilityStatus: registration.payerType === "BPJS" ? "Valid" : "Tidak Perlu",
+      payerType: payerType,
+      payerMemberNo: payerMemberNo,
+      eligibilityStatus: payerType === "BPJS" ? "Valid" : "Tidak Perlu",
       visitStatus: "WAITING_TRIAGE",
       pharmacyStatus: "Not Required",
       billingStatus: "Pending",
@@ -242,9 +294,9 @@ class RegistrationService {
       }]
     };
 
-    visits.push(newVisit);
+    visits.unshift(newVisit); // Add to beginning of queue list
     VisitStateService.saveVisits(visits);
-    AuditService.log(`Registrasi Kunjungan Rawat Jalan: ${patient.name} ke ${department.name} (Tiket: ${ticketNo})`);
+    AuditService.log(`Registrasi Kunjungan Rawat Jalan: ${patientName} ke ${department.name} (Tiket: ${ticketNo})`);
     
     return newVisit;
   }

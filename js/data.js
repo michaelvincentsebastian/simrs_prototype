@@ -170,6 +170,81 @@ const SIMRS_MASTER_DATA = {
       payerMemberNo: "0003112233445",
       bloodType: "O+",
       allergies: "Tidak ada riwayat alergi"
+    },
+    {
+      id: "PAT-006",
+      mrNo: "RM-2026-0124",
+      nik: "3201234567890002",
+      name: "Budi Santoso",
+      gender: "Laki-laki",
+      birthDate: "1984-06-15",
+      age: 42,
+      phone: "0813-1122-3344",
+      address: "Jl. Dahlia No. 45, Kebayoran, Jakarta Selatan",
+      payerType: "Umum",
+      payerMemberNo: "-",
+      bloodType: "B+",
+      allergies: "Tidak ada riwayat alergi"
+    },
+    {
+      id: "PAT-007",
+      mrNo: "RM-2026-0312",
+      nik: "3171052203970005",
+      name: "Budi Setiawan",
+      gender: "Laki-laki",
+      birthDate: "1997-03-22",
+      age: 29,
+      phone: "0812-8877-6655",
+      address: "Jl. Tebet Barat Dalam No. 14, Tebet, Jakarta Selatan",
+      payerType: "BPJS",
+      payerMemberNo: "0001928374821",
+      bloodType: "O+",
+      allergies: "Alergi Debu Dingin"
+    },
+    {
+      id: "PAT-008",
+      mrNo: "RM-2026-0405",
+      nik: "3276011011680007",
+      name: "Budi Gunawan",
+      gender: "Laki-laki",
+      birthDate: "1968-11-10",
+      age: 58,
+      phone: "0856-4433-2211",
+      address: "Jl. Margonda Raya No. 88, Depok",
+      payerType: "Asuransi",
+      payerMemberNo: "ALLIANZ-77821",
+      bloodType: "A+",
+      allergies: "Tidak ada riwayat alergi"
+    },
+    {
+      id: "PAT-009",
+      mrNo: "RM-2026-0123",
+      nik: "3201234567890001",
+      name: "Siti Rahmawati",
+      gender: "Perempuan",
+      birthDate: "1972-05-18",
+      age: 54,
+      phone: "0812-9876-5432",
+      address: "Jl. Sukamaju No. 12, Kel. Menteng, Jakarta Pusat",
+      payerType: "BPJS",
+      payerMemberNo: "0001882910291",
+      bloodType: "A+",
+      allergies: "Tidak ada riwayat alergi"
+    },
+    {
+      id: "PAT-010",
+      mrNo: "RM-2026-0288",
+      nik: "3174092509880004",
+      name: "Siti Aminah",
+      gender: "Perempuan",
+      birthDate: "1988-09-25",
+      age: 38,
+      phone: "0878-1122-3344",
+      address: "Jl. Ragunan No. 25, Pasar Minggu, Jakarta Selatan",
+      payerType: "Umum",
+      payerMemberNo: "-",
+      bloodType: "B+",
+      allergies: "Tidak ada riwayat alergi"
     }
   ],
 
@@ -590,7 +665,7 @@ const SIMRS_MASTER_DATA = {
 
 // Seed or retrieve from LocalStorage
 function initDatabase() {
-  if (!localStorage.getItem("SIMRS_DB_VERSION") || localStorage.getItem("SIMRS_DB_VERSION") !== "3.0") {
+  if (!localStorage.getItem("SIMRS_DB_VERSION") || localStorage.getItem("SIMRS_DB_VERSION") !== "3.3") {
     localStorage.setItem("SIMRS_PATIENTS", JSON.stringify(SIMRS_MASTER_DATA.initialPatients));
     localStorage.setItem("SIMRS_VISITS", JSON.stringify(SIMRS_MASTER_DATA.initialVisits));
     localStorage.setItem("SIMRS_APPOINTMENTS", JSON.stringify(SIMRS_MASTER_DATA.appointments));
@@ -601,7 +676,7 @@ function initDatabase() {
       { timestamp: "2026-10-05 08:30:10", user: "Ns. Siti Rahma", role: "Perawat", action: "Selesai Triase & Input TTV: Bambang Sutrisno -> Routing ke dr. Hendra" },
       { timestamp: "2026-10-05 08:45:04", user: "dr. Hendra Pratama", role: "Dokter", action: "Mulai Pelayanan Medis / Buka Rekam Medis Pasien: Bambang Sutrisno" }
     ]));
-    localStorage.setItem("SIMRS_DB_VERSION", "3.0");
+    localStorage.setItem("SIMRS_DB_VERSION", "3.3");
   }
 }
 

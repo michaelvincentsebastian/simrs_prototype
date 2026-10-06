@@ -108,7 +108,7 @@ function handleDoctorDeptChange(val) {
 
 function handleRegQueueDeptChange(val) {
   regQueueDeptFilter = val;
-  const tblContainer = document.getElementById("recent-visits-table-container");
+  const tblContainer = document.getElementById("registration-visits-table-container") || document.getElementById("recent-visits-table-container");
   if (tblContainer) {
     tblContainer.innerHTML = renderRecentVisitsTableHtml();
   } else {
@@ -118,7 +118,7 @@ function handleRegQueueDeptChange(val) {
 
 function handleRegQueueDocChange(val) {
   regQueueDocFilter = val;
-  const tblContainer = document.getElementById("recent-visits-table-container");
+  const tblContainer = document.getElementById("registration-visits-table-container") || document.getElementById("recent-visits-table-container");
   if (tblContainer) {
     tblContainer.innerHTML = renderRecentVisitsTableHtml();
   } else {
@@ -128,7 +128,7 @@ function handleRegQueueDocChange(val) {
 
 function handleRegQueueStatusChange(val) {
   regQueueStatusFilter = val;
-  const tblContainer = document.getElementById("recent-visits-table-container");
+  const tblContainer = document.getElementById("registration-visits-table-container") || document.getElementById("recent-visits-table-container");
   if (tblContainer) {
     tblContainer.innerHTML = renderRecentVisitsTableHtml();
   } else {
@@ -140,7 +140,7 @@ function resetRegQueueFilters() {
   regQueueDeptFilter = "ALL";
   regQueueDocFilter = "ALL";
   regQueueStatusFilter = "ALL";
-  const tblContainer = document.getElementById("recent-visits-table-container");
+  const tblContainer = document.getElementById("registration-visits-table-container") || document.getElementById("recent-visits-table-container");
   if (tblContainer) {
     tblContainer.innerHTML = renderRecentVisitsTableHtml();
   } else {
@@ -361,21 +361,8 @@ function updateRoleHeaderUI(user, role) {
   if (sidebarUserName) sidebarUserName.textContent = user.name;
   if (sidebarRolePill) sidebarRolePill.textContent = `${role.id}`;
 
-  // Role-Tailored Search Bar
-  const searchInput = document.getElementById("global-search");
-  const searchBox = document.getElementById("header-search-box");
-  if (searchInput) {
-    searchInput.placeholder = role.searchPlaceholder || "Cari data...";
-    searchInput.value = "";
-    searchQuery = "";
-  }
-  if (searchBox) {
-    if (role.searchScope === "none") {
-      searchBox.classList.add("hidden");
-    } else {
-      searchBox.classList.remove("hidden");
-    }
-  }
+  // Reset global search query on role switch
+  searchQuery = "";
 }
 
 // 6. Contextual Workflow Header Bar (Level 2 Context - Clean Breadcrumb & Status)
@@ -815,14 +802,16 @@ function renderWorkspace(workspaceId) {
 // ========================================================
 function renderRegistrasiWorkspace(container) {
   container.innerHTML = `
-    <div class="flex flex-col w-full">
-      <!-- Top Context Header -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-lg">
+    <div class="flex flex-col w-full gap-space-lg">
+      <!-- Top Context Header with + Pendaftaran CTA Button at Top Right -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-sm border-b border-line/40">
         <div class="flex flex-col">
           <div class="flex items-center gap-2 text-ink-soft text-caption font-caption mb-1">
-            <span>Registrasi</span>
+            <span>Rawat Jalan</span>
             <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span class="text-ink font-body-strong">Pendaftaran walk-in</span>
+            <span>Petugas Pendaftaran Rawat Jalan</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="text-ink font-body-strong">Modul Registrasi Pasien</span>
           </div>
           <div class="flex items-center gap-space-sm">
             <h1 class="font-headline-lg text-headline-lg text-ink font-bold tracking-tight">Pendaftaran Walk-in</h1>
@@ -833,501 +822,62 @@ function renderRegistrasiWorkspace(container) {
           </div>
         </div>
 
-        <!-- Quick Shortcuts & Info Indicator -->
-        <div class="flex items-center gap-space-md">
-          <div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-xl">
+        <!-- Quick Info & Top-Right Action: + Pendaftaran Button -->
+        <div class="flex items-center gap-space-md flex-wrap">
+          <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-xl">
             <span class="material-symbols-outlined text-[16px] text-ink-soft">access_time</span>
-            <span class="font-caption text-caption text-ink font-medium">08:24 WIB · Senin, 05 Okt 2026</span>
+            <span id="reg-clock-display" class="font-caption text-caption text-ink font-medium">08:24 WIB · Senin, 05 Okt 2026</span>
           </div>
-          <div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-xl">
-            <span class="font-caption text-caption text-ink-soft">Shortcut:</span>
-            <kbd class="px-1.5 py-0.5 bg-surface rounded text-[11px] font-mono text-ink shadow-sm">Alt + S</kbd>
-            <span class="font-caption text-caption text-ink-soft">Cari</span>
-          </div>
+
+          <!-- + PENDAFTARAN BUTTON (Tombol di Kanan Atas) -->
+          <button 
+            type="button" 
+            id="btn-open-walkin-reg" 
+            onclick="openWalkinRegistrationModal('old')" 
+            class="h-10 px-4 bg-brand hover:bg-brand-strong text-on-primary rounded-xl font-body-strong text-caption font-bold flex items-center gap-2 shadow-sm transition hover:shadow-md hover:scale-[1.01]"
+          >
+            <span class="material-symbols-outlined text-[20px]">person_add</span>
+            <span>+ Pendaftaran</span>
+          </button>
         </div>
       </div>
 
-      <!-- Two-Column Workstation Layout (1440px baseline) -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-        
-        <!-- LEFT COLUMN: Registration Desk (3 Stacked Sections) -->
-        <div class="lg:col-span-8 flex flex-col gap-space-lg">
-          
-          <!-- SECTION 1: PASIEN -->
-          <section class="bg-surface rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md border border-line/30">
-            <div class="flex items-center justify-between pb-space-sm">
-              <div class="flex items-center gap-space-sm">
-                <span class="w-6 h-6 rounded bg-brand-tint text-brand font-body-strong text-caption flex items-center justify-center font-bold">1</span>
-                <h2 class="font-headline-md text-headline-md text-ink font-bold uppercase tracking-wider text-[15px]">Pasien</h2>
-              </div>
-              <span class="font-caption text-caption text-ink-soft">Langkah verifikasi identitas pasien rawat jalan</span>
+      <!-- MAIN SECTION: DAFTAR KUNJUNGAN HARI INI (Langsung Tampil di Halaman Utama) -->
+      <section class="bg-surface rounded-2xl shadow-sm border border-line/40 overflow-hidden flex flex-col">
+        <div class="px-space-lg py-space-md border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-surface">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-brand-tint text-brand flex items-center justify-center">
+              <span class="material-symbols-outlined text-[20px]">list_alt</span>
             </div>
-
-            <!-- Search Bar Row -->
-            <div class="flex items-center gap-space-sm">
-              <div class="relative flex-1">
-                <span class="material-symbols-outlined absolute left-3 top-2.5 text-[20px] text-ink-soft pointer-events-none">badge</span>
-                <input 
-                  type="text" 
-                  id="patient-search-input" 
-                  value="3201234567890001"
-                  class="w-full h-10 pl-10 pr-space-md bg-canvas rounded-xl font-body-default text-body-default text-ink placeholder:text-ink-soft focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 transition-all shadow-inner" 
-                  placeholder="Cari MRN / NIK (16 digit) / nama pasien..."
-                />
-              </div>
-              <button 
-                type="button" 
-                onclick="showToast('Pencarian database pasien aktif...')"
-                class="h-10 px-space-lg rounded-xl font-body-strong text-body-strong text-brand bg-surface hover:bg-brand-tint flex items-center gap-1.5 transition-colors shadow-sm border border-line/40"
-              >
-                <span class="material-symbols-outlined text-[18px]">search</span>
-                <span>Cari</span>
-              </button>
-            </div>
-
-            <!-- Search Results Radio Cards -->
-            <div class="flex flex-col gap-space-xs mt-1">
-              <span class="font-caption text-caption text-ink-soft font-semibold uppercase tracking-wider mb-1">Hasil Pencarian Terkait</span>
-              
-              <!-- Patient Option 1 (Selected) -->
-              <label class="group relative flex items-start justify-between p-space-md bg-brand-tint/60 rounded-xl cursor-pointer hover:bg-brand-tint transition-colors">
-                <div class="flex items-start gap-space-md min-w-0">
-                  <input 
-                    type="radio" 
-                    name="selected_patient" 
-                    value="siti_rahmawati" 
-                    checked 
-                    onchange="selectRegPatient('siti_rahmawati')"
-                    class="mt-1 h-4 w-4 text-brand focus:ring-brand cursor-pointer"
-                  />
-                  <div class="flex flex-col min-w-0">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span class="font-body-strong text-body-strong text-ink">Siti Rahmawati</span>
-                      <span class="text-ink-soft">·</span>
-                      <span class="font-caption text-caption text-ink-soft">P, 54 th</span>
-                      <span class="text-ink-soft">·</span>
-                      <span class="font-mono text-caption text-brand-strong font-bold bg-surface px-1.5 py-0.5 rounded shadow-sm">MRN-000123</span>
-                    </div>
-                    <div class="flex items-center gap-space-md text-caption font-caption text-ink-soft mt-1 flex-wrap">
-                      <span>NIK: <strong class="text-ink font-mono">3201234567890001</strong></span>
-                      <span>Alamat: Jl. Sukamaju No. 12, Kel. Menteng</span>
-                      <span>Telp: 0812-9876-5432</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="shrink-0 flex items-center">
-                  <span class="px-2 py-0.5 bg-success-tint text-success rounded text-[12px] font-semibold flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[14px]">check_circle</span>
-                    Data Lengkap
-                  </span>
-                </div>
-              </label>
-
-              <!-- Patient Option 2 -->
-              <label class="group relative flex items-start justify-between p-space-md bg-surface-container-low/70 rounded-xl cursor-pointer hover:bg-surface-container-low transition-colors">
-                <div class="flex items-start gap-space-md min-w-0">
-                  <input 
-                    type="radio" 
-                    name="selected_patient" 
-                    value="budi_santoso" 
-                    onchange="selectRegPatient('budi_santoso')"
-                    class="mt-1 h-4 w-4 text-brand focus:ring-brand cursor-pointer"
-                  />
-                  <div class="flex flex-col min-w-0">
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <span class="font-body-strong text-body-strong text-ink">Budi Santoso</span>
-                      <span class="text-ink-soft">·</span>
-                      <span class="font-caption text-caption text-ink-soft">L, 42 th</span>
-                      <span class="text-ink-soft">·</span>
-                      <span class="font-mono text-caption text-brand-strong font-bold bg-surface px-1.5 py-0.5 rounded shadow-sm">MRN-000124</span>
-                    </div>
-                    <div class="flex items-center gap-space-md text-caption font-caption text-ink-soft mt-1 flex-wrap">
-                      <span>NIK: <strong class="text-ink font-mono">3201234567890002</strong></span>
-                      <span>Alamat: Jl. Dahlia No. 45, Kebayoran</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="shrink-0 flex items-center">
-                  <span class="px-2 py-0.5 bg-success-tint text-success rounded text-[12px] font-semibold flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[14px]">check_circle</span>
-                    Data Lengkap
-                  </span>
-                </div>
-              </label>
-
-              <!-- Patient Option 3: Pasien Baru -->
-              <label class="group relative flex items-center justify-between p-space-md bg-surface-container-low/70 rounded-xl cursor-pointer hover:bg-surface-container-low transition-colors">
-                <div class="flex items-center gap-space-md">
-                  <input 
-                    type="radio" 
-                    name="selected_patient" 
-                    value="new_patient" 
-                    onchange="selectRegPatient('new_patient')"
-                    class="h-4 w-4 text-brand focus:ring-brand cursor-pointer"
-                  />
-                  <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-[20px] text-brand">person_add</span>
-                    <span class="font-body-strong text-body-strong text-ink">+ Pasien Baru</span>
-                    <span class="font-caption text-caption text-ink-soft">(Registrasi formulir identitas baru)</span>
-                  </div>
-                </div>
-                <span class="font-caption text-caption text-ink-soft">Buat rekam medis baru</span>
-              </label>
-            </div>
-
-            <!-- Warning Panel (Duplicate Warning - Rule 6.2) -->
-            <div class="p-space-md bg-warning-tint text-warning rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-space-md mt-1">
-              <div class="flex items-start gap-space-sm min-w-0">
-                <span class="material-symbols-outlined text-[22px] text-warning shrink-0 mt-0.5">warning</span>
-                <div class="flex flex-col">
-                  <span class="font-body-strong text-body-strong text-ink leading-snug">
-                    Peringatan: NIK ini sudah terdaftar atas nama pasien ini
-                  </span>
-                  <p class="font-caption text-caption text-ink-soft mt-0.5">
-                    NIK <span class="font-mono font-semibold text-ink">3201234567890001</span> telah memiliki nomor rekam medis aktif <span class="font-mono font-semibold text-ink">MRN-000123</span>. Hindari pembuatan rekam medis ganda.
-                  </p>
-                </div>
-              </div>
-              <div class="flex items-center gap-space-sm shrink-0 self-end sm:self-center">
-                <button 
-                  type="button" 
-                  onclick="showToast('Pasien Siti Rahmawati siap diproses')"
-                  class="h-8 px-3 rounded-lg font-caption text-caption font-semibold bg-brand text-on-primary hover:bg-brand-strong transition-colors flex items-center gap-1 shadow-sm"
-                >
-                  <span class="material-symbols-outlined text-[16px]">verified</span>
-                  <span>Pakai pasien ini</span>
-                </button>
-                <button 
-                  type="button" 
-                  onclick="openNewPatientModal()"
-                  class="h-8 px-3 rounded-lg font-caption text-caption font-semibold bg-surface text-ink hover:bg-surface-container-high transition-colors shadow-sm"
-                >
-                  Tetap buat baru
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <!-- SECTION 2: POLI & DOKTER -->
-          <section class="bg-surface rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md border border-line/30">
-            <div class="flex items-center justify-between pb-space-sm">
-              <div class="flex items-center gap-space-sm">
-                <span class="w-6 h-6 rounded bg-brand-tint text-brand font-body-strong text-caption flex items-center justify-center font-bold">2</span>
-                <h2 class="font-headline-md text-headline-md text-ink font-bold uppercase tracking-wider text-[15px]">Poli & Dokter</h2>
-              </div>
-              <span class="font-caption text-caption text-ink-soft">Tujuan konsultasi rawat jalan hari ini</span>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
-              <!-- Poli Selector -->
-              <div class="flex flex-col gap-1.5">
-                <label class="font-body-strong text-body-strong text-ink flex items-center gap-1" for="poli-select">
-                  <span>Poli Tujuan</span>
-                  <span class="text-danger">*</span>
-                </label>
-                <div class="relative">
-                  <select 
-                    id="poli-select" 
-                    onchange="handlePoliChange(this.value)"
-                    class="w-full h-10 px-3 pr-8 bg-surface rounded-xl font-body-default text-body-default text-ink focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 transition-all appearance-none cursor-pointer shadow-sm border border-line/40"
-                  >
-                    <option value="penyakit_dalam" selected>Penyakit Dalam (Gedung B, Lt. 2)</option>
-                    <option value="jantung">Jantung & Pembuluh Darah</option>
-                    <option value="saraf">Neurologi / Saraf</option>
-                    <option value="mata">Klinik Mata</option>
-                    <option value="umum">Poli Umum</option>
-                  </select>
-                  <span class="material-symbols-outlined absolute right-2.5 top-2.5 text-[20px] text-ink-soft pointer-events-none">arrow_drop_down</span>
-                </div>
-                <span class="font-caption text-caption text-ink-soft">Lokasi antrian ruang tunggu zona 2</span>
-              </div>
-
-              <!-- Dokter Selector -->
-              <div class="flex flex-col gap-1.5">
-                <label class="font-body-strong text-body-strong text-ink flex items-center gap-1" for="dokter-select">
-                  <span>Dokter Praktik</span>
-                  <span class="text-danger">*</span>
-                </label>
-                <div class="relative">
-                  <select 
-                    id="dokter-select" 
-                    onchange="handleDoctorChange(this.value)"
-                    class="w-full h-10 px-3 pr-8 bg-surface rounded-xl font-body-default text-body-default text-ink focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 transition-all appearance-none cursor-pointer shadow-sm border border-line/40"
-                  >
-                    <option value="andika" selected>dr. Andika Pratama, Sp.PD (Ruang 2)</option>
-                    <option value="citra">dr. Citra Lestari, Sp.PD (Ruang 3)</option>
-                    <option value="fauzi">dr. Fauzi Rahman, Sp.PD (Ruang 1)</option>
-                    <option value="hendra">dr. Hendra Pratama, Sp.PD (Ruang 4)</option>
-                  </select>
-                  <span class="material-symbols-outlined absolute right-2.5 top-2.5 text-[20px] text-ink-soft pointer-events-none">arrow_drop_down</span>
-                </div>
-                <span class="font-caption text-caption text-ink-soft">SIP: 503/449/DINKES/2023</span>
-              </div>
-            </div>
-
-            <!-- Schedule & Quota Notification Indicator -->
-            <div class="flex items-center justify-between p-space-md bg-surface-container-low rounded-xl">
-              <div class="flex items-center gap-space-sm">
-                <span class="material-symbols-outlined text-[20px] text-brand">calendar_clock</span>
-                <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-space-sm text-caption font-caption">
-                  <span class="text-ink font-body-strong">Jadwal hari ini: <span class="font-mono">08:00 – 14:00 WIB</span></span>
-                  <span class="hidden sm:inline text-ink-soft">·</span>
-                  <span class="text-ink-soft">Estimasi waktu tunggu saat ini: ± 15 menit</span>
-                </div>
-              </div>
-              <div class="flex items-center gap-1.5 px-2.5 py-1 bg-success-tint text-success rounded-lg font-caption text-caption font-semibold">
-                <span class="material-symbols-outlined text-[16px]">event_available</span>
-                <span>Sisa kuota: 6 slot</span>
-              </div>
-            </div>
-          </section>
-
-          <!-- SECTION 3: PENJAMIN -->
-          <section class="bg-surface rounded-xl shadow-sm p-space-lg flex flex-col gap-space-md border border-line/30">
-            <div class="flex items-center justify-between pb-space-sm">
-              <div class="flex items-center gap-space-sm">
-                <span class="w-6 h-6 rounded bg-brand-tint text-brand font-body-strong text-caption flex items-center justify-center font-bold">3</span>
-                <h2 class="font-headline-md text-headline-md text-ink font-bold uppercase tracking-wider text-[15px]">Penjamin</h2>
-              </div>
-              <span class="font-caption text-caption text-ink-soft">Klasifikasi skema pembiayaan pasien</span>
-            </div>
-
-            <div class="flex flex-col gap-1.5">
-              <label class="font-body-strong text-body-strong text-ink">Skema Penjaminan</label>
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
-                <!-- Umum -->
-                <label class="flex items-center gap-space-sm p-3 bg-brand-tint/60 rounded-xl cursor-pointer hover:bg-brand-tint transition-all">
-                  <input 
-                    type="radio" 
-                    name="guarantor_type" 
-                    value="umum" 
-                    checked 
-                    onchange="handleGuarantorChange('umum')"
-                    class="h-4 w-4 text-brand focus:ring-brand cursor-pointer"
-                  />
-                  <div class="flex flex-col">
-                    <span class="font-body-strong text-body-strong text-ink">Umum</span>
-                    <span class="font-caption text-caption text-ink-soft">Bayar mandiri di kasir</span>
-                  </div>
-                </label>
-                <!-- Asuransi Swasta -->
-                <label class="flex items-center gap-space-sm p-3 bg-surface-container-low/70 rounded-xl cursor-pointer hover:bg-surface-container-low transition-all">
-                  <input 
-                    type="radio" 
-                    name="guarantor_type" 
-                    value="asuransi" 
-                    onchange="handleGuarantorChange('asuransi')"
-                    class="h-4 w-4 text-brand focus:ring-brand cursor-pointer"
-                  />
-                  <div class="flex flex-col">
-                    <span class="font-body-strong text-body-strong text-ink">Asuransi Swasta</span>
-                    <span class="font-caption text-caption text-ink-soft">Prudential, Allianz, dsb.</span>
-                  </div>
-                </label>
-                <!-- BPJS Kesehatan -->
-                <label class="flex items-center gap-space-sm p-3 bg-surface-container-low/70 rounded-xl cursor-pointer hover:bg-surface-container-low transition-all">
-                  <input 
-                    type="radio" 
-                    name="guarantor_type" 
-                    value="bpjs" 
-                    onchange="handleGuarantorChange('bpjs')"
-                    class="h-4 w-4 text-brand focus:ring-brand cursor-pointer"
-                  />
-                  <div class="flex flex-col">
-                    <span class="font-body-strong text-body-strong text-ink">BPJS Kesehatan</span>
-                    <span class="font-caption text-caption text-ink-soft">JKN / KIS Rujukan Faskes</span>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            <!-- Card Number Row -->
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-space-md items-end pt-1">
-              <div class="md:col-span-8 flex flex-col gap-1.5">
-                <label class="font-body-strong text-body-strong text-ink flex items-center justify-between" for="guarantor-number">
-                  <span>No. Peserta / Kartu Asuransi</span>
-                  <span class="font-caption text-caption text-ink-soft">(Opsional untuk Umum)</span>
-                </label>
-                <div class="relative">
-                  <span class="material-symbols-outlined absolute left-3 top-2.5 text-[20px] text-ink-soft pointer-events-none">credit_card</span>
-                  <input 
-                    type="text" 
-                    id="guarantor-number" 
-                    value="-" 
-                    oninput="handleGuarantorNumberChange(this.value)"
-                    placeholder="Masukkan no. kartu / polis penjamin..."
-                    class="w-full h-10 pl-10 pr-space-md bg-surface-container-low/50 rounded-xl font-body-default text-body-default text-ink placeholder:text-ink-soft focus:outline-none focus:ring-2 focus:ring-brand focus:ring-offset-2 transition-all shadow-sm border border-line/30"
-                  />
-                </div>
-              </div>
-              <div class="md:col-span-4 flex items-center h-10">
-                <div class="w-full h-10 px-3 bg-surface-container-low rounded-xl flex items-center justify-between">
-                  <span class="font-caption text-caption text-ink-soft">Status Klaim:</span>
-                  <span id="reg-claim-status" class="px-2 py-0.5 bg-info-tint text-info rounded font-caption text-caption font-semibold flex items-center gap-1">
-                    <span class="material-symbols-outlined text-[14px]">info</span>
-                    <span>Belum diverifikasi</span>
-                  </span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- SECTION 4: LIVE OUTPATIENT VISITS TABLE -->
-          <section class="bg-surface rounded-xl shadow-sm border border-line/30 overflow-hidden flex flex-col">
-            <div class="px-space-lg py-space-md border-b border-line flex items-center justify-between bg-surface">
-              <span class="font-headline-md text-headline-md text-ink font-bold flex items-center gap-2">
-                <span class="material-symbols-outlined text-[20px] text-brand">list_alt</span>
-                <span>Daftar Kunjungan Hari Ini (docs/data-model.md §3.1)</span>
-              </span>
-              <span class="font-caption text-caption text-ink-soft font-mono">Live Sync Frappe</span>
-            </div>
-
-            <div id="registration-visits-table-container">
-              ${renderRecentVisitsTableHtml()}
-            </div>
-          </section>
-
-        </div>
-
-        <!-- RIGHT COLUMN: Sticky Registration Summary Card (360px) -->
-        <div class="lg:col-span-4 sticky top-16 flex flex-col gap-space-md">
-          
-          <!-- Summary Card Container -->
-          <div class="bg-surface rounded-xl shadow-sm p-space-lg flex flex-col border border-line/30">
-            <div class="flex items-center justify-between pb-space-sm">
-              <div class="flex items-center gap-2">
-                <span class="material-symbols-outlined text-[20px] text-brand">receipt_long</span>
-                <h3 class="font-headline-md text-headline-md text-ink font-bold">Ringkasan pendaftaran</h3>
-              </div>
-              <span class="px-2 py-0.5 bg-brand-tint text-brand-strong rounded text-[11px] font-bold uppercase tracking-wider">
-                Loket Walk-in
-              </span>
-            </div>
-
-            <!-- Detail Attributes List -->
-            <div class="py-space-md flex flex-col gap-3 font-body-default text-body-default border-t border-line/30">
-              <div class="flex items-start justify-between gap-2">
-                <span class="text-ink-soft text-caption font-caption">Pasien</span>
-                <div class="text-right flex flex-col">
-                  <span id="summary-patient-name" class="text-ink font-body-strong">${regFormState.patientName}</span>
-                  <span id="summary-patient-meta" class="text-caption font-caption text-ink-soft">${regFormState.genderAge}</span>
-                </div>
-              </div>
-
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-ink-soft text-caption font-caption">No. Rekam Medis</span>
-                <span id="summary-patient-mrn" class="font-mono text-ink font-bold bg-surface-container-low px-2 py-0.5 rounded text-[13px]">
-                  ${regFormState.mrNo}
-                </span>
-              </div>
-
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-ink-soft text-caption font-caption">Poli Tujuan</span>
-                <span id="summary-poli-name" class="text-ink font-body-strong">${regFormState.poliName}</span>
-              </div>
-
-              <div class="flex items-start justify-between gap-2">
-                <span class="text-ink-soft text-caption font-caption">Dokter</span>
-                <div class="text-right flex flex-col">
-                  <span id="summary-doctor-name" class="text-ink font-body-strong">${regFormState.doctorName}</span>
-                  <span id="summary-doctor-room" class="text-caption font-caption text-ink-soft">${regFormState.poliRoom}</span>
-                </div>
-              </div>
-
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-ink-soft text-caption font-caption">Penjamin</span>
-                <span id="summary-guarantor-name" class="px-2 py-0.5 bg-surface-container-high rounded text-ink font-medium text-caption font-caption">
-                  ${regFormState.guarantorLabel}
-                </span>
-              </div>
-
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-ink-soft text-caption font-caption">Sumber</span>
-                <div class="flex items-center gap-1 text-ink">
-                  <span class="material-symbols-outlined text-[16px] text-brand">storefront</span>
-                  <span class="font-medium text-caption font-caption">Walk-in Loket</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Subtle Separator -->
-            <div class="h-px bg-surface-container-high w-full my-space-xs"></div>
-
-            <!-- Checklist of Auto-Created Items -->
-            <div class="py-space-md flex flex-col gap-space-sm bg-surface-container-low/60 p-space-md rounded-xl mt-space-sm">
-              <span class="font-caption text-caption text-ink-soft font-semibold uppercase tracking-wider">
-                Setelah Dikonfirmasi
-              </span>
-              <div class="flex flex-col gap-2 font-body-default text-body-default text-[13px]">
-                <div class="flex items-center gap-2 text-ink">
-                  <span class="w-4 h-4 rounded-full bg-success-tint text-success flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-[13px]">check</span>
-                  </span>
-                  <span>Appointment walk-in dibuat otomatis</span>
-                </div>
-                <div class="flex items-center gap-2 text-ink">
-                  <span class="w-4 h-4 rounded-full bg-success-tint text-success flex items-center justify-center shrink-0">
-                    <span class="material-symbols-outlined text-[13px]">check</span>
-                  </span>
-                  <span>Status Check-in langsung tercatat</span>
-                </div>
-                <div class="flex items-center justify-between text-ink">
-                  <div class="flex items-center gap-2">
-                    <span class="w-4 h-4 rounded-full bg-success-tint text-success flex items-center justify-center shrink-0">
-                      <span class="material-symbols-outlined text-[13px]">check</span>
-                    </span>
-                    <span>Tiket Triase dicetak:</span>
-                  </div>
-                  <span id="summary-ticket-preview" class="font-mono font-bold text-brand bg-brand-tint px-2 py-0.5 rounded text-[13px]">
-                    ${regFormState.nextTicketNo}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action Footer Buttons -->
-            <div class="flex flex-col gap-space-sm pt-space-md mt-space-xs">
-              <button 
-                type="button" 
-                id="btn-register" 
-                onclick="confirmRegistration()"
-                class="w-full h-10 px-space-lg rounded-xl font-body-strong text-body-strong bg-brand hover:bg-brand-strong text-on-primary flex items-center justify-center gap-2 shadow-sm transition-all"
-              >
-                <span class="material-symbols-outlined text-[20px]">print</span>
-                <span>Daftarkan &amp; cetak tiket</span>
-              </button>
-              <button 
-                type="button" 
-                onclick="resetRegistrationForm()"
-                class="w-full h-10 px-space-lg rounded-xl font-body-default text-body-default text-ink-soft hover:bg-surface-container-low hover:text-ink transition-colors"
-              >
-                Batal
-              </button>
+            <div>
+              <h2 class="font-headline-md text-headline-md text-ink font-bold">
+                Daftar Kunjungan Hari Ini (docs/data-model.md §3.1)
+              </h2>
+              <span class="text-[11px] text-ink-soft font-mono">Antrian &amp; registrasi pasien aktif rawat jalan</span>
             </div>
           </div>
-
-          <!-- Quick Desk Metrics / Status Card -->
-          <div class="p-space-md bg-surface rounded-xl shadow-sm flex items-center justify-between border border-line/30">
-            <div class="flex items-center gap-space-sm">
-              <div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-brand">
-                <span class="material-symbols-outlined text-[18px]">print_connect</span>
-              </div>
-              <div class="flex flex-col">
-                <span class="font-caption text-caption text-ink font-semibold">Thermal Printer EPSON TM-T82</span>
-                <span class="font-caption text-caption text-success flex items-center gap-1">
-                  <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
-                  Siap mencetak tiket
-                </span>
-              </div>
-            </div>
-            <span class="font-mono text-caption text-ink-soft font-medium">LOKET-01</span>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 flex items-center gap-1 border border-emerald-200">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Live Sync Frappe</span>
+            </span>
           </div>
-
         </div>
 
-      </div>
+        <div id="registration-visits-table-container">
+          ${renderRecentVisitsTableHtml()}
+        </div>
+      </section>
     </div>
   `;
+}
+
+function handleRegTableSearch(val) {
+  searchQuery = (val || "").trim().toLowerCase();
+  const tblContainer = document.getElementById("registration-visits-table-container") || document.getElementById("recent-visits-table-container");
+  if (tblContainer) {
+    tblContainer.innerHTML = renderRecentVisitsTableHtml();
+  }
 }
 
 function renderRecentVisitsTableHtml() {
@@ -1335,9 +885,11 @@ function renderRecentVisitsTableHtml() {
   let visits = allVisits;
   if (searchQuery) {
     visits = visits.filter(v => 
-      v.patientName.toLowerCase().includes(searchQuery) || 
-      v.mrNo.toLowerCase().includes(searchQuery) || 
-      v.ticketNo.toLowerCase().includes(searchQuery)
+      (v.patientName && v.patientName.toLowerCase().includes(searchQuery)) || 
+      (v.mrNo && v.mrNo.toLowerCase().includes(searchQuery)) || 
+      (v.ticketNo && v.ticketNo.toLowerCase().includes(searchQuery)) ||
+      (v.departmentName && v.departmentName.toLowerCase().includes(searchQuery)) ||
+      (v.practitionerName && v.practitionerName.toLowerCase().includes(searchQuery))
     );
   }
 
@@ -1357,23 +909,32 @@ function renderRecentVisitsTableHtml() {
     });
   }
 
-  if (regQueueStatusFilter !== "ALL") {
-    visits = visits.filter(v => v.visitStatus === regQueueStatusFilter);
-  }
-
-  const isFiltered = regQueueDeptFilter !== 'ALL' || regQueueDocFilter !== 'ALL' || regQueueStatusFilter !== 'ALL';
+  const isFiltered = regQueueDeptFilter !== 'ALL' || regQueueDocFilter !== 'ALL' || Boolean(searchQuery);
 
   return `
     <!-- Queue Filter Toolbar for Front Desk & Admission -->
     <div class="p-3 bg-surface-container-low border-b border-line/40 flex flex-wrap items-center justify-between gap-2.5">
       <div class="flex flex-wrap items-center gap-2">
-        <span class="text-caption font-semibold text-ink-soft flex items-center gap-1 shrink-0">
+        <!-- Quick Search on Table -->
+        <div class="relative">
+          <span class="material-symbols-outlined absolute left-2.5 top-2 text-[16px] text-ink-soft pointer-events-none">search</span>
+          <input 
+            type="text" 
+            id="reg-table-search-input"
+            value="${searchQuery || ''}"
+            placeholder="Cari Pasien / No. RM / Tiket..." 
+            oninput="handleRegTableSearch(this.value)"
+            class="h-8 pl-8 pr-2.5 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand w-48 sm:w-60 shadow-2xs"
+          />
+        </div>
+
+        <span class="text-caption font-semibold text-ink-soft flex items-center gap-1 shrink-0 ml-1">
           <span class="material-symbols-outlined text-[16px] text-brand">filter_alt</span>
-          <span>Filter Antrian:</span>
+          <span>Filter:</span>
         </span>
         
         <!-- Filter Poli -->
-        <select onchange="handleRegQueueDeptChange(this.value)" class="h-8 px-2 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+        <select onchange="handleRegQueueDeptChange(this.value)" class="h-8 px-2 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer shadow-2xs">
           <option value="ALL" ${regQueueDeptFilter === 'ALL' ? 'selected' : ''}>🏢 Semua Poli</option>
           ${SIMRS_MASTER_DATA.departments.map(dept => `
             <option value="${dept.id}" ${regQueueDeptFilter === dept.id ? 'selected' : ''}>${dept.name}</option>
@@ -1381,30 +942,20 @@ function renderRecentVisitsTableHtml() {
         </select>
 
         <!-- Filter Dokter -->
-        <select onchange="handleRegQueueDocChange(this.value)" class="h-8 px-2 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+        <select onchange="handleRegQueueDocChange(this.value)" class="h-8 px-2 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer shadow-2xs">
           <option value="ALL" ${regQueueDocFilter === 'ALL' ? 'selected' : ''}>👨‍⚕️ Semua Dokter</option>
           ${SIMRS_MASTER_DATA.practitioners.map(doc => `
             <option value="${doc.id}" ${regQueueDocFilter === doc.id ? 'selected' : ''}>${doc.name}</option>
           `).join("")}
         </select>
-
-        <!-- Filter Status -->
-        <select onchange="handleRegQueueStatusChange(this.value)" class="h-8 px-2 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
-          <option value="ALL" ${regQueueStatusFilter === 'ALL' ? 'selected' : ''}>📋 Semua Status</option>
-          <option value="WAITING_TRIAGE" ${regQueueStatusFilter === 'WAITING_TRIAGE' ? 'selected' : ''}>Menunggu Triase</option>
-          <option value="WAITING_DOCTOR" ${regQueueStatusFilter === 'WAITING_DOCTOR' ? 'selected' : ''}>Menunggu Dokter</option>
-          <option value="IN_SERVICE" ${regQueueStatusFilter === 'IN_SERVICE' ? 'selected' : ''}>Sedang Dilayani</option>
-          <option value="SERVICE_COMPLETED" ${regQueueStatusFilter === 'SERVICE_COMPLETED' ? 'selected' : ''}>Pelayanan Selesai</option>
-          <option value="CLOSED" ${regQueueStatusFilter === 'CLOSED' ? 'selected' : ''}>Ditutup / Selesai</option>
-        </select>
       </div>
 
       <div class="flex items-center gap-2">
         <span class="text-caption text-ink-soft">
-          Menampilkan: <strong class="text-ink font-mono">${visits.length}</strong> dari <span class="font-mono">${allVisits.length}</span> antrian
+          Menampilkan: <strong class="text-ink font-mono font-bold">${visits.length}</strong> dari <span class="font-mono">${allVisits.length}</span> antrian
         </span>
         ${isFiltered ? `
-          <button onclick="resetRegQueueFilters()" class="text-caption text-brand hover:underline font-semibold ml-2 flex items-center gap-0.5">
+          <button onclick="searchQuery=''; resetRegQueueFilters();" class="text-caption text-brand hover:underline font-semibold ml-2 flex items-center gap-0.5">
             <span class="material-symbols-outlined text-[14px]">refresh</span>
             <span>Reset</span>
           </button>
@@ -1420,15 +971,14 @@ function renderRecentVisitsTableHtml() {
             <th class="p-space-sm">Pasien &amp; No. RM</th>
             <th class="p-space-sm">Poli Tujuan</th>
             <th class="p-space-sm">Dokter Pemeriksa</th>
-            <th class="p-space-sm">Penjamin</th>
-            <th class="p-space-sm">Status Kunjungan</th>
+            <th class="p-space-sm">Metode Pembayaran</th>
             <th class="p-space-sm text-right">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-line">
           ${visits.length === 0 ? `
             <tr>
-              <td colspan="7" class="p-8 text-center text-ink-soft font-caption text-caption">
+              <td colspan="6" class="p-8 text-center text-ink-soft font-caption text-caption">
                 Tidak ada kunjungan atau antrian yang sesuai dengan filter yang dipilih.
               </td>
             </tr>
@@ -1445,11 +995,12 @@ function renderRecentVisitsTableHtml() {
               <td class="p-space-sm font-medium text-ink">${v.departmentName}</td>
               <td class="p-space-sm text-ink-soft">${v.practitionerName}</td>
               <td class="p-space-sm">
-                <span class="px-2 py-0.5 rounded font-caption text-caption font-medium ${
-                  v.payerType === 'BPJS' ? 'bg-info-tint text-info' : 'bg-surface-container-low text-ink-soft border border-line/40'
-                }">${v.payerType}</span>
+                <span class="px-2 py-0.5 rounded font-caption text-caption font-semibold ${
+                  v.payerType === 'BPJS' ? 'bg-info-tint text-info' : v.payerType === 'Asuransi' ? 'bg-purple-50 text-purple-700' : 'bg-surface-container-low text-ink-soft border border-line/40'
+                }">
+                  ${v.payerType === 'BPJS' ? 'BPJS Kesehatan' : v.payerType === 'Asuransi' ? 'Asuransi Swasta' : 'Umum / Mandiri'}
+                </span>
               </td>
-              <td class="p-space-sm">${renderStatusChip(v.visitStatus)}</td>
               <td class="p-space-sm text-right space-x-1">
                 <button onclick="callTicket('${v.ticketNo}', '${v.departmentName}')" class="h-8 px-2 bg-surface hover:bg-brand-tint border border-line text-brand rounded-lg font-caption text-caption transition shadow-sm" title="Panggil Antrian">
                   <span class="material-symbols-outlined text-[16px]">volume_up</span>
@@ -1465,6 +1016,495 @@ function renderRecentVisitsTableHtml() {
       </table>
     </div>
   `;
+}
+
+// ========================================================
+// WALKIN REGISTRATION MODAL CONTROLLER (Pasien Lama & Baru)
+// ========================================================
+let walkinCurrentMode = "old";
+let selectedOldPatient = null;
+let oldSearchDebounceTimer = null;
+
+function openWalkinRegistrationModal(initialMode = "old") {
+  walkinCurrentMode = initialMode;
+  
+  // Populate Poli Selects
+  const oldPoliEl = document.getElementById("old-reg-poli");
+  const newPoliEl = document.getElementById("new-reg-poli");
+  const poliOptions = SIMRS_MASTER_DATA.departments.map(d => `<option value="${d.id}">${d.name} (${d.room})</option>`).join("");
+  
+  if (oldPoliEl) oldPoliEl.innerHTML = poliOptions;
+  if (newPoliEl) newPoliEl.innerHTML = poliOptions;
+
+  // Also support legacy IDs if present
+  const legacyPoli = document.getElementById("poli-select");
+  if (legacyPoli) legacyPoli.innerHTML = poliOptions;
+
+  // Populate Doctor Selects based on first department
+  const firstDept = SIMRS_MASTER_DATA.departments[0]?.id || "POLI-INT";
+  handleOldPoliChange(firstDept);
+  handleNewPoliChange(firstDept);
+
+  // Switch tab mode
+  switchWalkinMode(initialMode);
+
+  // Run initial patient search
+  searchOldPatients();
+
+  // Show modal
+  const modal = document.getElementById("modal-walkin-registration");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+}
+
+function closeWalkinRegistrationModal() {
+  const modal = document.getElementById("modal-walkin-registration");
+  if (modal) {
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+}
+
+function switchWalkinMode(mode) {
+  walkinCurrentMode = mode;
+  const btnOld = document.getElementById("walkin-tab-btn-old");
+  const btnNew = document.getElementById("walkin-tab-btn-new");
+  const contentOld = document.getElementById("walkin-content-old");
+  const contentNew = document.getElementById("walkin-content-new");
+
+  if (mode === "old") {
+    if (btnOld) {
+      btnOld.className = "flex items-center justify-center gap-2.5 py-2.5 px-3 rounded-lg font-body-strong transition-all bg-surface text-brand shadow-sm border border-line/30";
+    }
+    if (btnNew) {
+      btnNew.className = "flex items-center justify-center gap-2.5 py-2.5 px-3 rounded-lg font-body-strong transition-all text-ink-soft hover:text-ink";
+    }
+    if (contentOld) contentOld.classList.remove("hidden");
+    if (contentNew) contentNew.classList.add("hidden");
+
+    const qInput = document.getElementById("old-search-query");
+    if (qInput) qInput.focus();
+  } else {
+    if (btnNew) {
+      btnNew.className = "flex items-center justify-center gap-2.5 py-2.5 px-3 rounded-lg font-body-strong transition-all bg-surface text-brand shadow-sm border border-line/30";
+    }
+    if (btnOld) {
+      btnOld.className = "flex items-center justify-center gap-2.5 py-2.5 px-3 rounded-lg font-body-strong transition-all text-ink-soft hover:text-ink";
+    }
+    if (contentNew) contentNew.classList.remove("hidden");
+    if (contentOld) contentOld.classList.add("hidden");
+
+    const nikInput = document.getElementById("new-reg-nik");
+    if (nikInput) nikInput.focus();
+  }
+}
+
+function handleOldPatientSearchInput() {
+  clearTimeout(oldSearchDebounceTimer);
+  oldSearchDebounceTimer = setTimeout(() => {
+    searchOldPatients();
+  }, 250);
+}
+
+function searchOldPatients() {
+  const q = (document.getElementById("old-search-query")?.value || "").trim();
+  const birthDate = document.getElementById("old-search-birthdate")?.value || "";
+  const gender = document.getElementById("old-search-gender")?.value || "ALL";
+
+  const results = RegistrationService.searchPatients({
+    query: q,
+    birthDate: birthDate,
+    gender: gender
+  });
+
+  const container = document.getElementById("old-patient-search-results");
+  if (!container) return;
+
+  if (results.length === 0) {
+    container.innerHTML = `
+      <div class="p-6 bg-surface rounded-xl border border-line/50 text-center flex flex-col items-center gap-2">
+        <span class="material-symbols-outlined text-[32px] text-ink-soft">person_search</span>
+        <span class="font-body-strong text-ink text-[13px]">Pasien tidak ditemukan dengan kriteria pencarian</span>
+        <p class="text-[12px] text-ink-soft max-w-md">
+          Tidak ada data RME yang cocok dengan filter "${q || 'Semua'}" ${birthDate ? `· Tgl Lahir: ${birthDate}` : ''} ${gender !== 'ALL' ? `· Gender: ${gender}` : ''}.
+        </p>
+        <button 
+          type="button" 
+          onclick="switchWalkinMode('new')" 
+          class="mt-1 h-8 px-3.5 bg-brand-tint text-brand-strong hover:bg-brand hover:text-on-primary rounded-lg text-caption font-semibold flex items-center gap-1.5 transition"
+        >
+          <span class="material-symbols-outlined text-[16px]">person_add</span>
+          <span>Daftarkan Sebagai Pasien Baru</span>
+        </button>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="flex items-center justify-between px-1 py-0.5 text-[11px] text-ink-soft font-medium">
+      <span>Ditemukan <strong class="text-ink font-semibold">${results.length}</strong> data pasien RME:</span>
+      <span>Klik kartu atau tombol "Pilih" untuk fetch data diri</span>
+    </div>
+    <div class="flex flex-col gap-2 max-h-56 overflow-y-auto pr-1">
+      ${results.map(p => `
+        <div 
+          onclick="selectOldPatient('${p.id}')"
+          class="p-3 bg-surface hover:bg-brand-tint/40 border ${selectedOldPatient?.id === p.id ? 'border-brand bg-brand-tint/50' : 'border-line/50'} rounded-xl cursor-pointer transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 group shadow-2xs"
+        >
+          <div class="flex items-start gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-lg bg-surface-container-low group-hover:bg-brand group-hover:text-on-primary text-brand flex items-center justify-center shrink-0 transition">
+              <span class="material-symbols-outlined text-[18px]">${p.gender === 'Perempuan' ? 'female' : 'male'}</span>
+            </div>
+            <div class="flex flex-col min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-body-strong text-ink font-bold text-[13px] group-hover:text-brand transition">${p.name}</span>
+                <span class="text-ink-soft text-[11px]">·</span>
+                <span class="text-[11px] text-ink-soft">${p.gender}, ${p.age} th</span>
+                <span class="text-ink-soft text-[11px]">·</span>
+                <span class="font-mono text-[11px] text-brand-strong font-semibold bg-surface px-1.5 py-0.2 rounded border border-line/40">${p.mrNo}</span>
+              </div>
+              <div class="text-[11px] text-ink-soft mt-0.5 flex items-center gap-3 flex-wrap">
+                <span>NIK: <strong class="font-mono text-ink">${p.nik}</strong></span>
+                <span>Tgl Lahir: <strong class="text-ink font-medium">${p.birthDate}</strong></span>
+                <span class="truncate max-w-[200px]">${p.address}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
+            <button 
+              type="button" 
+              onclick="event.stopPropagation(); selectOldPatient('${p.id}')"
+              class="h-7 px-3 bg-brand text-on-primary rounded-lg text-[11px] font-semibold hover:bg-brand-strong transition shadow-2xs flex items-center gap-1"
+            >
+              <span>Pilih Pasien</span>
+              <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function selectOldPatient(patientId) {
+  const patient = RegistrationService.getPatients().find(p => p.id === patientId);
+  if (!patient) return;
+
+  selectedOldPatient = patient;
+
+  const fName = document.getElementById("fetched-patient-name");
+  const fMeta = document.getElementById("fetched-patient-meta");
+  const fMrn = document.getElementById("fetched-patient-mrn");
+  const fNik = document.getElementById("fetched-patient-nik");
+  const fAddress = document.getElementById("fetched-patient-address");
+  const fPhone = document.getElementById("fetched-patient-phone");
+
+  if (fName) fName.textContent = patient.name;
+  if (fMeta) fMeta.textContent = `${patient.gender}, ${patient.age} th · Tgl Lahir: ${patient.birthDate}`;
+  if (fMrn) fMrn.textContent = patient.mrNo;
+  if (fNik) fNik.textContent = patient.nik;
+  if (fAddress) fAddress.textContent = patient.address;
+  if (fPhone) fPhone.textContent = patient.phone || "-";
+
+  const fCard = document.getElementById("old-patient-fetched-card");
+  const rList = document.getElementById("old-patient-search-results");
+  if (fCard) fCard.classList.remove("hidden");
+  if (rList) rList.classList.add("hidden");
+
+  // Auto-set payment method
+  if (patient.payerType === "BPJS") {
+    const radioBpjs = document.querySelector('input[name="old_payment_method"][value="BPJS"]');
+    if (radioBpjs) radioBpjs.checked = true;
+    handleOldPaymentMethodChange("BPJS");
+    const cardNo = document.getElementById("old-payment-card-no");
+    if (cardNo) cardNo.value = patient.payerMemberNo || "";
+  } else if (patient.payerType === "Asuransi") {
+    const radioAsu = document.querySelector('input[name="old_payment_method"][value="Asuransi"]');
+    if (radioAsu) radioAsu.checked = true;
+    handleOldPaymentMethodChange("Asuransi");
+    const cardNo = document.getElementById("old-payment-card-no");
+    if (cardNo) cardNo.value = patient.payerMemberNo || "";
+  } else {
+    const radioUmum = document.querySelector('input[name="old_payment_method"][value="Umum"]');
+    if (radioUmum) radioUmum.checked = true;
+    handleOldPaymentMethodChange("Umum");
+  }
+
+  showToast(`Data RME pasien ${patient.name} berhasil dimuat.`, "success");
+}
+
+function resetOldPatientSelection() {
+  selectedOldPatient = null;
+  const fCard = document.getElementById("old-patient-fetched-card");
+  const rList = document.getElementById("old-patient-search-results");
+  if (fCard) fCard.classList.add("hidden");
+  if (rList) rList.classList.remove("hidden");
+  searchOldPatients();
+}
+
+function resetOldPatientSearch() {
+  const q = document.getElementById("old-search-query");
+  const b = document.getElementById("old-search-birthdate");
+  const g = document.getElementById("old-search-gender");
+  if (q) q.value = "";
+  if (b) b.value = "";
+  if (g) g.value = "ALL";
+  resetOldPatientSelection();
+}
+
+function handleOldPoliChange(deptId) {
+  const dept = SIMRS_MASTER_DATA.departments.find(d => d.id === deptId) || SIMRS_MASTER_DATA.departments[0];
+  const docSelect = document.getElementById("old-reg-doctor");
+  const legacyDoc = document.getElementById("dokter-select");
+  const docs = SIMRS_MASTER_DATA.practitioners.filter(p => p.department === dept.id);
+  const optionsHtml = docs.map(d => `<option value="${d.id}">${d.name}</option>`).join("");
+  
+  if (docSelect) docSelect.innerHTML = optionsHtml;
+  if (legacyDoc) legacyDoc.innerHTML = optionsHtml;
+
+  const roomEl = document.getElementById("old-doctor-room");
+  if (roomEl) roomEl.textContent = `${dept.room}, ${dept.floor}`;
+
+  if (docs.length > 0) {
+    handleOldDoctorChange(docs[0].id);
+  }
+}
+
+function handleOldDoctorChange(docId) {
+  const doc = SIMRS_MASTER_DATA.practitioners.find(p => p.id === docId);
+  const schedEl = document.getElementById("old-doctor-schedule");
+  if (schedEl && doc) {
+    schedEl.textContent = `Jadwal: ${doc.schedule}`;
+  }
+}
+
+function handleOldPaymentMethodChange(val) {
+  const cardGroup = document.getElementById("old-payment-card-group");
+  if (cardGroup) {
+    if (val === "BPJS" || val === "Asuransi") {
+      cardGroup.classList.remove("hidden");
+    } else {
+      cardGroup.classList.add("hidden");
+    }
+  }
+}
+
+function submitOldPatientRegistration(event) {
+  if (event) event.preventDefault();
+
+  if (!selectedOldPatient) {
+    showToast("Silakan cari dan pilih pasien terlebih dahulu dari hasil pencarian RME!", "warning");
+    const qInput = document.getElementById("old-search-query");
+    if (qInput) qInput.focus();
+    return;
+  }
+
+  try {
+    const deptId = document.getElementById("old-reg-poli")?.value || SIMRS_MASTER_DATA.departments[0].id;
+    const docId = document.getElementById("old-reg-doctor")?.value || SIMRS_MASTER_DATA.practitioners[0].id;
+    const method = document.querySelector('input[name="old_payment_method"]:checked')?.value || "Umum";
+    const cardNo = document.getElementById("old-payment-card-no")?.value || "-";
+
+    const registration = {
+      patientId: selectedOldPatient.id,
+      patientName: selectedOldPatient.name,
+      mrNo: selectedOldPatient.mrNo,
+      departmentId: deptId,
+      practitionerId: docId,
+      payerType: method,
+      payerMemberNo: cardNo,
+      source: "Walk-in"
+    };
+
+    const visit = RegistrationService.registerWalkIn(registration);
+    closeWalkinRegistrationModal();
+
+    populateSuccessModal({
+      ticketNo: visit.ticketNo,
+      patientName: visit.patientName,
+      mrNo: visit.mrNo,
+      poliName: visit.departmentName,
+      doctorName: visit.practitionerName
+    });
+
+    showToast(`Pendaftaran berhasil · Tiket ${visit.ticketNo} dicetak untuk ${visit.patientName}`, "success");
+
+    playAudioCall(visit.ticketNo, visit.patientName);
+
+    refreshVisitsTable();
+  } catch (err) {
+    showToast(err.message, "danger");
+  }
+}
+
+// Pasien Baru Handlers
+function checkNewPatientDuplicateNik(nik) {
+  const warnBox = document.getElementById("new-patient-duplicate-warning");
+  const warnText = document.getElementById("new-duplicate-warning-text");
+  if (!warnBox) return;
+
+  const found = RegistrationService.checkDuplicateNik(nik);
+  if (found) {
+    warnBox.classList.remove("hidden");
+    if (warnText) {
+      warnText.innerHTML = `NIK <strong>${nik}</strong> telah terdaftar atas nama <strong>${found.name}</strong> (No. RM: <strong>${found.mrNo}</strong>). Klik tombol di samping untuk beralih ke Pasien Lama.`;
+    }
+  } else {
+    warnBox.classList.add("hidden");
+  }
+}
+
+function switchToOldPatientWithNik() {
+  const nik = document.getElementById("new-reg-nik")?.value || "";
+  switchWalkinMode("old");
+  const qInput = document.getElementById("old-search-query");
+  if (qInput) qInput.value = nik;
+  searchOldPatients();
+}
+
+function handleNewBirthdateChange(val) {
+  const display = document.getElementById("new-reg-age-display");
+  if (!display || !val) return;
+  const birth = new Date(val);
+  const now = new Date();
+  let age = now.getFullYear() - birth.getFullYear();
+  const m = now.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+  display.textContent = `(Usia: ${Math.max(0, age)} tahun)`;
+}
+
+function handleNewPoliChange(deptId) {
+  const docSelect = document.getElementById("new-reg-doctor");
+  const docs = SIMRS_MASTER_DATA.practitioners.filter(p => p.department === deptId);
+  if (docSelect) {
+    docSelect.innerHTML = docs.map(d => `<option value="${d.id}">${d.name}</option>`).join("");
+  }
+}
+
+function handleNewPaymentMethodChange(val) {
+  const cardGroup = document.getElementById("new-payment-card-group");
+  if (cardGroup) {
+    if (val === "BPJS" || val === "Asuransi") {
+      cardGroup.classList.remove("hidden");
+    } else {
+      cardGroup.classList.add("hidden");
+    }
+  }
+}
+
+function submitNewPatientRegistration(event) {
+  if (event) event.preventDefault();
+
+  try {
+    const nik = document.getElementById("new-reg-nik")?.value.trim();
+    const name = document.getElementById("new-reg-name")?.value.trim();
+    const gender = document.getElementById("new-reg-gender")?.value;
+    const birthDate = document.getElementById("new-reg-birthdate")?.value;
+    const phone = document.getElementById("new-reg-phone")?.value.trim();
+    const address = document.getElementById("new-reg-address")?.value.trim();
+    const bloodType = document.getElementById("new-reg-blood")?.value || "O+";
+    const paymentMethod = document.querySelector('input[name="new_payment_method"]:checked')?.value || "Umum";
+    const cardNo = document.getElementById("new-payment-card-no")?.value.trim() || "-";
+
+    if (!nik || nik.length < 16) {
+      throw new Error("NIK harus terdiri dari 16 digit angka!");
+    }
+    if (!name) {
+      throw new Error("Nama pasien wajib diisi!");
+    }
+    if (!birthDate) {
+      throw new Error("Tanggal lahir wajib diisi!");
+    }
+
+    const newPatient = RegistrationService.createPatient({
+      nik: nik,
+      name: name,
+      gender: gender,
+      birthDate: birthDate,
+      phone: phone,
+      address: address,
+      bloodType: bloodType,
+      payerType: paymentMethod,
+      payerMemberNo: cardNo
+    });
+
+    const deptId = document.getElementById("new-reg-poli")?.value || SIMRS_MASTER_DATA.departments[0].id;
+    const docId = document.getElementById("new-reg-doctor")?.value || SIMRS_MASTER_DATA.practitioners[0].id;
+
+    const visit = RegistrationService.registerWalkIn({
+      patientId: newPatient.id,
+      patientName: newPatient.name,
+      mrNo: newPatient.mrNo,
+      departmentId: deptId,
+      practitionerId: docId,
+      payerType: paymentMethod,
+      payerMemberNo: cardNo,
+      source: "Walk-in"
+    });
+
+    closeWalkinRegistrationModal();
+
+    populateSuccessModal({
+      ticketNo: visit.ticketNo,
+      patientName: visit.patientName,
+      mrNo: visit.mrNo,
+      poliName: visit.departmentName,
+      doctorName: visit.practitionerName
+    });
+
+    showToast(`Pasien Baru ${newPatient.name} terdaftar dengan No. RM: ${newPatient.mrNo}! Tiket: ${visit.ticketNo}`, "success");
+
+    playAudioCall(visit.ticketNo, visit.patientName);
+
+    refreshVisitsTable();
+  } catch (err) {
+    showToast(err.message, "danger");
+  }
+}
+
+function populateSuccessModal({ ticketNo, patientName, mrNo, poliName, doctorName }) {
+  const mNumber = document.getElementById("ticket-modal-number");
+  const mName = document.getElementById("ticket-modal-name");
+  const mMrn = document.getElementById("ticket-modal-mrn");
+  const mPoli = document.getElementById("ticket-modal-poli");
+  const mDoc = document.getElementById("ticket-modal-doctor");
+  const mTime = document.getElementById("ticket-modal-time");
+
+  if (mNumber) mNumber.textContent = ticketNo;
+  if (mName) mName.textContent = patientName;
+  if (mMrn) mMrn.textContent = mrNo;
+  if (mPoli) mPoli.textContent = poliName;
+  if (mDoc) mDoc.textContent = doctorName;
+  if (mTime) {
+    const now = new Date();
+    mTime.textContent = `${now.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}, ${now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB`;
+  }
+
+  const modal = document.getElementById("success-modal");
+  if (modal) {
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+}
+
+function playAudioCall(ticketNo, patientName) {
+  if (isAudioEnabled && window.speechSynthesis) {
+    const textToSpeak = `Nomor antrian ${ticketNo}, atas nama ${patientName}, silakan menuju ruang triase rawat jalan.`;
+    const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = "id-ID";
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
+function refreshVisitsTable() {
+  const tblContainer = document.getElementById("registration-visits-table-container") || document.getElementById("recent-visits-table-container");
+  if (tblContainer) {
+    tblContainer.innerHTML = renderRecentVisitsTableHtml();
+  }
 }
 
 // ========================================================

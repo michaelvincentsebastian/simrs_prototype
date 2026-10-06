@@ -513,8 +513,8 @@
     <!-- Primary Header (56px) -->
     <header class="fixed top-0 left-[232px] right-0 h-14 bg-surface/95 backdrop-blur-md shadow-[0_1px_6px_rgba(0,0,0,0.03)] border-b border-line/40 z-40 px-space-xl flex items-center justify-between gap-space-md">
       
-      <!-- Left: Role Indicator & Quick Search Bar -->
-      <div class="flex items-center gap-space-md flex-1 max-w-[620px]">
+      <!-- Left: Role Indicator -->
+      <div class="flex items-center gap-space-md">
         
         <!-- Active Role Badge -->
         <div id="header-role-container" class="flex items-center gap-2 px-3 py-1 bg-surface-container-low rounded-xl border border-line/40 shrink-0">
@@ -526,18 +526,6 @@
             <span id="header-user-dept" class="text-[10px] text-ink-soft truncate max-w-[150px] sm:max-w-[180px]">Triase Rawat Jalan</span>
           </div>
           <span id="header-role-badge" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 shrink-0 uppercase tracking-wider">Perawat Triase</span>
-        </div>
-
-        <!-- Role-Tailored Search Bar -->
-        <div id="header-search-box" class="relative flex items-center flex-1">
-          <span class="material-symbols-outlined absolute left-3 text-[18px] text-ink-soft pointer-events-none">search</span>
-          <input 
-            type="text" 
-            id="global-search" 
-            oninput="handleGlobalSearch(this.value)" 
-            class="w-full h-9 pl-9 pr-3 bg-canvas rounded-xl font-body-default text-caption text-ink placeholder:text-ink-soft focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all shadow-inner" 
-            placeholder="Cari Antrian Pasien Triase / No. Tiket..."
-          >
         </div>
       </div>
 
@@ -1109,6 +1097,530 @@
           Mengerti
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- MODAL: Pendaftaran Pasien Walk-in (Pasien Lama & Baru)     -->
+  <!-- ========================================================== -->
+  <div id="modal-walkin-registration" class="fixed inset-0 z-50 bg-ink/50 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="bg-surface rounded-2xl modal-shadow max-w-4xl w-full p-4 sm:p-6 flex flex-col gap-4 relative border border-line/40 my-auto max-h-[92vh] overflow-y-auto">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-line">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-brand-tint text-brand flex items-center justify-center">
+            <span class="material-symbols-outlined text-[24px]">person_add</span>
+          </div>
+          <div>
+            <h3 class="font-headline-md text-headline-md font-bold text-ink">Pendaftaran Pasien Walk-in</h3>
+            <span class="text-caption text-ink-soft">Loket 01 Registrasi Rawat Jalan · Terbitkan Tiket Antrian &amp; Triase</span>
+          </div>
+        </div>
+        <button onclick="closeWalkinRegistrationModal()" type="button" class="p-1.5 rounded-xl hover:bg-surface-container-low text-ink-soft hover:text-ink transition-colors">
+          <span class="material-symbols-outlined text-[22px]">close</span>
+        </button>
+      </div>
+
+      <!-- Segmented Tab Switcher: Pasien Lama vs Pasien Baru -->
+      <div class="p-1.5 bg-surface-container-low rounded-xl grid grid-cols-2 gap-2 border border-line/30">
+        <button 
+          type="button" 
+          id="walkin-tab-btn-old" 
+          onclick="switchWalkinMode('old')" 
+          class="flex items-center justify-center gap-2.5 py-2.5 px-3 rounded-lg font-body-strong transition-all bg-surface text-brand shadow-sm border border-line/30"
+        >
+          <span class="material-symbols-outlined text-[20px]">manage_search</span>
+          <div class="text-left">
+            <span class="block leading-tight font-bold text-[14px]">Pasien Lama</span>
+            <span class="block text-[11px] opacity-75 font-normal">Cari RME dengan Nama/NIK &amp; Filter Tgl Lahir</span>
+          </div>
+        </button>
+
+        <button 
+          type="button" 
+          id="walkin-tab-btn-new" 
+          onclick="switchWalkinMode('new')" 
+          class="flex items-center justify-center gap-2.5 py-2.5 px-3 rounded-lg font-body-strong transition-all text-ink-soft hover:text-ink"
+        >
+          <span class="material-symbols-outlined text-[20px]">person_add_alt</span>
+          <div class="text-left">
+            <span class="block leading-tight font-bold text-[14px]">Pasien Baru</span>
+            <span class="block text-[11px] opacity-75 font-normal">Formulir Pendaftaran Data Diri Baru</span>
+          </div>
+        </button>
+      </div>
+
+      <!-- TAB 1: KONTEN PASIEN LAMA -->
+      <div id="walkin-content-old" class="flex flex-col gap-4">
+        
+        <!-- STEP 1: PENCARIAN RME & FETCH DATA DIRI -->
+        <div class="p-4 bg-surface-container-low/50 rounded-xl border border-line/40 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="font-body-strong text-ink flex items-center gap-1.5 text-[14px] font-bold">
+              <span class="w-5 h-5 rounded-full bg-brand-tint text-brand text-[12px] flex items-center justify-center font-bold">1</span>
+              <span>Pencarian Pasien (RME) &amp; Fetch Data Diri</span>
+            </span>
+            <span class="text-[11px] text-ink-soft">Filter Tanggal Lahir &amp; Gender untuk bedakan nama serupa</span>
+          </div>
+
+          <!-- Search Filters Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+            <div class="sm:col-span-5 flex flex-col gap-1">
+              <label class="text-[11px] font-semibold text-ink-soft" for="old-search-query">Nama Pasien / NIK / No. RM</label>
+              <div class="relative">
+                <span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[18px] text-ink-soft pointer-events-none">search</span>
+                <input 
+                  type="text" 
+                  id="old-search-query" 
+                  placeholder="Ketik Nama (mis: Budi) atau NIK..." 
+                  class="w-full h-9 pl-9 pr-3 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                  oninput="handleOldPatientSearchInput()"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault(); searchOldPatients();}"
+                />
+              </div>
+            </div>
+
+            <div class="sm:col-span-3 flex flex-col gap-1">
+              <label class="text-[11px] font-semibold text-ink-soft" for="old-search-birthdate">Filter Tanggal Lahir</label>
+              <input 
+                type="date" 
+                id="old-search-birthdate" 
+                class="w-full h-9 px-2 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                onchange="searchOldPatients()"
+              />
+            </div>
+
+            <div class="sm:col-span-2 flex flex-col gap-1">
+              <label class="text-[11px] font-semibold text-ink-soft" for="old-search-gender">Jenis Kelamin</label>
+              <select 
+                id="old-search-gender" 
+                class="w-full h-9 px-2 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand cursor-pointer"
+                onchange="searchOldPatients()"
+              >
+                <option value="ALL">Semua</option>
+                <option value="Laki-laki">Laki-laki</option>
+                <option value="Perempuan">Perempuan</option>
+              </select>
+            </div>
+
+            <div class="sm:col-span-2 flex gap-1.5">
+              <button 
+                type="button" 
+                id="btn-search-old-patient"
+                onclick="searchOldPatients()" 
+                class="flex-1 h-9 bg-brand hover:bg-brand-strong text-on-primary rounded-lg text-caption font-semibold flex items-center justify-center gap-1 transition shadow-xs"
+              >
+                <span class="material-symbols-outlined text-[16px]">search</span>
+                <span>Cari</span>
+              </button>
+              <button 
+                type="button" 
+                onclick="resetOldPatientSearch()" 
+                title="Reset Filter"
+                class="h-9 px-2.5 bg-surface hover:bg-surface-container-high border border-line/50 text-ink-soft rounded-lg text-caption transition"
+              >
+                <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Dynamic Search Results List -->
+          <div id="old-patient-search-results" class="flex flex-col gap-2 mt-1">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Fetched Selected Patient Card (shown when selected) -->
+          <div id="old-patient-fetched-card" class="hidden p-3.5 bg-brand-tint/60 border border-brand/40 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-start gap-3">
+              <div class="w-9 h-9 rounded-lg bg-brand text-on-primary flex items-center justify-center shrink-0 mt-0.5">
+                <span class="material-symbols-outlined text-[20px]">verified_user</span>
+              </div>
+              <div class="flex flex-col">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span id="fetched-patient-name" class="font-body-strong text-ink font-bold text-[14px]">Budi Santoso</span>
+                  <span class="text-ink-soft">·</span>
+                  <span id="fetched-patient-meta" class="text-caption text-ink-soft">L, 42 th · Tgl Lahir: 15/06/1984</span>
+                  <span class="text-ink-soft">·</span>
+                  <span id="fetched-patient-mrn" class="font-mono text-caption text-brand-strong font-bold bg-surface px-1.5 py-0.2 rounded border border-brand/20">RM-2026-0124</span>
+                </div>
+                <div class="text-[12px] text-ink-soft mt-1 flex items-center gap-3 flex-wrap">
+                  <span>NIK: <strong id="fetched-patient-nik" class="font-mono text-ink">3201234567890002</strong></span>
+                  <span>Alamat: <span id="fetched-patient-address" class="text-ink">Jl. Dahlia No. 45, Kebayoran</span></span>
+                  <span>Telp: <span id="fetched-patient-phone" class="text-ink">0813-1122-3344</span></span>
+                </div>
+              </div>
+            </div>
+            <button 
+              type="button" 
+              onclick="resetOldPatientSelection()" 
+              class="h-8 px-3 rounded-lg text-caption font-semibold bg-surface border border-line/60 hover:bg-surface-container-high text-ink transition shrink-0 self-start sm:self-center"
+            >
+              Ganti Pasien
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: POLI & DOKTER -->
+        <div class="p-4 bg-surface rounded-xl border border-line/40 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="font-body-strong text-ink flex items-center gap-1.5 text-[14px] font-bold">
+              <span class="w-5 h-5 rounded-full bg-brand-tint text-brand text-[12px] flex items-center justify-center font-bold">2</span>
+              <span>Poli Tujuan &amp; Dokter Praktik</span>
+            </span>
+            <span class="text-[11px] text-ink-soft">Pilih poliklinik dan DPJP pemeriksa</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="flex flex-col gap-1">
+              <label class="text-[11px] font-semibold text-ink-soft" for="old-reg-poli">Poli Tujuan *</label>
+              <select 
+                id="old-reg-poli" 
+                class="w-full h-9 px-2.5 bg-surface-container-low/50 rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand cursor-pointer"
+                onchange="handleOldPoliChange(this.value)"
+              >
+                <!-- Populated via JS -->
+              </select>
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <label class="text-[11px] font-semibold text-ink-soft" for="old-reg-doctor">Dokter Praktik *</label>
+              <select 
+                id="old-reg-doctor" 
+                class="w-full h-9 px-2.5 bg-surface-container-low/50 rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand cursor-pointer"
+                onchange="handleOldDoctorChange(this.value)"
+              >
+                <!-- Populated via JS -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Doctor info & quota banner -->
+          <div class="p-2.5 bg-surface-container-low rounded-lg flex items-center justify-between text-[12px]">
+            <div class="flex items-center gap-2 text-ink-soft">
+              <span class="material-symbols-outlined text-[16px] text-brand">schedule</span>
+              <span id="old-doctor-schedule">Jadwal: 08:00 - 14:00 WIB</span>
+              <span>·</span>
+              <span id="old-doctor-room" class="text-ink font-medium">Ruang 101, Lantai 1</span>
+            </div>
+            <span id="doctor-quota-badge" class="px-2 py-0.5 bg-emerald-50 text-emerald-700 font-semibold rounded text-[11px] flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>Kuota tersedia (6 slot)</span>
+            </span>
+          </div>
+        </div>
+
+        <!-- STEP 3: METODE PEMBAYARAN -->
+        <div class="p-4 bg-surface rounded-xl border border-line/40 flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="font-body-strong text-ink flex items-center gap-1.5 text-[14px] font-bold">
+              <span class="w-5 h-5 rounded-full bg-brand-tint text-brand text-[12px] flex items-center justify-center font-bold">3</span>
+              <span>Metode Pembayaran</span>
+            </span>
+            <span class="text-[11px] text-ink-soft">Pengganti istilah penjaminan / pembiayaan</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <label class="flex items-center gap-2.5 p-3 rounded-xl border border-line/60 bg-surface hover:bg-surface-container-low cursor-pointer transition">
+              <input type="radio" name="old_payment_method" value="Umum" checked onchange="handleOldPaymentMethodChange(this.value)" class="text-brand focus:ring-brand" />
+              <div class="flex flex-col">
+                <span class="font-body-strong text-ink text-[13px] font-bold">Umum / Mandiri</span>
+                <span class="text-[11px] text-ink-soft">Bayar di loket kasir</span>
+              </div>
+            </label>
+
+            <label class="flex items-center gap-2.5 p-3 rounded-xl border border-line/60 bg-surface hover:bg-surface-container-low cursor-pointer transition">
+              <input type="radio" name="old_payment_method" value="BPJS" onchange="handleOldPaymentMethodChange(this.value)" class="text-brand focus:ring-brand" />
+              <div class="flex flex-col">
+                <span class="font-body-strong text-ink text-[13px] font-bold">BPJS Kesehatan</span>
+                <span class="text-[11px] text-ink-soft">JKN / KIS Rujukan Faskes</span>
+              </div>
+            </label>
+
+            <label class="flex items-center gap-2.5 p-3 rounded-xl border border-line/60 bg-surface hover:bg-surface-container-low cursor-pointer transition">
+              <input type="radio" name="old_payment_method" value="Asuransi" onchange="handleOldPaymentMethodChange(this.value)" class="text-brand focus:ring-brand" />
+              <div class="flex flex-col">
+                <span class="font-body-strong text-ink text-[13px] font-bold">Asuransi Swasta</span>
+                <span class="text-[11px] text-ink-soft">Prudential, Allianz, dsb</span>
+              </div>
+            </label>
+          </div>
+
+          <!-- Card / Member Number Input (Optional/Conditional) -->
+          <div id="old-payment-card-group" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div class="flex flex-col gap-1">
+              <label class="text-[11px] font-semibold text-ink-soft" for="old-payment-card-no">No. Kartu BPJS / Polis Asuransi</label>
+              <input 
+                type="text" 
+                id="old-payment-card-no" 
+                placeholder="Masukkan nomor kartu / polis..." 
+                class="w-full h-9 px-3 bg-surface-container-low/50 rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+            </div>
+            <div class="flex items-end">
+              <div class="w-full h-9 px-3 bg-emerald-50 rounded-lg flex items-center gap-2 text-emerald-800 text-[12px]">
+                <span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
+                <span>Bridging Eligibilitas Siap</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACTION FOOTER: SUBMIT -->
+        <div class="flex items-center justify-between pt-2 border-t border-line/40">
+          <div class="flex items-center gap-2 text-caption text-ink-soft">
+            <span class="material-symbols-outlined text-[16px] text-brand">confirmation_number</span>
+            <span>Tiket Triase diterbitkan otomatis setelah submit</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button 
+              type="button" 
+              onclick="closeWalkinRegistrationModal()" 
+              class="h-9 px-4 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-ink font-body-strong text-caption transition"
+            >
+              Batal
+            </button>
+            <button 
+              type="button" 
+              id="btn-register"
+              onclick="submitOldPatientRegistration(event)" 
+              class="h-9 px-5 bg-brand hover:bg-brand-strong text-on-primary rounded-xl font-body-strong text-caption font-bold flex items-center gap-1.5 shadow-sm transition"
+            >
+              <span class="material-symbols-outlined text-[18px]">print</span>
+              <span>Daftarkan &amp; Cetak Tiket</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB 2: KONTEN PASIEN BARU -->
+      <div id="walkin-content-new" class="hidden flex flex-col gap-4">
+        <form id="form-walkin-new" onsubmit="submitNewPatientRegistration(event)" class="flex flex-col gap-4">
+          
+          <!-- STEP 1: FORMULIR DATA DIRI -->
+          <div class="p-4 bg-surface-container-low/50 rounded-xl border border-line/40 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="font-body-strong text-ink flex items-center gap-1.5 text-[14px] font-bold">
+                <span class="w-5 h-5 rounded-full bg-brand-tint text-brand text-[12px] flex items-center justify-center font-bold">1</span>
+                <span>Formulir Pendaftaran Data Diri Pasien Baru</span>
+              </span>
+              <span class="text-[11px] text-ink-soft">Nomor Rekam Medis (MRN) baru dibuat otomatis</span>
+            </div>
+
+            <!-- Duplicate NIK Alert Banner -->
+            <div id="new-patient-duplicate-warning" class="hidden p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl flex items-start justify-between gap-3 text-[12px]">
+              <div class="flex items-start gap-2">
+                <span class="material-symbols-outlined text-[18px] text-amber-700 shrink-0 mt-0.5">warning</span>
+                <div>
+                  <strong class="block font-semibold">Peringatan: NIK Sudah Terdaftar!</strong>
+                  <span id="new-duplicate-warning-text">NIK ini sudah dimiliki pasien aktif. Hindari pembuatan rekam medis ganda.</span>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                onclick="switchToOldPatientWithNik()" 
+                class="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold text-[11px] shrink-0 transition"
+              >
+                Pilih Pasien Terdaftar
+              </button>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-ink-soft" for="new-reg-nik">NIK Pasien (16 digit) *</label>
+                <input 
+                  type="text" 
+                  id="new-reg-nik" 
+                  required 
+                  maxlength="16" 
+                  placeholder="3201xxxxxxxxxxxx" 
+                  class="w-full h-9 px-3 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                  oninput="checkNewPatientDuplicateNik(this.value)"
+                />
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-ink-soft" for="new-reg-name">Nama Lengkap Pasien *</label>
+                <input 
+                  type="text" 
+                  id="new-reg-name" 
+                  required 
+                  placeholder="Sesuai KTP / Akta Lahir..." 
+                  class="w-full h-9 px-3 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-ink-soft" for="new-reg-gender">Jenis Kelamin *</label>
+                <select id="new-reg-gender" class="w-full h-9 px-2 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand cursor-pointer">
+                  <option value="Laki-laki">Laki-laki</option>
+                  <option value="Perempuan">Perempuan</option>
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <div class="flex items-center justify-between">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="new-reg-birthdate">Tanggal Lahir *</label>
+                  <span id="new-reg-age-display" class="text-[10px] text-brand font-semibold"></span>
+                </div>
+                <input 
+                  type="date" 
+                  id="new-reg-birthdate" 
+                  required 
+                  class="w-full h-9 px-2 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                  onchange="handleNewBirthdateChange(this.value)"
+                />
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-ink-soft" for="new-reg-phone">No. HP / WhatsApp *</label>
+                <input 
+                  type="tel" 
+                  id="new-reg-phone" 
+                  required 
+                  placeholder="08xxxxxxxxxx" 
+                  class="w-full h-9 px-3 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+              <div class="sm:col-span-8 flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-ink-soft" for="new-reg-address">Alamat Lengkap KTP / Domisili *</label>
+                <input 
+                  type="text" 
+                  id="new-reg-address" 
+                  required 
+                  placeholder="Jl. Nama Jalan No. XX, Kelurahan, Kota..." 
+                  class="w-full h-9 px-3 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+              </div>
+
+              <div class="sm:col-span-4 flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-ink-soft" for="new-reg-blood">Golongan Darah</label>
+                <select id="new-reg-blood" class="w-full h-9 px-2 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand cursor-pointer">
+                  <option value="O+">O+</option>
+                  <option value="A+">A+</option>
+                  <option value="B+">B+</option>
+                  <option value="AB+">AB+</option>
+                  <option value="-">Tidak Tahu</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: POLI & DOKTER -->
+          <div class="p-4 bg-surface rounded-xl border border-line/40 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="font-body-strong text-ink flex items-center gap-1.5 text-[14px] font-bold">
+                <span class="w-5 h-5 rounded-full bg-brand-tint text-brand text-[12px] flex items-center justify-center font-bold">2</span>
+                <span>Poli Tujuan &amp; Dokter Praktik</span>
+              </span>
+              <span class="text-[11px] text-ink-soft">Tujuan pemeriksaan rawat jalan</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-ink-soft" for="new-reg-poli">Poli Tujuan *</label>
+                <select 
+                  id="new-reg-poli" 
+                  class="w-full h-9 px-2.5 bg-surface-container-low/50 rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand cursor-pointer"
+                  onchange="handleNewPoliChange(this.value)"
+                >
+                  <!-- Populated via JS -->
+                </select>
+              </div>
+
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-ink-soft" for="new-reg-doctor">Dokter Praktik *</label>
+                <select 
+                  id="new-reg-doctor" 
+                  class="w-full h-9 px-2.5 bg-surface-container-low/50 rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand cursor-pointer"
+                >
+                  <!-- Populated via JS -->
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: METODE PEMBAYARAN -->
+          <div class="p-4 bg-surface rounded-xl border border-line/40 flex flex-col gap-3">
+            <div class="flex items-center justify-between">
+              <span class="font-body-strong text-ink flex items-center gap-1.5 text-[14px] font-bold">
+                <span class="w-5 h-5 rounded-full bg-brand-tint text-brand text-[12px] flex items-center justify-center font-bold">3</span>
+                <span>Metode Pembayaran</span>
+              </span>
+              <span class="text-[11px] text-ink-soft">Pengganti istilah penjaminan</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-line/60 bg-surface hover:bg-surface-container-low cursor-pointer transition">
+                <input type="radio" name="new_payment_method" value="Umum" checked onchange="handleNewPaymentMethodChange(this.value)" class="text-brand focus:ring-brand" />
+                <div class="flex flex-col">
+                  <span class="font-body-strong text-ink text-[13px] font-bold">Umum / Mandiri</span>
+                  <span class="text-[11px] text-ink-soft">Bayar di kasir</span>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-line/60 bg-surface hover:bg-surface-container-low cursor-pointer transition">
+                <input type="radio" name="new_payment_method" value="BPJS" onchange="handleNewPaymentMethodChange(this.value)" class="text-brand focus:ring-brand" />
+                <div class="flex flex-col">
+                  <span class="font-body-strong text-ink text-[13px] font-bold">BPJS Kesehatan</span>
+                  <span class="text-[11px] text-ink-soft">JKN / KIS Rujukan</span>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-line/60 bg-surface hover:bg-surface-container-low cursor-pointer transition">
+                <input type="radio" name="new_payment_method" value="Asuransi" onchange="handleNewPaymentMethodChange(this.value)" class="text-brand focus:ring-brand" />
+                <div class="flex flex-col">
+                  <span class="font-body-strong text-ink text-[13px] font-bold">Asuransi Swasta</span>
+                  <span class="text-[11px] text-ink-soft">Prudential, Allianz, dsb</span>
+                </div>
+              </label>
+            </div>
+
+            <!-- Card Number for BPJS/Asuransi -->
+            <div id="new-payment-card-group" class="hidden flex flex-col gap-1 pt-1">
+              <label class="text-[11px] font-semibold text-ink-soft" for="new-payment-card-no">No. Kartu BPJS / Polis Asuransi</label>
+              <input 
+                type="text" 
+                id="new-payment-card-no" 
+                placeholder="Masukkan nomor kartu / polis..." 
+                class="w-full h-9 px-3 bg-surface-container-low/50 rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+              />
+            </div>
+          </div>
+
+          <!-- ACTION FOOTER -->
+          <div class="flex items-center justify-between pt-2 border-t border-line/40">
+            <div class="text-caption text-ink-soft flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-brand">badge</span>
+              <span>MRN &amp; Tiket Triase dibuatkan secara otomatis</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button 
+                type="button" 
+                onclick="closeWalkinRegistrationModal()" 
+                class="h-9 px-4 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-ink font-body-strong text-caption transition"
+              >
+                Batal
+              </button>
+              <button 
+                type="submit" 
+                class="h-9 px-5 bg-brand hover:bg-brand-strong text-on-primary rounded-xl font-body-strong text-caption font-bold flex items-center gap-1.5 shadow-sm transition"
+              >
+                <span class="material-symbols-outlined text-[18px]">how_to_reg</span>
+                <span>Daftarkan Pasien Baru &amp; Cetak Tiket</span>
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+
     </div>
   </div>
 
