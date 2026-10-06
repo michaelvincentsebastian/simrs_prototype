@@ -1,150 +1,94 @@
 /**
  * SIMRS Mini - Role & Permission Engine & Authentication Service
- * Strictly adhering to docs/user-role.md §0.2, §0.3, §3, §6 & PRD ADR A-00
- * "ONE system, many roles - menu hiding is not security, permissions enforced server-side"
+ * Strictly adhering to stakeholder hierarchy: SIMRS-0.1.hirarki
+ * Modul: 1. Modul Rawat Jalan (5 Submodul Eksklusif):
+ * 1. Registrasi Pasien (Petugas Pendaftaran RJ)
+ * 2. TTV (Perawat)
+ * 3. Dokter Rawat Jalan (Dokter)
+ * 4. Kasir Rawat Jalan (Kasir RJ)
+ * 5. Display Antrian Dokter (Display Antrian)
  */
 
-// 1. User Database with Unique Passwords & Assigned Roles
+// 1. User Database with Unique Passwords & Assigned Roles (Rawat Jalan Scope)
 const SIMRS_USERS = {
-  "dokter.hendra": {
-    username: "dokter.hendra",
-    password: "dokter123",
-    name: "dr. Hendra Pratama, Sp.PD",
-    roleKey: "PHYSICIAN",
-    department: "Poli Penyakit Dalam",
-    title: "Dokter Spesialis Penyakit Dalam",
-    initials: "HP",
-    avatarBg: "bg-indigo-600",
-    idNumber: "SIP.503/102/DS/2022"
+  "staf.budi": {
+    username: "staf.budi",
+    password: "registrasi123",
+    name: "Budi Santoso",
+    roleKey: "REGISTRATION_STAFF",
+    department: "Loket Registrasi Rawat Jalan",
+    title: "Petugas Pendaftaran Rawat Jalan",
+    initials: "BS",
+    avatarBg: "bg-blue-600",
+    idNumber: "NIP.198804122019031002"
   },
   "perawat.siti": {
     username: "perawat.siti",
     password: "perawat123",
     name: "Ns. Siti Rahma, S.Kep",
     roleKey: "NURSING_USER",
-    department: "Triase Rawat Jalan",
-    title: "Perawat Triase & Pengukuran TTV",
+    department: "Ruang TTV Rawat Jalan",
+    title: "Perawat Rawat Jalan",
     initials: "SR",
     avatarBg: "bg-emerald-600",
     idNumber: "STR.31.02.5.2.19.123456"
   },
-  "staf.budi": {
-    username: "staf.budi",
-    password: "registrasi123",
-    name: "Budi Santoso",
-    roleKey: "REGISTRATION_STAFF",
-    department: "Loket Admisi 01",
-    title: "Staf Admisi & Pendaftaran Walk-in",
-    initials: "BS",
-    avatarBg: "bg-blue-600",
-    idNumber: "NIP.198804122019031002"
-  },
-  "antrian.rian": {
-    username: "antrian.rian",
-    password: "antrian123",
-    name: "Rian Pratama",
-    roleKey: "QUEUE_OFFICER",
-    department: "Front Desk & Antrian",
-    title: "Petugas Antrian Loket",
-    initials: "RP",
-    avatarBg: "bg-cyan-600",
-    idNumber: "NIP.199408252020121004"
-  },
-  "apoteker.dewi": {
-    username: "apoteker.dewi",
-    password: "farmasi123",
-    name: "apt. Dewi Lestari, S.Farm",
-    roleKey: "PHARMACIST",
-    department: "Instalasi Farmasi Rawat Jalan",
-    title: "Apoteker Rawat Jalan",
-    initials: "DL",
-    avatarBg: "bg-teal-600",
-    idNumber: "SIPA.446/089/APT/2021"
+  "dokter.hendra": {
+    username: "dokter.hendra",
+    password: "dokter123",
+    name: "dr. Hendra Pratama, Sp.PD",
+    roleKey: "PHYSICIAN",
+    department: "Poli Penyakit Dalam",
+    title: "Dokter Rawat Jalan",
+    initials: "HP",
+    avatarBg: "bg-indigo-600",
+    idNumber: "SIP.503/102/DS/2022"
   },
   "kasir.linda": {
     username: "kasir.linda",
     password: "kasir123",
     name: "Linda Wijaya, S.E.",
     roleKey: "CASHIER",
-    department: "Loket Kasir & Pembayaran",
-    title: "Kasir Rawat Jalan & Billing",
+    department: "Loket Kasir Rawat Jalan",
+    title: "Kasir Rawat Jalan",
     initials: "LW",
     avatarBg: "bg-emerald-700",
     idNumber: "NIP.199105172018022003"
   },
-  "lab.fauzi": {
-    username: "lab.fauzi",
-    password: "lab123",
-    name: "Ahmad Fauzi, A.Md.AK",
-    roleKey: "LABORATORY_USER",
-    department: "Laboratorium Patologi Klinik",
-    title: "Analis Laboratorium",
-    initials: "AF",
-    avatarBg: "bg-amber-600",
-    idNumber: "STR.LAB.2020.9981"
-  },
-  "spv.rina": {
-    username: "spv.rina",
-    password: "spv123",
-    name: "dr. Rina Marlina, MMRS",
-    roleKey: "SUPERVISOR",
-    department: "Manajemen Pelayanan Medis",
-    title: "Supervisor Pelayanan Rawat Jalan",
-    initials: "RM",
-    avatarBg: "bg-purple-600",
-    idNumber: "NIP.197806142005012001"
-  },
-  "auditor.taufik": {
-    username: "auditor.taufik",
-    password: "audit123",
-    name: "dr. Taufik Hidayat, Sp.PK",
-    roleKey: "AUDITOR",
-    department: "Komite Mutu & Akreditasi",
-    title: "Auditor Mutu & Rekam Medis",
-    initials: "TH",
-    avatarBg: "bg-slate-700",
-    idNumber: "NIP.198203092008121001"
-  },
   "display.tv": {
     username: "display.tv",
     password: "display123",
-    name: "Display Antrian TV",
+    name: "Display Antrian Dokter",
     roleKey: "QUEUE_DISPLAY",
-    department: "Ruang Tunggu Pasien",
-    title: "Layar TV Publik (Zero PHI)",
+    department: "Ruang Tunggu Rawat Jalan",
+    title: "Layar Display Antrian Publik (Zero PHI)",
     initials: "TV",
-    avatarBg: "bg-rose-600",
+    avatarBg: "bg-slate-800",
     idNumber: "DEVICE-TV-01"
-  },
-  "kiosk.apm": {
-    username: "kiosk.apm",
-    password: "kiosk123",
-    name: "Kiosk Mandiri (APM)",
-    roleKey: "KIOSK_DEVICE",
-    department: "Lobi RS Utama",
-    title: "Anjungan Pasien Mandiri",
-    initials: "KM",
-    avatarBg: "bg-orange-600",
-    idNumber: "DEVICE-KIOSK-01"
   }
 };
 
 // 2. Role Specifications & Contextual Top Service Menus
 const ROLES = {
   REGISTRATION_STAFF: {
-    id: "Registration Staff",
+    id: "Petugas Pendaftaran RJ",
     name: "Budi Santoso",
-    title: "Staf Admisi & Pendaftaran",
+    title: "Petugas Pendaftaran Rawat Jalan",
     badge: "bg-blue-100 text-blue-800 border border-blue-200",
+    submoduleName: "Modul Registrasi Pasien",
     landingWorkspace: "registrasi",
-    allowedWorkspaces: ["registrasi"],
+    allowedWorkspaces: ["registrasi", "reg-queue", "reg-bpjs"],
+    primaryNav: [
+      { id: "registrasi", label: "Pendaftaran Walk-in", icon: "person_add" },
+      { id: "reg-queue", label: "Antrian Loket", icon: "confirmation_number" },
+      { id: "reg-bpjs", label: "Rujukan BPJS & SEP", icon: "verified_user" }
+    ],
     searchPlaceholder: "Cari NIK / No. RM / Nama Pasien...",
     searchScope: "patients",
     serviceTabs: [
-      { id: "tab-reg-walkin", label: "1.2 Walk-in Reg", icon: "how_to_reg", target: "registrasi" },
-      { id: "tab-reg-new", label: "1.2 Pasien Baru", icon: "person_add", action: "openNewPatientModal" },
-      { id: "tab-reg-checkin", label: "1.4 Check-in Booking", icon: "event_available", target: "registrasi" },
-      { id: "tab-reg-queue", label: "1.7 Antrian Loket", icon: "confirmation_number", target: "registrasi" }
+      { id: "tab-reg-enc", label: "Daftar Encounter", icon: "view_list", target: "registrasi", action: "switchRegView('encounter')" },
+      { id: "tab-reg-bpjs", label: "Rujukan BPJS & SEP", icon: "verified_user", target: "registrasi", action: "switchRegView('bpjs')" },
+      { id: "tab-reg-walkin", label: "Form Registrasi Pasien", icon: "person_add", target: "registrasi", action: "switchRegView('form')" }
     ],
     permissions: {
       "Patient": ["read", "write", "create"],
@@ -157,49 +101,36 @@ const ROLES = {
       "Sales Invoice": [] // DILARANG
     },
     allowedMenus: [
-      "1.1 Appointment", "1.2 Walk-in Registration", "1.4 Check-in & Konfirmasi", 
-      "1.5 Verifikasi Pasien", "1.6 Verifikasi Penjamin", "1.7 Antrian Rawat Jalan"
+      "Penerimaan Pasien Rujukan BPJS",
+      "Cetak Surat Eligibilitas Berobat (SEP)",
+      "View Daftar Encounter",
+      "Buat Encounter Pasien Lama",
+      "Buat Encounter Pasien Baru",
+      "Pilih Poli Spesialis & Jadwal Dokter",
+      "Lihat Slot Antrian Dokter"
     ],
-    deniedNotes: "Dilarang membuka TTV, Rekam Medis (Encounter), E-Resep, atau Billing Kasir."
-  },
-
-  QUEUE_OFFICER: {
-    id: "Queue Officer",
-    name: "Rian Pratama",
-    title: "Petugas Antrian & Front Desk",
-    badge: "bg-cyan-100 text-cyan-800 border border-cyan-200",
-    landingWorkspace: "registrasi",
-    allowedWorkspaces: ["registrasi"],
-    searchPlaceholder: "Cari No. Tiket Antrian Loket...",
-    searchScope: "queue",
-    serviceTabs: [
-      { id: "tab-qo-panggil", label: "Panggil Antrian", icon: "campaign", action: "callTicketDemo" },
-      { id: "tab-qo-recall", label: "Panggil Ulang", icon: "replay", action: "recallTicketDemo" },
-      { id: "tab-qo-skip", label: "Lewati / Skip", icon: "skip_next", action: "skipTicketDemo" }
-    ],
-    permissions: {
-      "Queue Ticket": ["read", "write"],
-      "Outpatient Visit": ["read"],
-      "Patient": ["read"]
-    },
-    allowedMenus: ["1.7 Antrian Rawat Jalan", "Panggil Tiket", "Recall Tiket", "Skip Tiket"],
-    deniedNotes: "Hanya mengelola panggil/recall/skip antrian. Tidak bisa mengubah data rekam medis atau kasir."
+    deniedNotes: "Hanya berwenang mengelola registrasi & encounter pendaftaran. Dilarang membuka rekam medis dokter (SOAP), TTV, atau kasir pembayaran."
   },
 
   NURSING_USER: {
-    id: "Nursing User",
+    id: "Perawat",
     name: "Ns. Siti Rahma, S.Kep",
-    title: "Perawat Rawat Jalan (Triase / TTV)",
+    title: "Perawat Rawat Jalan",
     badge: "bg-emerald-100 text-emerald-800 border border-emerald-200",
-    landingWorkspace: "triase",
-    allowedWorkspaces: ["triase"],
-    searchPlaceholder: "Cari Antrian Pasien Triase / No. Tiket...",
-    searchScope: "triase",
+    submoduleName: "Modul TTV",
+    landingWorkspace: "ttv-queue",
+    allowedWorkspaces: ["ttv-queue", "ttv-input", "ttv-history", "ttv", "triase"],
+    primaryNav: [
+      { id: "ttv-queue", label: "Antrian Triase", icon: "checklist" },
+      { id: "ttv-input", label: "Pengukuran TTV", icon: "vital_signs" },
+      { id: "ttv-history", label: "Riwayat Triase", icon: "history" }
+    ],
+    searchPlaceholder: "Cari Antrian Pasien TTV / No. Tiket...",
+    searchScope: "ttv",
     serviceTabs: [
-      { id: "tab-tri-queue", label: "2.1 Antrian Triase", icon: "checklist", target: "triase" },
-      { id: "tab-tri-ttv", label: "2.3 Input Tanda Vital", icon: "vital_signs", target: "triase" },
-      { id: "tab-tri-screen", label: "2.4 Skrining Awal & Nyeri", icon: "health_and_safety", target: "triase" },
-      { id: "tab-tri-route", label: "2.5 Routing ke Poli", icon: "forward", target: "triase" }
+      { id: "tab-ttv-queue", label: "Antrian Poli & Dokter", icon: "checklist", target: "ttv-queue", action: "focusTtvQueue()" },
+      { id: "tab-ttv-call", label: "Panggil Pasien", icon: "campaign", action: "callCurrentTriagePatient" },
+      { id: "tab-ttv-input", label: "Input TTV", icon: "vital_signs", target: "ttv-input", action: "focusTtvInput()" }
     ],
     permissions: {
       "Vital Signs": ["read", "write", "create"],
@@ -207,33 +138,42 @@ const ROLES = {
       "Outpatient Visit": ["read"],
       "Queue Ticket": ["read", "write"],
       "Patient": ["read"],
-      "Patient Encounter": [], // DILARANG WRITE SOAP DOKTER
+      "Patient Encounter": [], // DILARANG WRITE SOAP
       "Medication Request": [], // DILARANG
       "Sales Invoice": [] // DILARANG
     },
     allowedMenus: [
-      "2.1 Antrian Triase", "2.2 Identifikasi Pasien", "2.3 Input Tanda Vital (TTV)",
-      "2.4 Skrining Awal", "2.5 Routing ke Poli Dokter"
+      "View Antrian Poli dan Dokter",
+      "Pemanggil Pasien (Panggil / Recall)",
+      "Input TTV (TD, Nadi, Suhu, RR, SpO2, BB, TB, BMI)"
     ],
-    deniedNotes: "Hanya berhak mencatat TTV, Asesmen Triase, dan routing ke poli. Dilarang mengakses SOAP dokter, resep, atau billing."
+    deniedNotes: "Berwenang memanggil antrian dan menginput TTV. Dilarang meresepkan obat, mengisi SOAP dokter, atau memproses pembayaran."
   },
 
   PHYSICIAN: {
-    id: "Physician",
+    id: "Dokter",
     name: "dr. Hendra Pratama, Sp.PD",
-    title: "Dokter Spesialis Penyakit Dalam",
+    title: "Dokter Rawat Jalan",
     badge: "bg-indigo-100 text-indigo-800 border border-indigo-200",
-    landingWorkspace: "dokter",
-    allowedWorkspaces: ["dokter"],
+    submoduleName: "Modul Dokter Rawat Jalan",
+    landingWorkspace: "doctor-queue",
+    allowedWorkspaces: ["doctor-dashboard", "doctor-queue", "doctor-consultation", "doctor-patients", "doctor-documents", "dokter"],
+    primaryNav: [
+      { id: "doctor-dashboard", label: "Dashboard", icon: "dashboard" },
+      { id: "doctor-queue", label: "Antrian Pasien", icon: "format_list_bulleted" },
+      { id: "doctor-consultation", label: "Pemeriksaan (RME)", icon: "stethoscope" },
+      { id: "doctor-patients", label: "Data Pasien", icon: "person_search" },
+      { id: "doctor-documents", label: "Dokumen & Resume", icon: "description" }
+    ],
     searchPlaceholder: "Cari Pasien Antrian Poli / No. RM...",
     searchScope: "doctor",
     serviceTabs: [
-      { id: "tab-doc-queue", label: "3.1 My Queue", icon: "queue", target: "dokter" },
-      { id: "tab-doc-soap", label: "3.4 SOAP Anamnesis", icon: "history_edu", target: "dokter" },
-      { id: "tab-doc-diag", label: "3.7 Diagnosa ICD-10", icon: "assignment", target: "dokter" },
-      { id: "tab-doc-lab", label: "3.8 Order Penunjang", icon: "biotech", action: "openDocLabOrder" },
-      { id: "tab-doc-rx", label: "3.9 E-Resep Obat", icon: "prescriptions", target: "dokter" },
-      { id: "tab-doc-fin", label: "3.12 Finalisasi", icon: "task_alt", action: "focusFinalizeSection" }
+      { id: "tab-doc-queue", label: "Antrian Pasien", icon: "queue", target: "doctor-queue", action: "focusDoctorQueue()" },
+      { id: "tab-doc-call", label: "Panggil Pasien", icon: "campaign", action: "callCurrentDoctorPatient" },
+      { id: "tab-doc-data", label: "Data Pasien & SOAP", icon: "history_edu", target: "doctor-consultation", action: "focusDoctorSoap()" },
+      { id: "tab-doc-referral", label: "Rujukan Online", icon: "forward", action: "openOnlineReferralModal" },
+      { id: "tab-doc-rx", label: "Resep Online", icon: "prescriptions", action: "focusDoctorPrescriptions()" },
+      { id: "tab-doc-resume", label: "Resume Medis", icon: "print", action: "printResumeMedisCurrent" }
     ],
     permissions: {
       "Patient Encounter": ["read", "write", "create", "submit"],
@@ -248,203 +188,95 @@ const ROLES = {
       "Pharmacy Dispense": [] // DILARANG
     },
     allowedMenus: [
-      "3.1 My Queue Dokter", "3.2 Pemanggilan Pasien", "3.3 Patient Chart / Ringkasan",
-      "3.4 Anamnesis (S)", "3.5 Pemeriksaan Fisik (O)", "3.6 Assessment (A)", "3.7 Diagnosa ICD-10",
-      "3.8 Order Lab & Prosedur", "3.9 E-Resep Obat", "3.10 Plan & Edukasi", "3.11 Resume Medis", "3.12 Finalisasi Encounter"
+      "View Antrian Pasien",
+      "Pemanggil Pasien",
+      "View Data Pasien (Profile, TTV, Anamnesis)",
+      "Rujukan Online (Dokter Spesialis, Lab, Radiologi, Rehab Medis, Luar)",
+      "SOAP",
+      "Diagnosa (ICD-10)",
+      "Resume Medis",
+      "Resep Online",
+      "Layanan & Tindakan Dokter"
     ],
-    deniedNotes: "Berhak mengelola rekam medis SOAP, order lab, dan e-resep. Dilarang mengakses kasir pembayaran atau dispensing obat."
-  },
-
-  LABORATORY_USER: {
-    id: "Laboratory User",
-    name: "Ahmad Fauzi, A.Md.AK",
-    title: "Analis Laboratorium",
-    badge: "bg-amber-100 text-amber-800 border border-amber-200",
-    landingWorkspace: "lab",
-    allowedWorkspaces: ["lab"],
-    searchPlaceholder: "Cari No. Order Lab / No. Sampel...",
-    searchScope: "lab",
-    serviceTabs: [
-      { id: "tab-lab-order", label: "4.1 Order Laboratorium", icon: "science", target: "lab" },
-      { id: "tab-lab-sample", label: "4.2 Pengambilan Sampel", icon: "colorize", target: "lab" },
-      { id: "tab-lab-result", label: "4.5 Input & Validasi Hasil", icon: "check_circle", target: "lab" }
-    ],
-    permissions: {
-      "Lab Test": ["read", "write", "submit"],
-      "Sample Collection": ["read", "write", "create"],
-      "Patient": ["read"],
-      "Outpatient Visit": ["read"],
-      "Patient Encounter": [], // DILARANG
-      "Sales Invoice": [] // DILARANG
-    },
-    allowedMenus: [
-      "4.1 Order Laboratorium", "4.2 Pengambilan Sampel", "4.4 Monitoring Status Order", "4.5 Input & Validasi Hasil Lab"
-    ],
-    deniedNotes: "Hanya berwenang memproses spesimen dan memvalidasi hasil uji laboratorium. Dilarang mengedit rekam medis dokter."
-  },
-
-  PHARMACIST: {
-    id: "Pharmacist",
-    name: "apt. Dewi Lestari, S.Farm",
-    title: "Apoteker Rawat Jalan",
-    badge: "bg-teal-100 text-teal-800 border border-teal-200",
-    landingWorkspace: "farmasi",
-    allowedWorkspaces: ["farmasi"],
-    searchPlaceholder: "Cari No. Resep / No. Tiket Farmasi (F-...)...",
-    searchScope: "pharmacy",
-    serviceTabs: [
-      { id: "tab-ph-inbox", label: "5.1 Resep Masuk", icon: "inbox", target: "farmasi" },
-      { id: "tab-ph-review", label: "5.2 Telaah 7 Benar", icon: "verified", target: "farmasi" },
-      { id: "tab-ph-dispense", label: "5.3 Dispensing Obat", icon: "medication", target: "farmasi" },
-      { id: "tab-ph-handover", label: "5.4 Penyerahan & KIE", icon: "front_hand", target: "farmasi" }
-    ],
-    permissions: {
-      "Pharmacy Dispense": ["read", "write", "create", "submit"],
-      "Medication Request": ["read"],
-      "Item": ["read"],
-      "Outpatient Visit": ["read"],
-      "Patient Encounter": [], // DILARANG
-      "Sales Invoice": [] // DILARANG
-    },
-    allowedMenus: [
-      "5.1 Daftar Resep Masuk", "5.2 Telaah 7 Benar Resep", "5.3 Dispensing Obat",
-      "5.4 Penyerahan Obat & KIE", "5.5 Status Resep"
-    ],
-    deniedNotes: "Berhak menelaah dan menyerahkan obat. Tidak boleh mengubah resep dokter secara sepihak & dilarang membuka tagihan."
+    deniedNotes: "Berwenang mengelola rekam medis SOAP, diagnosa, rujukan order online, dan resep online. Dilarang mengakses kasir atau dispensing obat."
   },
 
   CASHIER: {
-    id: "Cashier",
+    id: "Kasir RJ",
     name: "Linda Wijaya, S.E.",
-    title: "Kasir Rawat Jalan & Billing",
+    title: "Kasir Rawat Jalan",
     badge: "bg-emerald-100 text-emerald-800 border border-emerald-200",
-    landingWorkspace: "kasir",
-    allowedWorkspaces: ["kasir"],
-    searchPlaceholder: "Cari No. Tagihan / No. Tiket Kasir (K-...)...",
+    submoduleName: "Modul Kasir Rawat Jalan",
+    landingWorkspace: "cashier-queue",
+    allowedWorkspaces: ["cashier-dashboard", "cashier-queue", "cashier-payment", "cashier-history", "kasir"],
+    primaryNav: [
+      { id: "cashier-dashboard", label: "Dashboard", icon: "dashboard" },
+      { id: "cashier-queue", label: "Antrian Billing", icon: "receipt_long" },
+      { id: "cashier-payment", label: "Pembayaran Kasir", icon: "point_of_sale" },
+      { id: "cashier-history", label: "Riwayat Transaksi", icon: "history_edu" }
+    ],
+    searchPlaceholder: "Cari No. Tagihan / Pasien Kasir...",
     searchScope: "cashier",
     serviceTabs: [
-      { id: "tab-cs-queue", label: "6.1 Billing Pasien", icon: "receipt_long", target: "kasir" },
-      { id: "tab-cs-items", label: "6.2 Rincian Jasa & Obat", icon: "calculate", target: "kasir" },
-      { id: "tab-cs-pay", label: "6.5 Pembayaran & Kwitansi", icon: "payments", target: "kasir" }
+      { id: "tab-cs-queue", label: "Billing Pasien", icon: "receipt_long", target: "cashier-queue" },
+      { id: "tab-cs-add", label: "Tambah Tindakan", icon: "add_circle", action: "openAddServiceModal" },
+      { id: "tab-cs-print", label: "Cetak Billing", icon: "print", action: "printBillingCurrent" },
+      { id: "tab-cs-pay", label: "Pembayaran & Kwitansi", icon: "payments", target: "cashier-payment" }
     ],
     permissions: {
       "Sales Invoice": ["read", "write", "create", "submit"],
       "Payment Entry": ["read", "write", "create", "submit"],
       "Outpatient Visit": ["read"],
       "Patient": ["read"],
-      "Patient Encounter": [], // DILARANG BUKA REKAM MEDIS
+      "Patient Encounter": [], // DILARANG
       "Vital Signs": [] // DILARANG
     },
     allowedMenus: [
-      "6.1 Billing Pasien", "6.2 Rincian Jasa & Obat", "6.3 Tarif",
-      "6.4 Verifikasi Penjamin", "6.5 Pembayaran & Kwitansi"
+      "Billing Pasien",
+      "Tambah Pelayanan / Tindakan",
+      "Cetak Billing Pasien",
+      "Pembayaran (Tunai, Debit/Kredit, Online/QRIS, Asuransi, Perusahaan)",
+      "Cetak Kwitansi Pembayaran"
     ],
-    deniedNotes: "Berhak mengagregasi tagihan dan memproses pembayaran. Dilarang keras membaca catatan rekam medis (SOAP) dokter."
-  },
-
-  SUPERVISOR: {
-    id: "Outpatient Supervisor",
-    name: "dr. Rina Marlina, MMRS",
-    title: "Supervisor Pelayanan Rawat Jalan",
-    badge: "bg-purple-100 text-purple-800 border border-purple-200",
-    landingWorkspace: "monitoring",
-    allowedWorkspaces: ["monitoring", "registrasi", "triase", "dokter", "lab", "farmasi", "kasir"],
-    searchPlaceholder: "Cari Pasien / Dokter / Status SLA...",
-    searchScope: "monitoring",
-    serviceTabs: [
-      { id: "tab-spv-sla", label: "7.1 Dashboard SLA", icon: "speed", target: "monitoring" },
-      { id: "tab-spv-visits", label: "7.2 Monitoring Kunjungan", icon: "groups", target: "monitoring" },
-      { id: "tab-spv-report", label: "7.5 Laporan Kinerja", icon: "analytics", target: "monitoring" }
-    ],
-    permissions: {
-      "Outpatient Visit": ["read", "write"], // can override
-      "Patient": ["read"],
-      "Queue Ticket": ["read"],
-      "Sales Invoice": ["read"]
-    },
-    allowedMenus: [
-      "7.1 Waktu Tunggu (SLA)", "7.2 Kunjungan Harian", "7.3 Monitoring Pasien Aktif",
-      "7.4 Override / Batal Kunjungan", "7.5 Laporan Kinerja Rawat Jalan"
-    ],
-    deniedNotes: "Memantau SLA operasional dan memiliki hak override kunjungan dengan alasan audit."
-  },
-
-  AUDITOR: {
-    id: "Clinical Auditor",
-    name: "dr. Taufik Hidayat, Sp.PK",
-    title: "Auditor Mutu & Rekam Medis",
-    badge: "bg-slate-100 text-slate-800 border border-slate-300",
-    landingWorkspace: "audit",
-    allowedWorkspaces: ["audit"],
-    searchPlaceholder: "Cari No. Kunjungan / Audit Log...",
-    searchScope: "audit",
-    serviceTabs: [
-      { id: "tab-aud-trail", label: "Audit Trail Kunjungan", icon: "history", target: "audit" },
-      { id: "tab-aud-chart", label: "Evaluasi Resume Medis", icon: "assignment_turned_in", target: "audit" },
-      { id: "tab-aud-access", label: "Log Akses Rekam Medis", icon: "security", target: "audit" }
-    ],
-    permissions: {
-      "Outpatient Visit": ["read"],
-      "Patient Encounter": ["read"],
-      "Vital Signs": ["read"],
-      "Activity Log": ["read"],
-      "Version": ["read"]
-    },
-    allowedMenus: [
-      "Audit Trail Kunjungan", "Evaluasi Kelengkapan Resume Medis", "Log Akses Rekam Medis"
-    ],
-    deniedNotes: "Akses strictly READ-ONLY untuk keperluan akreditasi, audit medis, dan kepatuhan hukum."
+    deniedNotes: "Berwenang memproses billing dan penerimaan pembayaran. Dilarang membaca isi catatan medis SOAP dokter atau mengubah resep."
   },
 
   QUEUE_DISPLAY: {
-    id: "Queue Display",
-    name: "Layar Antrian Publik (TV)",
-    title: "Display Ruang Tunggu Pasien",
-    badge: "bg-rose-100 text-rose-800 border border-rose-200",
+    id: "Display Antrian",
+    name: "Display Antrian Dokter",
+    title: "Layar Antrian Publik",
+    badge: "bg-slate-100 text-slate-800 border border-slate-300",
+    submoduleName: "Modul Display Antrian Dokter",
     landingWorkspace: "display",
     allowedWorkspaces: ["display"],
+    primaryNav: [
+      { id: "display", label: "Display Antrian TV", icon: "tv" }
+    ],
     searchPlaceholder: "",
     searchScope: "none",
     serviceTabs: [
-      { id: "tab-disp-tv", label: "Layar TV Poli, Farmasi, Kasir", icon: "tv", target: "display" }
+      { id: "tab-disp-poli", label: "Display Antrian Poli/Dokter", icon: "tv", target: "display", action: "switchDisplayTab('poli')" },
+      { id: "tab-disp-kasir-farmasi", label: "Display Antrian Kasir & Farmasi", icon: "tv_gen", target: "display", action: "switchDisplayTab('kasir_farmasi')" }
     ],
     permissions: {
       "Queue Ticket": ["read"]
     },
-    allowedMenus: ["Layar TV Antrian Poli, Farmasi & Kasir"],
-    deniedNotes: "Akun perangkat publik. PRIVASI KETAT: TIDAK MENAMPILKAN Nama Pasien, NIK, Diagnosa, atau Rincian Medis (Zero PHI)."
-  },
-
-  KIOSK_DEVICE: {
-    id: "Kiosk Device",
-    name: "Anjungan Pasien Mandiri (APM)",
-    title: "Touchscreen Kiosk Mandiri",
-    badge: "bg-orange-100 text-orange-800 border border-orange-200",
-    landingWorkspace: "kiosk",
-    allowedWorkspaces: ["kiosk"],
-    searchPlaceholder: "",
-    searchScope: "none",
-    serviceTabs: [
-      { id: "tab-kiosk-checkin", label: "Check-in Booking Pasien", icon: "touch_app", target: "kiosk" }
+    allowedMenus: [
+      "Display Antrian Poli/Dokter",
+      "Display Antrian Kasir & Farmasi"
     ],
-    permissions: {
-      "Patient Appointment": ["read", "write"],
-      "Patient": ["read", "create"],
-      "Queue Ticket": ["create"]
-    },
-    allowedMenus: ["Check-in Mandiri", "Cetak Tiket Mandiri"],
-    deniedNotes: "Akun perangkat kiosk pasien. Hanya melayani check-in kode booking & penerbitan tiket antrian."
+    deniedNotes: "Perangkat monitor publik. PRIVASI KETAT: Menampilkan nomor tiket & ruangan saja. Bebas data medis atau identitas pribadi (Zero PHI)."
   }
 };
 
-// 3. Permission Manager Class (Enforces ADR A-00)
+// 3. Permission Manager Class (Enforces ADR A-00 & 5 Submodul Stakeholder)
 class PermissionManager {
   constructor() {
-    this.currentRoleKey = "NURSING_USER"; // default fallback
+    this.currentRoleKey = "REGISTRATION_STAFF"; // default fallback
   }
 
   getCurrentRole() {
-    return ROLES[this.currentRoleKey] || ROLES["NURSING_USER"];
+    return ROLES[this.currentRoleKey] || ROLES["REGISTRATION_STAFF"];
   }
 
   setRole(roleKey) {
@@ -460,7 +292,12 @@ class PermissionManager {
   canAccessWorkspace(workspaceId) {
     const role = this.getCurrentRole();
     if (!role) return false;
-    return role.allowedWorkspaces.includes(workspaceId);
+    if (role.allowedWorkspaces && role.allowedWorkspaces.includes(workspaceId)) return true;
+    // Map backwards-compatible aliases
+    if ((workspaceId === "triase" || workspaceId === "ttv") && role.allowedWorkspaces.includes("ttv-queue")) return true;
+    if (workspaceId === "dokter" && role.allowedWorkspaces.includes("doctor-queue")) return true;
+    if (workspaceId === "kasir" && role.allowedWorkspaces.includes("cashier-queue")) return true;
+    return false;
   }
 
   canPerform(doctype, action = "read") {

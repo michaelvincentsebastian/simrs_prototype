@@ -1,0 +1,1692 @@
+{
+  "app": "Hirarki Sistem",
+  "version": 1,
+  "savedAt": "2026-09-30T09:10:41.302Z",
+  "roots": [
+    {
+      "id": "2b3e4cf9-1a4c-47a7-9601-3ee86a2dc7b8",
+      "name": "SIM RS",
+      "description": "Desain dibuat mulai pada tanggal 20/09/2026 09:00",
+      "createdAt": "2026-09-20T02:18:36.799Z",
+      "updatedAt": "2026-09-20T09:56:55.165Z",
+      "children": [
+        {
+          "id": "4a983879-9a7c-49d3-9c9c-4b759edc1019",
+          "name": "1. Modul Rawat Jalan",
+          "description": "Jenis Pasien:\n1. Umum (tunai, kartu debit, kartu kredit, online)\n2. Jaminan Asuransi\n3. Jaminan Perusahaan\n4. BPJS\n\nModul Rawat Jalan memiliki submodul:\n1. Registrasi Pasien\n2. TTV\n3. Dokter RJ\n4. Kasir RJ\n5. Display Antrian",
+          "createdAt": "2026-09-20T02:39:43.115Z",
+          "updatedAt": "2026-09-27T14:38:33.084Z",
+          "children": [
+            {
+              "id": "93ee5b61-2a15-4c21-87aa-8ae61dce7059",
+              "name": "Modul Registrasi Pasien (User: Petugas Pendaftaran RJ)",
+              "description": "Pendaftaran Pasien Rawat Jalan",
+              "createdAt": "2026-09-20T02:19:13.972Z",
+              "updatedAt": "2026-09-27T14:09:37.732Z",
+              "children": [
+                {
+                  "id": "07650748-4d72-4459-b3e8-ffea8e410e66",
+                  "name": "Penerimaan Pasien Rujukan BPJS",
+                  "description": "Menerima rujukan dari BPJS.\nCetak Surat Eligibilitas Berobat (lihat: APM Anjungan Pendaftaran Mandiri)",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-27T10:55:48.608Z",
+                  "updatedAt": "2026-09-27T14:40:26.959Z",
+                  "children": []
+                },
+                {
+                  "id": "ae807e11-07d9-4446-a83f-8b67bdfe44c4",
+                  "name": "View Daftar Encounter",
+                  "description": "Filter:\n1. Nama pasien, tanggal lahir, jenis kelamin\n2. Poli spesialis\n3. Nama dokter (berdasarkan jadwal dokter)\n",
+                  "createdAt": "2026-09-20T02:27:05.257Z",
+                  "updatedAt": "2026-09-27T14:17:13.594Z",
+                  "children": [
+                    {
+                      "id": "cc9f0616-a07f-457a-b712-bd7bfc17739d",
+                      "name": "Buat Encounter Pasien Lama",
+                      "description": "",
+                      "createdAt": "2026-09-20T02:29:04.873Z",
+                      "updatedAt": "2026-09-27T14:17:23.912Z",
+                      "children": [],
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": ""
+                    },
+                    {
+                      "id": "97c6819b-9106-4755-8b3e-c53eb87aa1e5",
+                      "name": "Buat Encounter Pasien Baru",
+                      "description": "",
+                      "createdAt": "2026-09-20T02:29:20.797Z",
+                      "updatedAt": "2026-09-27T14:17:40.344Z",
+                      "children": [],
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": ""
+                    },
+                    {
+                      "id": "9da6cd82-1dca-4c62-8b26-116917394282",
+                      "name": "Pilih Poli Spesialis dan Jadwal Dokter",
+                      "description": "",
+                      "createdAt": "2026-09-20T02:30:29.986Z",
+                      "updatedAt": "2026-09-27T14:18:20.707Z",
+                      "children": [
+                        {
+                          "id": "855c5a5f-8dbd-4ea8-bbc9-c227942cf7ad",
+                          "name": "Lihat Slot Antrian Dokter",
+                          "description": "",
+                          "createdAt": "2026-09-20T08:48:32.858Z",
+                          "updatedAt": "2026-09-20T08:48:45.377Z",
+                          "children": [],
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": ""
+                        },
+                        {
+                          "id": "7d68693a-38a4-4a13-9e7b-562e5286ec4a",
+                          "name": "Buat Appointment Pasien (Telepon)",
+                          "description": "",
+                          "createdAt": "2026-09-20T08:49:45.201Z",
+                          "updatedAt": "2026-09-20T08:50:13.788Z",
+                          "children": [],
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": ""
+                        }
+                      ],
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": ""
+                    }
+                  ],
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": ""
+                },
+                {
+                  "id": "2eee3dc4-abad-4698-942f-2c6de12f0698",
+                  "name": "View Daftar Appointment",
+                  "description": "",
+                  "createdAt": "2026-09-20T08:47:43.182Z",
+                  "updatedAt": "2026-09-20T08:47:52.034Z",
+                  "children": [
+                    {
+                      "id": "ca45b152-bf8f-4050-ac15-1b0878ef7943",
+                      "name": "Scan QRCode Appointment",
+                      "description": "Jika sudah membuat appointment, maka:\n\n1. Jika pasien baru: membuat nomor RM & buat registrasi/encounter\n2. Jika pasien lama: buat registrasi/encounter",
+                      "createdAt": "2026-09-20T02:32:35.458Z",
+                      "updatedAt": "2026-09-27T14:11:00.476Z",
+                      "children": [],
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": ""
+                    }
+                  ],
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": ""
+                }
+              ],
+              "assignedTo": "",
+              "done": false,
+              "doneDate": ""
+            },
+            {
+              "id": "31a077cc-1c1d-492b-ab14-19222deb7349",
+              "name": "Modul TTV (User: Perawat)",
+              "description": "",
+              "createdAt": "2026-09-20T02:19:29.032Z",
+              "updatedAt": "2026-09-20T02:23:13.640Z",
+              "children": [
+                {
+                  "id": "12f6eebe-e326-4eff-acad-e76432c50a91",
+                  "name": "View Antrian Poli dan Dokter",
+                  "description": "",
+                  "createdAt": "2026-09-20T09:04:32.646Z",
+                  "updatedAt": "2026-09-20T09:04:46.934Z",
+                  "children": [
+                    {
+                      "id": "66236988-523b-497b-818f-0f56e0b78bdb",
+                      "name": "Pemanggil Pasien",
+                      "description": "",
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": "",
+                      "createdAt": "2026-09-22T11:16:31.786Z",
+                      "updatedAt": "2026-09-22T11:17:02.197Z",
+                      "children": []
+                    },
+                    {
+                      "id": "a28665bd-8672-4067-8ca7-9a928d52d31c",
+                      "name": "Input TTV",
+                      "description": "",
+                      "createdAt": "2026-09-20T09:04:52.675Z",
+                      "updatedAt": "2026-09-20T09:04:58.816Z",
+                      "children": [],
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": ""
+                    }
+                  ],
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": ""
+                }
+              ],
+              "assignedTo": "",
+              "done": false,
+              "doneDate": ""
+            },
+            {
+              "id": "23950ee7-cedb-4096-bfed-3fee860346de",
+              "name": "Modul Dokter Rawat Jalan (User: Dokter)",
+              "description": "0. Pemanggil Pasien\n1. Anamnesis\n2. Rujukan -> Dokter spesialis lain, Penunjang Diagnosa (Laboratory, Radiology), Rehabilitasi Medis\n3. SOAP\n4. Diagnosa\n5. Resep Online\n6. Resume Medis\n7. dll.",
+              "createdAt": "2026-09-20T02:43:42.610Z",
+              "updatedAt": "2026-09-26T14:54:50.311Z",
+              "children": [
+                {
+                  "id": "04b87432-29f4-4c7c-bb2e-9b3da3b14f02",
+                  "name": "View Antrian Pasien",
+                  "description": "View dan panggil pasien",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-26T14:56:18.916Z",
+                  "updatedAt": "2026-09-26T14:57:25.279Z",
+                  "children": [
+                    {
+                      "id": "86426e4f-bace-469d-8d26-f3b469846171",
+                      "name": "Pemanggil Pasien",
+                      "description": "",
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": "",
+                      "createdAt": "2026-09-26T14:57:29.471Z",
+                      "updatedAt": "2026-09-26T14:57:34.056Z",
+                      "children": []
+                    },
+                    {
+                      "id": "8a22a624-f772-4fe1-984c-d25e50ea3b3f",
+                      "name": "View Data Pasien",
+                      "description": "",
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": "",
+                      "createdAt": "2026-09-26T14:57:43.057Z",
+                      "updatedAt": "2026-09-26T14:57:52.013Z",
+                      "children": [
+                        {
+                          "id": "0334e77c-a6d9-4ab8-a6f7-46734f20de4f",
+                          "name": "Profile Pasien",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-26T14:57:56.385Z",
+                          "updatedAt": "2026-09-26T14:58:17.283Z",
+                          "children": []
+                        },
+                        {
+                          "id": "c2a5fe44-2121-4bbe-85de-37cea982988d",
+                          "name": "TTV",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-26T14:58:21.033Z",
+                          "updatedAt": "2026-09-26T14:58:35.049Z",
+                          "children": []
+                        },
+                        {
+                          "id": "3dec538c-1136-44a1-8386-9f709fa70ee8",
+                          "name": "Anamnesis",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-26T14:58:42.889Z",
+                          "updatedAt": "2026-09-26T14:58:46.315Z",
+                          "children": []
+                        },
+                        {
+                          "id": "850033f9-e787-40a2-b874-ee463d3e7ad4",
+                          "name": "Rujukan Online",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-26T14:58:50.135Z",
+                          "updatedAt": "2026-09-27T11:00:30.173Z",
+                          "children": [
+                            {
+                              "id": "8bb7b73c-4c2a-4604-b181-3154b49874bb",
+                              "name": "Rujukan Dokter Spesialis",
+                              "description": "",
+                              "assignedTo": "",
+                              "done": false,
+                              "doneDate": "",
+                              "createdAt": "2026-09-26T14:59:04.187Z",
+                              "updatedAt": "2026-09-26T14:59:09.691Z",
+                              "children": []
+                            },
+                            {
+                              "id": "9f5093f3-32da-45c1-b0b0-b522b1deff8f",
+                              "name": "Rujukan Laboratorium",
+                              "description": "",
+                              "assignedTo": "",
+                              "done": false,
+                              "doneDate": "",
+                              "createdAt": "2026-09-26T14:59:13.466Z",
+                              "updatedAt": "2026-09-26T14:59:21.517Z",
+                              "children": []
+                            },
+                            {
+                              "id": "01c660e6-59de-418e-8553-d9fa61cf3fe4",
+                              "name": "Rujukan Radiologi",
+                              "description": "",
+                              "assignedTo": "",
+                              "done": false,
+                              "doneDate": "",
+                              "createdAt": "2026-09-26T14:59:24.674Z",
+                              "updatedAt": "2026-09-26T14:59:28.114Z",
+                              "children": []
+                            },
+                            {
+                              "id": "28a42814-2cef-48a9-9a63-94302f122576",
+                              "name": "Rujukan Rehabilitasi Medis",
+                              "description": "",
+                              "assignedTo": "",
+                              "done": false,
+                              "doneDate": "",
+                              "createdAt": "2026-09-26T14:59:32.986Z",
+                              "updatedAt": "2026-09-26T14:59:38.072Z",
+                              "children": []
+                            },
+                            {
+                              "id": "b32212e4-f5b7-4596-bda4-781eb34d6683",
+                              "name": "Rujukan Luar (RS/Dokter)",
+                              "description": "",
+                              "assignedTo": "",
+                              "done": false,
+                              "doneDate": "",
+                              "createdAt": "2026-09-26T14:59:45.024Z",
+                              "updatedAt": "2026-09-26T14:59:55.453Z",
+                              "children": []
+                            }
+                          ]
+                        },
+                        {
+                          "id": "28445e05-8284-4346-9b48-4eec8e9ecdc4",
+                          "name": "SOAP (Subjective, Objective, Assessment, Plan)",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-26T15:00:11.597Z",
+                          "updatedAt": "2026-09-26T15:00:30.634Z",
+                          "children": []
+                        },
+                        {
+                          "id": "6a2eda88-d1bb-4f33-b347-1827c0256264",
+                          "name": "Diagnosa",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-26T15:04:50.081Z",
+                          "updatedAt": "2026-09-26T15:04:53.307Z",
+                          "children": []
+                        },
+                        {
+                          "id": "3ccb82c3-f78a-4c86-9e9d-e91bfcca5465",
+                          "name": "Resume Medis",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-26T15:00:37.559Z",
+                          "updatedAt": "2026-09-26T15:00:48.286Z",
+                          "children": []
+                        },
+                        {
+                          "id": "5c14adf5-4d55-4600-8ef0-7fb41dbfae94",
+                          "name": "Resep Online",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-26T15:00:52.230Z",
+                          "updatedAt": "2026-09-26T15:00:55.470Z",
+                          "children": []
+                        },
+                        {
+                          "id": "455c0508-76fd-4dac-b2e9-2c58ba01f62c",
+                          "name": "Layanan & Tindakan Dokter",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-26T15:01:19.318Z",
+                          "updatedAt": "2026-09-26T15:01:25.093Z",
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "assignedTo": "",
+              "done": false,
+              "doneDate": ""
+            },
+            {
+              "id": "3a581d23-5de2-41c9-a249-cea4d58ee1f0",
+              "name": "Modul Kasir Rawat Jalan (User: Kasir RJ)",
+              "description": "Bisa digabung dengan Kasir Farmasi\n1. Menerima resep online\n2. Penyiapan\n3. Dispensing\n4. (atau) delivery -> via gojek/grab",
+              "createdAt": "2026-09-20T08:34:19.449Z",
+              "updatedAt": "2026-09-22T11:14:31.458Z",
+              "children": [
+                {
+                  "id": "33f22ac0-bf1a-47e9-8819-cd8ac95daf74",
+                  "name": "Billing Pasien",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-27T14:03:41.235Z",
+                  "updatedAt": "2026-09-27T14:03:56.297Z",
+                  "children": [
+                    {
+                      "id": "c00398b4-2c97-4561-b3c1-f1388922dc26",
+                      "name": "Tambah Pelayanan/Tindakan",
+                      "description": "",
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": "",
+                      "createdAt": "2026-09-27T14:04:03.078Z",
+                      "updatedAt": "2026-09-27T14:04:13.759Z",
+                      "children": []
+                    },
+                    {
+                      "id": "dc9b38f7-51b5-47f5-8889-0959b3aafed7",
+                      "name": "Cetak Billing Pasien",
+                      "description": "",
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": "",
+                      "createdAt": "2026-09-27T14:06:35.932Z",
+                      "updatedAt": "2026-09-27T14:06:45.099Z",
+                      "children": []
+                    },
+                    {
+                      "id": "284f9efb-c025-4429-a3cb-eb0a7269c59c",
+                      "name": "Pembayaran",
+                      "description": "",
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": "",
+                      "createdAt": "2026-09-27T14:04:18.251Z",
+                      "updatedAt": "2026-09-27T14:04:39.248Z",
+                      "children": [
+                        {
+                          "id": "0df7e99b-6efe-460f-916f-5fa38c4fde61",
+                          "name": "Pembayaran Tunai",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-27T14:04:42.726Z",
+                          "updatedAt": "2026-09-27T14:04:48.515Z",
+                          "children": []
+                        },
+                        {
+                          "id": "afc18aed-70c8-4173-b3a2-78befef2af27",
+                          "name": "Pembayaran Kartu Debit/Kredit",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-27T14:04:53.085Z",
+                          "updatedAt": "2026-09-27T14:05:06.709Z",
+                          "children": []
+                        },
+                        {
+                          "id": "a3b21c04-a50a-4479-b11f-debc80750952",
+                          "name": "Pembayaran Online (QRIS, Gopay, dll)",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-27T14:08:03.481Z",
+                          "updatedAt": "2026-09-27T14:08:16.582Z",
+                          "children": []
+                        },
+                        {
+                          "id": "a7facaf4-519f-405c-9ba2-dc39643f207b",
+                          "name": "Jaminan Asuransi",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-27T14:05:11.385Z",
+                          "updatedAt": "2026-09-27T14:06:14.765Z",
+                          "children": []
+                        },
+                        {
+                          "id": "b986e561-fd6d-4061-bc8f-a5a04cc4ed8e",
+                          "name": "Jaminan Perusahaan Kerja Sama",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-27T14:06:18.616Z",
+                          "updatedAt": "2026-09-27T14:06:24.192Z",
+                          "children": []
+                        },
+                        {
+                          "id": "1c1e48a4-3e6f-4350-8716-3791e6c0acfb",
+                          "name": "Cetak Kwitansi Pembayaran (Tunai, Kartu & Online)",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-27T14:06:59.765Z",
+                          "updatedAt": "2026-09-27T14:08:32.588Z",
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "assignedTo": "",
+              "done": false,
+              "doneDate": ""
+            },
+            {
+              "id": "478c87f1-634f-49cf-9148-ebeb8cdad08f",
+              "name": "Modul Display Antrian Dokter",
+              "description": "Dengan monitor besar. Pemanggil ada di modul perawat dan/atau dokter.\nMenggunakan nomor (slot waktu sebagai acuan bagi pasien akan bersiap)",
+              "createdAt": "2026-09-20T09:21:23.153Z",
+              "updatedAt": "2026-09-22T11:15:48.929Z",
+              "children": [
+                {
+                  "id": "fbd00e21-e22e-4fe5-afb5-c1e98143291d",
+                  "name": "Display Antrian Poli/Dokter",
+                  "description": "",
+                  "createdAt": "2026-09-20T09:21:42.386Z",
+                  "updatedAt": "2026-09-22T11:18:02.341Z",
+                  "children": [],
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": ""
+                },
+                {
+                  "id": "3025efef-23a0-4cbe-9b98-21c5f7bc0fd9",
+                  "name": "Display Antrian Kasir & Farmasi",
+                  "description": "",
+                  "createdAt": "2026-09-20T09:21:54.452Z",
+                  "updatedAt": "2026-09-22T11:18:07.749Z",
+                  "children": [],
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": ""
+                }
+              ],
+              "assignedTo": "",
+              "done": false,
+              "doneDate": ""
+            }
+          ],
+          "assignedTo": "",
+          "done": false,
+          "doneDate": ""
+        },
+        {
+          "id": "d8d3dd02-212a-4561-a24c-79241dd377ee",
+          "name": "2. Sistem Appointment",
+          "description": "",
+          "createdAt": "2026-09-20T02:18:54.777Z",
+          "updatedAt": "2026-09-22T11:19:01.400Z",
+          "children": [
+            {
+              "id": "2193ff8a-fb6b-4527-9498-a7ac1ef266b7",
+              "name": "Appointment (Mobile App)",
+              "description": "",
+              "createdAt": "2026-09-20T09:01:38.762Z",
+              "updatedAt": "2026-09-22T11:21:08.055Z",
+              "children": [],
+              "assignedTo": "",
+              "done": false,
+              "doneDate": ""
+            },
+            {
+              "id": "e4efdab0-abea-45fe-9729-30e16bf2bce8",
+              "name": "Appointment (AI chatbot WhatsApp)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-22T11:19:30.208Z",
+              "updatedAt": "2026-09-22T11:19:48.254Z",
+              "children": []
+            },
+            {
+              "id": "3c3372ee-1163-4d26-9054-38b898ec188b",
+              "name": "Appointment (Web App)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-22T11:20:46.784Z",
+              "updatedAt": "2026-09-22T11:20:59.612Z",
+              "children": []
+            },
+            {
+              "id": "2364aa52-0247-4d3c-bca7-fe1c22470659",
+              "name": "Appointment by Call (Lihat modul Appointment di Modul RJ)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T15:06:38.306Z",
+              "updatedAt": "2026-09-26T15:07:12.729Z",
+              "children": []
+            },
+            {
+              "id": "01aa91da-7069-4ce7-8eb7-2969a96e1db6",
+              "name": "APM (Anjungan Pendaftaran Mandiri)",
+              "description": "Menu:\n1. Rujukan BPJS\n2. Antrian Pendaftaran Rawat Jalan\n3. Pendaftaran Mandiri (Pasien Lama): pilih Poli Spesialis & Dokter, masukkan nomor rekam medis + tanggal lahir + nomor telpon (kirim sms berisi link untuk konfirmasi pendaftaran), cetak struk pendaftaran + nomor antrian",
+              "createdAt": "2026-09-20T09:02:23.094Z",
+              "updatedAt": "2026-09-27T14:43:58.242Z",
+              "children": [],
+              "assignedTo": "",
+              "done": false,
+              "doneDate": ""
+            }
+          ],
+          "assignedTo": "",
+          "done": false,
+          "doneDate": ""
+        },
+        {
+          "id": "bd2d85c7-7429-40b5-aa9b-5a076d1d30f2",
+          "name": "3. Modul Rawat Inap",
+          "description": "",
+          "createdAt": "2026-09-20T02:40:49.186Z",
+          "updatedAt": "2026-09-20T08:39:37.987Z",
+          "children": [
+            {
+              "id": "b6b56850-4be5-408c-8919-414fe29442c7",
+              "name": "Modul Admission (User: Petugas Pendaftaran RI)",
+              "description": "",
+              "createdAt": "2026-09-20T09:02:51.020Z",
+              "updatedAt": "2026-09-20T09:03:07.540Z",
+              "children": [
+                {
+                  "id": "f9275bb8-169d-4819-bbfa-ca3cf233ff3b",
+                  "name": "Form Pendaftaran Pasien Rawat Inap",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-27T10:52:47.250Z",
+                  "updatedAt": "2026-09-27T10:53:07.020Z",
+                  "children": [
+                    {
+                      "id": "15f78ebd-452c-4663-b3ed-93c2c64b8f18",
+                      "name": "Terima Pasien Rujukan",
+                      "description": "",
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": "",
+                      "createdAt": "2026-09-27T10:55:22.543Z",
+                      "updatedAt": "2026-09-27T10:56:44.559Z",
+                      "children": [
+                        {
+                          "id": "d9c5284e-1839-4caf-98ce-bd55f12789ea",
+                          "name": "Pasien Baru",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-27T10:53:12.101Z",
+                          "updatedAt": "2026-09-27T10:54:50.397Z",
+                          "children": []
+                        },
+                        {
+                          "id": "8921cdc7-a642-4996-ab5b-0514997458b2",
+                          "name": "Pasien Lama",
+                          "description": "",
+                          "assignedTo": "",
+                          "done": false,
+                          "doneDate": "",
+                          "createdAt": "2026-09-27T10:54:53.564Z",
+                          "updatedAt": "2026-09-27T10:55:03.223Z",
+                          "children": []
+                        }
+                      ]
+                    },
+                    {
+                      "id": "18e9fef2-a7de-4608-a998-ff1350805566",
+                      "name": "Inquiry Kelas, Bangsal, Kamar, Bed",
+                      "description": "",
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": "",
+                      "createdAt": "2026-09-27T10:53:39.766Z",
+                      "updatedAt": "2026-09-27T10:54:20.914Z",
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "id": "5bc0064d-5400-4969-bedb-4e7ab5105d5c",
+                  "name": "View Pasien Rawat Inap",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-27T10:53:26.787Z",
+                  "updatedAt": "2026-09-27T10:53:31.695Z",
+                  "children": []
+                },
+                {
+                  "id": "c8ab6ff5-632e-47ce-9ade-226d6fbeb5fe",
+                  "name": "Transfer Pasien",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-27T10:58:14.729Z",
+                  "updatedAt": "2026-09-27T10:58:32.816Z",
+                  "children": []
+                }
+              ],
+              "assignedTo": "",
+              "done": false,
+              "doneDate": ""
+            },
+            {
+              "id": "40603b71-faef-4159-8b26-4c897bc5265c",
+              "name": "Modul Dokter Rawat Inap (User: Dokter)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-22T11:11:16.417Z",
+              "updatedAt": "2026-09-22T11:11:25.011Z",
+              "children": []
+            },
+            {
+              "id": "a1477ff3-8740-4490-a160-8fe35c4496c4",
+              "name": "Modul Asuhan Keperawatan (User: Perawat)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-22T11:21:25.449Z",
+              "updatedAt": "2026-09-22T11:22:03.181Z",
+              "children": []
+            },
+            {
+              "id": "5355faf8-04ce-4e6f-8fa4-39ba19f5635d",
+              "name": "Modul Discharge Pasien (User: Perawat)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-27T10:59:14.470Z",
+              "updatedAt": "2026-09-27T10:59:43.839Z",
+              "children": []
+            },
+            {
+              "id": "2f47c6ad-4099-4281-bb59-38151cddf3af",
+              "name": "Modul Kasir Rawat Inap (User: Kasir RI)",
+              "description": "",
+              "createdAt": "2026-09-20T08:34:32.263Z",
+              "updatedAt": "2026-09-22T11:22:13.686Z",
+              "children": [],
+              "assignedTo": "",
+              "done": false,
+              "doneDate": ""
+            }
+          ],
+          "assignedTo": "",
+          "done": false,
+          "doneDate": ""
+        },
+        {
+          "id": "2eddb931-74b5-4fab-a893-5efbf400d4f2",
+          "name": "4. Modul Laboratorium",
+          "description": "",
+          "createdAt": "2026-09-20T02:43:07.972Z",
+          "updatedAt": "2026-09-20T08:40:21.870Z",
+          "children": [],
+          "assignedTo": "",
+          "done": false,
+          "doneDate": ""
+        },
+        {
+          "id": "c8c2c429-3d2c-42b7-a185-8923bfd254b5",
+          "name": "5. Modul Radiologi",
+          "description": "",
+          "createdAt": "2026-09-20T02:34:28.496Z",
+          "updatedAt": "2026-09-20T08:40:25.334Z",
+          "children": [],
+          "assignedTo": "",
+          "done": false,
+          "doneDate": ""
+        },
+        {
+          "id": "f1720e15-395d-4944-9da1-a45ba4c0a4db",
+          "name": "6. Modul Instalasi Farmasi",
+          "description": "",
+          "createdAt": "2026-09-20T02:39:28.786Z",
+          "updatedAt": "2026-09-20T08:40:33.069Z",
+          "children": [],
+          "assignedTo": "",
+          "done": false,
+          "doneDate": ""
+        },
+        {
+          "id": "be74e4ff-e925-44cf-86cd-80167ab02190",
+          "name": "7. Modul Rehabilitasi Medis",
+          "description": "",
+          "createdAt": "2026-09-20T08:22:15.845Z",
+          "updatedAt": "2026-09-20T08:40:37.148Z",
+          "children": [],
+          "assignedTo": "",
+          "done": false,
+          "doneDate": ""
+        },
+        {
+          "id": "e3ecf528-b42d-48b0-af59-f84894ec5bc2",
+          "name": "8. Modul Instalasi Gawat Darurat",
+          "description": "",
+          "createdAt": "2026-09-20T08:35:00.228Z",
+          "updatedAt": "2026-09-20T09:33:37.958Z",
+          "children": [],
+          "assignedTo": "",
+          "done": false,
+          "doneDate": ""
+        },
+        {
+          "id": "afdcaddf-ffab-4d93-9360-f6a4e1995acf",
+          "name": "9. Modul Medical Check Up",
+          "description": "",
+          "createdAt": "2026-09-20T08:35:08.088Z",
+          "updatedAt": "2026-09-20T09:33:49.021Z",
+          "children": [],
+          "assignedTo": "",
+          "done": false,
+          "doneDate": ""
+        },
+        {
+          "id": "d6a5ddc5-9110-4e44-9233-a08ca41ffc5d",
+          "name": "10. Modul One Day Care (ODC)",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T15:46:14.728Z",
+          "updatedAt": "2026-09-26T15:46:23.447Z",
+          "children": []
+        },
+        {
+          "id": "5cbfd49e-d79b-4a12-8ff2-6a83ea2f4d18",
+          "name": "11. OK/VK",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T16:00:49.586Z",
+          "updatedAt": "2026-09-26T16:01:00.473Z",
+          "children": []
+        },
+        {
+          "id": "877809d0-26e7-42b5-aca8-e9bda1b3ff00",
+          "name": "12. Honor Dokter",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-27T14:57:58.022Z",
+          "updatedAt": "2026-09-27T14:58:21.147Z",
+          "children": []
+        },
+        {
+          "id": "3431ec3a-b67f-49b5-a33a-926d7683a821",
+          "name": "99. Modul Electronic Medical Record",
+          "description": "",
+          "createdAt": "2026-09-20T09:23:34.155Z",
+          "updatedAt": "2026-09-26T16:01:11.253Z",
+          "children": [],
+          "assignedTo": "",
+          "done": false,
+          "doneDate": ""
+        }
+      ],
+      "assignedTo": "Dewo",
+      "done": false,
+      "doneDate": ""
+    },
+    {
+      "id": "51d86fad-c615-4210-909e-7b2496491881",
+      "name": "Inventory System",
+      "description": "Logistik:\n1. Logistik Medis : Obat, Alkes, BHP\n2. Logistik Umum :",
+      "createdAt": "2026-09-20T09:18:49.325Z",
+      "updatedAt": "2026-09-26T14:43:54.344Z",
+      "children": [
+        {
+          "id": "3a9e54b2-97fe-4576-970c-b753f4b0a974",
+          "name": "Logistik Medis",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T14:42:02.675Z",
+          "updatedAt": "2026-09-26T14:42:06.330Z",
+          "children": [
+            {
+              "id": "9bf0534f-facf-4398-8f12-e96eba66e240",
+              "name": "Permintaan (Auto Replenishment)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:44:28.337Z",
+              "updatedAt": "2026-09-27T15:04:11.870Z",
+              "children": []
+            },
+            {
+              "id": "84b0bc6a-2e62-44dd-9669-b8f38585b512",
+              "name": "Pembelian (PO)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:44:19.963Z",
+              "updatedAt": "2026-09-27T15:02:25.828Z",
+              "children": []
+            },
+            {
+              "id": "3fd0a38d-924a-4c72-82c6-3898b32c1cf7",
+              "name": "Pembelian Langsung",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-27T15:02:36.422Z",
+              "updatedAt": "2026-09-27T15:02:39.581Z",
+              "children": []
+            },
+            {
+              "id": "b1286795-4f6b-4570-b7d7-49b313e4f1a0",
+              "name": "Penerimaan Pembelian",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:46:01.351Z",
+              "updatedAt": "2026-09-26T14:46:05.079Z",
+              "children": []
+            },
+            {
+              "id": "874455dc-e3e0-4c85-901e-94812ae5dcc0",
+              "name": "Penerimaan Donasi",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-27T14:59:47.235Z",
+              "updatedAt": "2026-09-27T14:59:50.511Z",
+              "children": []
+            },
+            {
+              "id": "893a11ba-76a5-4843-b4bb-56f07538484c",
+              "name": "Permintaan Mutasi",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:46:09.004Z",
+              "updatedAt": "2026-09-26T14:46:19.520Z",
+              "children": []
+            },
+            {
+              "id": "7e3637d6-8b1d-449a-b9b4-28e32042850e",
+              "name": "Mutasi",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:46:22.974Z",
+              "updatedAt": "2026-09-26T14:46:36.781Z",
+              "children": []
+            },
+            {
+              "id": "5e409269-bb52-496e-abc6-dc45b44911a6",
+              "name": "Kadaluarsa",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:46:42.110Z",
+              "updatedAt": "2026-09-26T14:47:01.795Z",
+              "children": []
+            },
+            {
+              "id": "3997e43e-8c9b-421c-9e52-943252535c5a",
+              "name": "Stock Opname",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:47:06.499Z",
+              "updatedAt": "2026-09-26T14:48:46.778Z",
+              "children": []
+            },
+            {
+              "id": "7642037d-9b46-4fe3-82ce-675644ef2c9c",
+              "name": "Stock Adjustment",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-27T14:48:43.262Z",
+              "updatedAt": "2026-09-27T14:48:47.879Z",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "72826b37-e904-4953-8f33-ea7e238a3e1f",
+          "name": "Logistik Umum",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T14:42:10.000Z",
+          "updatedAt": "2026-09-26T14:42:13.432Z",
+          "children": [
+            {
+              "id": "9d929fa7-bb34-4796-88bf-9758e271e683",
+              "name": "Permintaan Barang",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-27T15:00:11.039Z",
+              "updatedAt": "2026-09-27T15:00:23.204Z",
+              "children": []
+            },
+            {
+              "id": "b1c6dee3-746c-46a4-8b8c-1edbbfbde9b0",
+              "name": "Pembelian Barang (PO)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-27T15:05:13.785Z",
+              "updatedAt": "2026-09-27T15:07:51.450Z",
+              "children": []
+            },
+            {
+              "id": "a68c1f5f-fdd5-4c35-a89b-21164af6c3d9",
+              "name": "Pembelian Langsung",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-27T15:05:42.835Z",
+              "updatedAt": "2026-09-27T15:05:46.014Z",
+              "children": []
+            },
+            {
+              "id": "6d3af040-f5eb-40c7-ab89-0be0aaa79e3c",
+              "name": "Penerimaan Barang (RO)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-27T15:05:52.689Z",
+              "updatedAt": "2026-09-27T15:07:47.321Z",
+              "children": []
+            },
+            {
+              "id": "6544ad3e-2f6f-4014-9648-148c7ace67ed",
+              "name": "Mutasi Barang",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-27T15:06:10.179Z",
+              "updatedAt": "2026-09-27T15:06:12.720Z",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "ac75aa48-5a86-4eca-b799-387e61d2f679",
+          "name": "Administrator",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T14:47:26.333Z",
+          "updatedAt": "2026-09-26T14:47:30.147Z",
+          "children": [
+            {
+              "id": "17c609c3-e116-4238-8550-4f441ebc4c7f",
+              "name": "Master Lokasi",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:47:35.611Z",
+              "updatedAt": "2026-09-27T14:51:24.930Z",
+              "children": [
+                {
+                  "id": "7e74eebe-350e-4f04-abba-a35ef906e793",
+                  "name": "Master Gudang",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-27T14:51:28.608Z",
+                  "updatedAt": "2026-09-27T14:51:36.333Z",
+                  "children": [
+                    {
+                      "id": "62986f26-1cbe-4c09-b33d-0ed06ebad436",
+                      "name": "Master Rak",
+                      "description": "",
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": "",
+                      "createdAt": "2026-09-27T14:51:40.087Z",
+                      "updatedAt": "2026-09-27T14:52:38.362Z",
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "b9e2ca0e-c8ca-4038-8007-d497e74b80a2",
+              "name": "Master Barang Medis",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:47:51.514Z",
+              "updatedAt": "2026-09-27T14:55:22.029Z",
+              "children": [
+                {
+                  "id": "f99a2fe2-bb71-424f-b448-cc28a570a184",
+                  "name": "Master Obat",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-27T14:53:47.858Z",
+                  "updatedAt": "2026-09-27T14:53:51.769Z",
+                  "children": []
+                },
+                {
+                  "id": "a389fbfb-53aa-4667-8816-8cefbdf62e1e",
+                  "name": "Master Alkes",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-27T14:53:55.523Z",
+                  "updatedAt": "2026-09-27T14:54:00.466Z",
+                  "children": []
+                },
+                {
+                  "id": "473092e6-7bdf-424d-aac3-90a3c6f14566",
+                  "name": "Master BHP",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-27T14:54:04.111Z",
+                  "updatedAt": "2026-09-27T14:54:09.095Z",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "817a3095-dc6f-4b0c-b93e-f8a638d8c91a",
+              "name": "Master Barang Umum",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-27T14:54:35.024Z",
+              "updatedAt": "2026-09-27T14:54:42.158Z",
+              "children": []
+            },
+            {
+              "id": "08a97ccc-81d8-4dc0-83b9-ab0a8412b6cd",
+              "name": "Master User, Hak Akses, Approval",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:48:11.816Z",
+              "updatedAt": "2026-09-26T14:48:37.254Z",
+              "children": []
+            },
+            {
+              "id": "a35dc30a-218a-406a-8166-0da328da5c5d",
+              "name": "Master Supplier",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:51:46.451Z",
+              "updatedAt": "2026-09-26T14:51:51.401Z",
+              "children": []
+            },
+            {
+              "id": "0e87eb36-5503-439a-a17a-81af7ee34592",
+              "name": "Master Kontrak Supplier",
+              "description": "Kontrak harga\nMOQ (minimum order quantity)\nDiskon\nDll",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:51:56.722Z",
+              "updatedAt": "2026-09-26T14:53:21.173Z",
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": "9976f452-e7e8-40d3-8aca-d20f2779286b",
+          "name": "Laporan",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T14:48:54.808Z",
+          "updatedAt": "2026-09-26T14:48:58.044Z",
+          "children": [
+            {
+              "id": "6d7d1a43-6808-4de6-8f07-085e5969fad2",
+              "name": "Laporan Stok",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:49:02.355Z",
+              "updatedAt": "2026-09-26T14:49:10.682Z",
+              "children": [
+                {
+                  "id": "48fe6dcb-bf44-4584-bcf3-a864ae83c4a4",
+                  "name": "Per Periode",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-27T14:49:40.548Z",
+                  "updatedAt": "2026-09-27T14:49:43.723Z",
+                  "children": []
+                },
+                {
+                  "id": "f5d7d329-e090-4f8e-8fc2-a62ace2627d6",
+                  "name": "Cetak Kartu Stok",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-27T14:49:14.191Z",
+                  "updatedAt": "2026-09-27T14:49:18.255Z",
+                  "children": []
+                }
+              ]
+            },
+            {
+              "id": "a5d0b331-e407-4e81-af5a-052feb614249",
+              "name": "Laporan Pemakaian (Gudang, Periode)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:49:14.337Z",
+              "updatedAt": "2026-09-27T14:50:49.118Z",
+              "children": []
+            },
+            {
+              "id": "78a55944-0451-4a6b-b40f-4f577d4c8bb1",
+              "name": "Laporan Pembelian (Gudang, Periode)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:49:28.160Z",
+              "updatedAt": "2026-09-27T14:50:59.696Z",
+              "children": []
+            },
+            {
+              "id": "aaf8e744-07ad-487a-96ac-97ed679e3ecd",
+              "name": "Laporan Mutasi (Gudang, Periode)",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T14:49:34.895Z",
+              "updatedAt": "2026-09-27T14:51:09.250Z",
+              "children": []
+            }
+          ]
+        }
+      ],
+      "assignedTo": "",
+      "done": false,
+      "doneDate": ""
+    },
+    {
+      "id": "0cca378a-82ef-4401-8a8c-13db46bd9550",
+      "name": "Administrator Sistem",
+      "description": "",
+      "assignedTo": "",
+      "done": false,
+      "doneDate": "",
+      "createdAt": "2026-09-20T09:59:27.958Z",
+      "updatedAt": "2026-09-28T03:43:47.589Z",
+      "children": [
+        {
+          "id": "308149de-6e6b-4fb0-9c8b-86107b097c43",
+          "name": "Dashboard",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T09:59:49.126Z",
+          "updatedAt": "2026-09-20T10:00:00.444Z",
+          "children": []
+        },
+        {
+          "id": "12ccf7b8-89a6-443f-ab0a-f96d3562bd44",
+          "name": "Master RS",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:00:04.110Z",
+          "updatedAt": "2026-09-20T10:00:09.870Z",
+          "children": []
+        },
+        {
+          "id": "5586ada0-5671-466d-88ca-b0531629ba6b",
+          "name": "Master Lokasi",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:03:18.538Z",
+          "updatedAt": "2026-09-20T10:03:21.784Z",
+          "children": []
+        },
+        {
+          "id": "af09907a-463a-40c2-9c86-f39f171b9eda",
+          "name": "Master Departemen",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:00:16.509Z",
+          "updatedAt": "2026-09-20T10:00:42.527Z",
+          "children": []
+        },
+        {
+          "id": "546b002f-ba6a-4acf-b271-ecfb7e4f26bf",
+          "name": "Master Kelas",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-28T08:01:05.770Z",
+          "updatedAt": "2026-09-28T08:01:08.534Z",
+          "children": []
+        },
+        {
+          "id": "d3dec842-0443-47ba-a872-467c55267c56",
+          "name": "Master Bangsal, Kamar, Bed",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:06:05.956Z",
+          "updatedAt": "2026-09-20T10:06:15.769Z",
+          "children": []
+        },
+        {
+          "id": "985d2a80-a9ac-4bb4-b021-c9317f11eded",
+          "name": "Master Dokter",
+          "description": "Jenis dokter: Pegawai Tetap dan Mitra (Share income, Guarantee Income)",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:00:48.449Z",
+          "updatedAt": "2026-09-26T15:18:31.492Z",
+          "children": []
+        },
+        {
+          "id": "c0e7c2f8-6bfa-4324-bad2-984f6e629517",
+          "name": "Master Jadwal Dokter",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:04:07.714Z",
+          "updatedAt": "2026-09-20T10:04:14.658Z",
+          "children": []
+        },
+        {
+          "id": "d98fdb71-b2a9-468f-946b-f8e42432eec3",
+          "name": "Master Layanan & Tindakan",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:00:59.158Z",
+          "updatedAt": "2026-09-29T04:32:53.624Z",
+          "children": []
+        },
+        {
+          "id": "bf8c7a84-1f92-49fb-8722-1a20a7c525f8",
+          "name": "Master Paket Layanan/Tindakan",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-29T04:32:58.522Z",
+          "updatedAt": "2026-09-29T04:33:04.474Z",
+          "children": []
+        },
+        {
+          "id": "b2f0ff0e-abcb-4bcc-aab3-545eadb7fec6",
+          "name": "Master Perusahaan & Asuransi",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:01:08.776Z",
+          "updatedAt": "2026-09-20T10:01:25.138Z",
+          "children": []
+        },
+        {
+          "id": "e6bd61a2-abc8-4f81-a636-08f76cd932cf",
+          "name": "Master Tarif",
+          "description": "Layanan\nTindakan",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:01:30.495Z",
+          "updatedAt": "2026-09-26T15:16:18.979Z",
+          "children": [
+            {
+              "id": "0bef9753-2dc4-4d25-88b9-975e9b5e5c4b",
+              "name": "Periode Tarif",
+              "description": "",
+              "assignedTo": "",
+              "done": false,
+              "doneDate": "",
+              "createdAt": "2026-09-26T15:13:52.119Z",
+              "updatedAt": "2026-09-26T15:14:02.679Z",
+              "children": [
+                {
+                  "id": "d9550159-b11c-4e0f-82f7-99740747a0c8",
+                  "name": "Tarif Rawat Jalan",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-26T15:14:08.816Z",
+                  "updatedAt": "2026-09-26T15:14:48.092Z",
+                  "children": [
+                    {
+                      "id": "f1fe3937-10bb-43a2-9ce8-f86ddf338d9c",
+                      "name": "Tarif per Departemen",
+                      "description": "",
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": "",
+                      "createdAt": "2026-09-26T15:15:40.349Z",
+                      "updatedAt": "2026-09-26T15:15:52.802Z",
+                      "children": []
+                    },
+                    {
+                      "id": "e56598d1-c74f-403f-ad60-172dac199cfb",
+                      "name": "Tarif Khusus per Dokter",
+                      "description": "",
+                      "assignedTo": "",
+                      "done": false,
+                      "doneDate": "",
+                      "createdAt": "2026-09-26T15:15:56.421Z",
+                      "updatedAt": "2026-09-26T15:16:49.092Z",
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "id": "150583de-f3c2-48f9-ab64-7c8545780a65",
+                  "name": "Tarif Rawat Inap",
+                  "description": "",
+                  "assignedTo": "",
+                  "done": false,
+                  "doneDate": "",
+                  "createdAt": "2026-09-26T15:14:55.876Z",
+                  "updatedAt": "2026-09-26T15:14:59.921Z",
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "492c57a0-766c-422d-b1b7-ab6edaf9ea5b",
+          "name": "Master Supplier",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T15:12:40.448Z",
+          "updatedAt": "2026-09-26T15:12:43.918Z",
+          "children": []
+        },
+        {
+          "id": "e78eafa5-6ad2-4160-a104-8f4e55403c3a",
+          "name": "Master Kontrak & Tarif Kerja Sama",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:01:58.513Z",
+          "updatedAt": "2026-09-20T10:02:23.095Z",
+          "children": []
+        },
+        {
+          "id": "8970fea5-4391-42bf-8418-2edade796f98",
+          "name": "Master Item Medis (Obat & Alkes)",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:02:38.396Z",
+          "updatedAt": "2026-09-20T10:02:51.931Z",
+          "children": []
+        },
+        {
+          "id": "abbe2b22-7ab2-4a15-9150-766fbb8cf6ba",
+          "name": "Master Item Umum (Non Medis)",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:02:56.048Z",
+          "updatedAt": "2026-09-20T10:03:05.972Z",
+          "children": []
+        },
+        {
+          "id": "9b66a49d-c2af-4aaf-a83e-21d7a5fa50d2",
+          "name": "Master Pasien & Rekam Medis",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-20T10:05:15.759Z",
+          "updatedAt": "2026-09-20T10:05:44.414Z",
+          "children": []
+        },
+        {
+          "id": "9fae4927-f8dd-4df6-8e02-c89b00032578",
+          "name": "Formularium",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-27T14:56:11.370Z",
+          "updatedAt": "2026-09-27T14:56:15.455Z",
+          "children": []
+        },
+        {
+          "id": "edd972db-5ae3-40a8-9032-0086c0162fe0",
+          "name": "Master User System",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-28T03:44:12.350Z",
+          "updatedAt": "2026-09-28T03:44:16.882Z",
+          "children": []
+        },
+        {
+          "id": "6bc2ab37-77cb-48cd-8193-01941209da11",
+          "name": "Master Role User",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-28T03:44:25.398Z",
+          "updatedAt": "2026-09-28T03:44:41.953Z",
+          "children": []
+        },
+        {
+          "id": "eedb87bb-839e-47d4-9cbe-8aba98ab0254",
+          "name": "Hak Akses Sistem",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-28T03:44:51.285Z",
+          "updatedAt": "2026-09-28T03:44:56.971Z",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "fb3312f9-16ba-4d20-921a-162edac716ba",
+      "name": "HRD & Payroll System",
+      "description": "",
+      "assignedTo": "",
+      "done": false,
+      "doneDate": "",
+      "createdAt": "2026-09-20T09:53:25.847Z",
+      "updatedAt": "2026-09-20T09:53:43.595Z",
+      "children": []
+    },
+    {
+      "id": "0ddef45f-105d-4052-a105-422deab9716b",
+      "name": "Accounting System",
+      "description": "",
+      "createdAt": "2026-09-20T09:18:08.467Z",
+      "updatedAt": "2026-09-20T09:18:16.315Z",
+      "children": [],
+      "assignedTo": "",
+      "done": false,
+      "doneDate": ""
+    },
+    {
+      "id": "06d34148-0d9e-4475-bfaa-e354a0a75c23",
+      "name": "Bussiness Intelligence",
+      "description": "",
+      "createdAt": "2026-09-20T09:19:30.462Z",
+      "updatedAt": "2026-09-20T09:19:37.909Z",
+      "children": [],
+      "assignedTo": "",
+      "done": false,
+      "doneDate": ""
+    },
+    {
+      "id": "049e1338-3a3f-4ac4-9c8d-2ded47b6cba0",
+      "name": "AI Companion",
+      "description": "",
+      "assignedTo": "",
+      "done": false,
+      "doneDate": "",
+      "createdAt": "2026-09-26T14:37:56.213Z",
+      "updatedAt": "2026-09-26T14:38:01.729Z",
+      "children": [
+        {
+          "id": "0e8f74db-c2ec-44a4-b899-663237fb1ab6",
+          "name": "Modul Dikte",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T14:38:13.725Z",
+          "updatedAt": "2026-09-26T14:39:32.261Z",
+          "children": []
+        },
+        {
+          "id": "eec6a0a1-d8ba-4969-bdcf-de5e889a88fd",
+          "name": "Modul Percakapan",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T14:38:23.322Z",
+          "updatedAt": "2026-09-26T14:39:36.798Z",
+          "children": []
+        },
+        {
+          "id": "ce1e4337-7552-497c-bffe-5186fcde431d",
+          "name": "Modul Resep",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T14:38:30.837Z",
+          "updatedAt": "2026-09-26T14:39:41.302Z",
+          "children": []
+        },
+        {
+          "id": "948ace97-f2fc-4176-98b4-1034bebccc71",
+          "name": "Modul Dr. AI",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T14:38:42.976Z",
+          "updatedAt": "2026-09-26T14:39:46.196Z",
+          "children": []
+        },
+        {
+          "id": "fe5e3eb9-59db-4ea9-92fd-5a53fec189b1",
+          "name": "Settings",
+          "description": "",
+          "assignedTo": "",
+          "done": false,
+          "doneDate": "",
+          "createdAt": "2026-09-26T14:38:58.002Z",
+          "updatedAt": "2026-09-26T14:39:01.263Z",
+          "children": []
+        }
+      ]
+    }
+  ]
+}

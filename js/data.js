@@ -173,6 +173,86 @@ const SIMRS_MASTER_DATA = {
     }
   ],
 
+  appointments: [
+    {
+      id: "APT-2026-0101",
+      patientType: "Lama",
+      patientName: "Bambang Sutrisno",
+      mrNo: "RM-2026-0042",
+      phone: "081234567890",
+      departmentId: "POLI-INT",
+      departmentName: "Poli Penyakit Dalam",
+      practitionerId: "DOC-HENDRA",
+      practitionerName: "dr. Hendra Pratama, Sp.PD",
+      source: "Telepon (Loket)",
+      bookingDate: "2026-10-06",
+      slotTime: "08:30 - 09:00",
+      status: "Checked-in",
+      qrCode: "QR-APT-0101"
+    },
+    {
+      id: "APT-2026-0102",
+      patientType: "Lama",
+      patientName: "Siti Rahayu Ningrum",
+      mrNo: "RM-2026-0089",
+      phone: "081398765432",
+      departmentId: "POLI-INT",
+      departmentName: "Poli Penyakit Dalam",
+      practitionerId: "DOC-HENDRA",
+      practitionerName: "dr. Hendra Pratama, Sp.PD",
+      source: "Telepon (Loket)",
+      bookingDate: "2026-10-06",
+      slotTime: "09:30 - 10:00",
+      status: "Booked",
+      qrCode: "QR-APT-0102"
+    },
+    {
+      id: "APT-2026-0103",
+      patientType: "Baru",
+      patientName: "Dedi Kurniawan",
+      mrNo: "-",
+      phone: "081755443322",
+      departmentId: "POLI-ANAK",
+      departmentName: "Poli Anak",
+      practitionerId: "DOC-ANISA",
+      practitionerName: "dr. Anisa Putri, Sp.A",
+      source: "Telepon (Loket)",
+      bookingDate: "2026-10-06",
+      slotTime: "10:00 - 10:30",
+      status: "Booked",
+      qrCode: "QR-APT-0103"
+    }
+  ],
+
+  bpjsReferrals: [
+    {
+      rujukanNo: "0114R0010926P000123",
+      bpjsCard: "0001234567890",
+      patientName: "Siti Rahayu Ningrum",
+      nik: "3172025608920001",
+      faskesAsal: "Puskesmas Menteng (0114B001)",
+      departmentName: "Poli Penyakit Dalam",
+      diagnosaRujukan: "E11.9 - Type 2 diabetes mellitus",
+      tglRujukan: "2026-09-28",
+      masaBerlaku: "2026-10-28",
+      statusRujukan: "Aktif",
+      sepNo: "SEP-2026-0091"
+    },
+    {
+      rujukanNo: "0114R0010926P000456",
+      bpjsCard: "0009876543210",
+      patientName: "Ahmad Dahlan",
+      nik: "3173031205780003",
+      faskesAsal: "Klinik Pratama Sehat Sejahtera",
+      departmentName: "Poli Jantung & Pembuluh Darah",
+      diagnosaRujukan: "I10 - Essential (primary) hypertension",
+      tglRujukan: "2026-10-01",
+      masaBerlaku: "2026-10-31",
+      statusRujukan: "Aktif",
+      sepNo: null
+    }
+  ],
+
   initialVisits: [
     {
       id: "OPV-2026-0001",
@@ -510,16 +590,18 @@ const SIMRS_MASTER_DATA = {
 
 // Seed or retrieve from LocalStorage
 function initDatabase() {
-  if (!localStorage.getItem("SIMRS_DB_VERSION") || localStorage.getItem("SIMRS_DB_VERSION") !== "2.2") {
+  if (!localStorage.getItem("SIMRS_DB_VERSION") || localStorage.getItem("SIMRS_DB_VERSION") !== "3.0") {
     localStorage.setItem("SIMRS_PATIENTS", JSON.stringify(SIMRS_MASTER_DATA.initialPatients));
     localStorage.setItem("SIMRS_VISITS", JSON.stringify(SIMRS_MASTER_DATA.initialVisits));
+    localStorage.setItem("SIMRS_APPOINTMENTS", JSON.stringify(SIMRS_MASTER_DATA.appointments));
+    localStorage.setItem("SIMRS_BPJS_REFERRALS", JSON.stringify(SIMRS_MASTER_DATA.bpjsReferrals));
     localStorage.setItem("SIMRS_TICKETS_SEQ", JSON.stringify({ A: 3, B: 2, C: 1, D: 1, E: 2, F: 2, K: 1, T: 7 }));
     localStorage.setItem("SIMRS_AUDIT_LOGS", JSON.stringify([
-      { timestamp: "2026-10-05 08:15:22", user: "Budi Santoso", role: "Registration Staff", action: "Check-In Pasien Walk-in: Bambang Sutrisno (Tiket A-001)" },
-      { timestamp: "2026-10-05 08:30:10", user: "Ns. Siti Rahma", role: "Nursing User", action: "Selesai Triase & Input TTV: Bambang Sutrisno -> Routing ke dr. Hendra" },
-      { timestamp: "2026-10-05 08:45:04", user: "dr. Hendra Pratama", role: "Physician", action: "Mulai Pelayanan Medis / Buka Rekam Medis Pasien: Bambang Sutrisno" }
+      { timestamp: "2026-10-05 08:15:22", user: "Budi Santoso", role: "Petugas Pendaftaran RJ", action: "Check-In Pasien Walk-in: Bambang Sutrisno (Tiket A-001)" },
+      { timestamp: "2026-10-05 08:30:10", user: "Ns. Siti Rahma", role: "Perawat", action: "Selesai Triase & Input TTV: Bambang Sutrisno -> Routing ke dr. Hendra" },
+      { timestamp: "2026-10-05 08:45:04", user: "dr. Hendra Pratama", role: "Dokter", action: "Mulai Pelayanan Medis / Buka Rekam Medis Pasien: Bambang Sutrisno" }
     ]));
-    localStorage.setItem("SIMRS_DB_VERSION", "2.2");
+    localStorage.setItem("SIMRS_DB_VERSION", "3.0");
   }
 }
 

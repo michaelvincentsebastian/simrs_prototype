@@ -68,6 +68,41 @@ Legenda: **●** bisa melihat & bekerja · **○** hanya baca (konteks) · **—
 | Multi-role = gabungan Workspace; landing mengikuti urutan prioritas | Role Profile gabungan + urutan `role_home_page` |
 | Perangkat tidak punya Desk | Akun `Queue Display`/`Kiosk Device` dibatasi ke route + endpoint |
 
+### 0.5 Matriks Granular RBAC, Data Scope & Workflow Authority (70 Item Analisis Mockup)
+
+Berdasarkan analisis komprehensif seluruh page, screen, form, dan workflow action pada prototipe rawat jalan SIMRS Mini, telah disusun matriks hak akses detail yang terdokumentasi lengkap pada file [`.user-role.csv`](file:///home/vincent/Projects/prototype_simrs/.user-role.csv) dan diinspeksi interaktif pada modal login **"Matriks Hak Akses & Arsitektur"**.
+
+#### Ringkasan Distribusi Aksi per Peran:
+1. **Staf Pendaftaran (Antrian)** — **14 Aksi**:
+   - *Pencarian & Registrasi:* Search Patient (NIK/MRN), Verifikasi Duplikasi NIK, Registrasi Pasien Baru Walk-in, Routing Poli & Dokter, Verifikasi Skema Penjamin (BPJS/Umum/Asuransi), Walk-in Registration, Check-in Reservasi Booking Janji Temu.
+   - *Pencetakan & Antrian:* Cetak Tiket Antrian Termal Triase, Cetak Slip Bukti Pendaftaran Resmi, Monitoring Antrian Rawat Jalan Terkini, Panggil Antrian Suara (Web Speech), Recall Antrian, Skip Antrian, Reset Filter Loket.
+2. **Perawat** — **15 Aksi**:
+   - *Antrian & Identifikasi:* Filter Stasiun & Dokter, Pemantauan Antrian Triase, Panggil Antrian ke Meja Triase, Mulai Sesi Triase (`IN_TRIAGE`).
+   - *Tanda Vital & Skrining:* Pengukuran Tekanan Darah Sistolik/Diastolik, Nadi, Suhu Tubuh, Laju Napas & SpO2, Antropometri & Kalkulasi BMI Otomatis, Dokumentasi Keluhan Utama, Asesmen Risiko Jatuh, Skala Nyeri (VAS 0-10), Identifikasi Alergi Obat/Makanan.
+   - *Klasifikasi & Routing:* Penetapan Kategori Triase ESI (Normal/Perhatian/Eskalasi), Submit Triase & Routing ke Antrian Dokter (`WAITING_DOCTOR` / `ESCALATED`).
+3. **Dokter** — **16 Aksi**:
+   - *Antrian & Konsultasi:* Filter Antrian Dokter DPJP (My Queue), Pemantauan Antrian Siap Periksa, Panggil Pasien ke Ruang Periksa, Mulai Pelayanan (`IN_SERVICE`), Review Ringkasan Pasien & TTV Perawat.
+   - *Dokumentasi SOAP & Medis:* Anamnesis Subjektif (S), Pemeriksaan Fisik Objektif (O), Penegakan Diagnosis ICD-10 Utama (A), Formulasi Terapi & Edukasi Plan (P).
+   - *Order & Penunjang:* Permintaan Uji Laboratorium Patologi Klinik, Review Hasil Validasi Lab Terintegrasi, Permintaan Prosedur/Tindakan Medis Rawat Jalan, Peresepan E-Resep Obat Formularium.
+   - *Penyelesaian & Resume:* Simpan Draft SOAP, Finalisasi Encounter Medis (Submit & kunci rekam medis, otomatis memicu antrian Farmasi & Kasir), Cetak Resume Medis Resmi 11 Elemen Permenkes RI.
+4. **Apoteker** — **6 Aksi**:
+   - *Verifikasi & Dispensing:* Filter Resep per Poliklinik/Dokter, Pemantauan Inbox Resep Masuk Dokter, Panggil Antrian Pengambilan Obat (F-xxx), Telaah Resep 7-Benar (Administratif & Klinis), Dispensing & Pemotongan Stok Farmasi Otomatis, Penyerahan Obat & Konseling Edukasi (KIE) ke Pasien.
+5. **Kasir Farmasi** — **7 Aksi**:
+   - *Agregasi & Pembayaran:* Filter Tagihan per Poliklinik & Penjamin, Pemantauan Antrian Siap Bayar (`SERVICE_COMPLETED`), Panggil Antrian Kasir (K-xxx), Agregasi Tagihan Otomatis (Registrasi, Tindakan, Lab, Obat), Verifikasi Klaim Penjamin & Porsi Bayar Mandiri (Co-payment), Pemrosesan Pembayaran Kas/QRIS, Cetak Kwitansi Pembayaran Resmi Bernomor.
+6. **Analis Lab** — **5 Aksi**:
+   - *Pemeriksaan Penunjang:* Pemantauan Worklist Order Lab Masuk, Konfirmasi Pengambilan Sampel & Spesimen, Input Hasil Parameter Pemeriksaan Patologi Klinik, Validasi & Rilis Hasil Lab ke Rekam Medis, Cetak Sertifikat Hasil Uji Laboratorium.
+7. **Supervisor Rawat Jalan** — **4 Aksi**:
+   - *Monitoring & Tata Kelola:* Monitoring Dashboard SLA & Waktu Tunggu Kemenkes RI (< 60 menit), Penelusuran Timeline Flow Kunjungan Pasien, Override Administratif Status Kunjungan Tertahan (Audit Justified), Ekspor Rekapitulasi Laporan Kinerja Poliklinik.
+8. **Auditor Medis** — **3 Aksi**:
+   - *Audit Independen (Strictly Read-Only):* Inspeksi Jejak Log Audit Trail Sistem SIMRS Mini, Review Kelengkapan Dokumentasi Klinis (SOAP, ICD-10, Resume Medis), Monitoring Log Riwayat Akses Rekam Medis Pasien.
+
+#### Dasar Pemisahan Apoteker dan Kasir Farmasi:
+Pada mockup prototipe, fungsi Apoteker dan Kasir Farmasi dipisahkan menjadi dua peran mandiri dengan alasan kuat:
+1. **Workstation Terpisah:** Mockup menyediakan workstation dan route mandiri (`farmasi` vs `kasir`).
+2. **Akun Petugas Terpisah:** Demo persona login terpisah (`apoteker.dewi` vs `kasir.linda`).
+3. **Data Scope & Permissions Berbeda:** Apoteker menangani aspek klinis farmasi (telaah resep, pemotongan stok obat, KIE), sedangkan Kasir menangani aspek finansial (agregasi invoice, klaim asuransi, penerimaan kas/QRIS, cetak kwitansi).
+4. **Separation of Duties (Fraud Prevention):** Mencegah benturan kepentingan di mana petugas yang meracik obat tidak mengelola transaksi penerimaan uang kasir.
+
 ---
 
 ## 1. Prinsip
