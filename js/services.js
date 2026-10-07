@@ -218,6 +218,8 @@ class RegistrationService {
       address: patientData.address,
       payerType: patientData.payerType || "Umum",
       payerMemberNo: patientData.payerMemberNo || "-",
+      companyName: patientData.companyName || null,
+      guarantorCode: patientData.guarantorCode || null,
       bloodType: patientData.bloodType || "O+",
       allergies: patientData.allergies || "Tidak ada riwayat alergi"
     };
@@ -266,6 +268,20 @@ class RegistrationService {
     const payerType = registration.payerType || (patient ? patient.payerType : "Umum");
     const paymentSubMethod = registration.paymentSubMethod || (payerType === "Umum" ? "Cash" : null);
     const payerMemberNo = registration.payerMemberNo || (patient ? patient.payerMemberNo : "-");
+    const companyName = registration.companyName || (patient ? patient.companyName : null);
+    const guarantorCode = registration.guarantorCode || (patient ? patient.guarantorCode : null);
+    const guarantorLetterNo = registration.guarantorLetterNo || (patient ? patient.guarantorLetterNo : null);
+    const paymentDetails = registration.paymentDetails || null;
+    const paymentDetailSummary = registration.paymentDetailSummary || null;
+
+    let eligibilityStatus = "Tidak Perlu";
+    if (payerType === "BPJS") {
+      eligibilityStatus = "Valid";
+    } else if (payerType === "Perusahaan") {
+      eligibilityStatus = "Dijamin Perusahaan";
+    } else if (payerType === "Asuransi") {
+      eligibilityStatus = "Valid Asuransi";
+    }
 
     const newVisit = {
       id: opvId,
@@ -280,7 +296,12 @@ class RegistrationService {
       payerType: payerType,
       paymentSubMethod: paymentSubMethod,
       payerMemberNo: payerMemberNo,
-      eligibilityStatus: payerType === "BPJS" ? "Valid" : "Tidak Perlu",
+      companyName: companyName,
+      guarantorCode: guarantorCode,
+      guarantorLetterNo: guarantorLetterNo,
+      paymentDetails: paymentDetails,
+      paymentDetailSummary: paymentDetailSummary,
+      eligibilityStatus: eligibilityStatus,
       visitStatus: "WAITING_TRIAGE",
       pharmacyStatus: "Not Required",
       billingStatus: "Pending",

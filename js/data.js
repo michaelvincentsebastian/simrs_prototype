@@ -245,6 +245,23 @@ const SIMRS_MASTER_DATA = {
       payerMemberNo: "-",
       bloodType: "B+",
       allergies: "Tidak ada riwayat alergi"
+    },
+    {
+      id: "PAT-011",
+      mrNo: "RM-2026-0312",
+      nik: "3171051210870003",
+      name: "Agus Prasetyo",
+      gender: "Laki-laki",
+      birthDate: "1987-10-12",
+      age: 39,
+      phone: "0812-9988-7766",
+      address: "Jl. Kramat Kwitang No. 18, Jakarta Pusat",
+      payerType: "Perusahaan",
+      payerMemberNo: "CORP-PERT-2026-081",
+      companyName: "PT Pertamina (Persero)",
+      guarantorCode: "CORP-PERT-2026-081",
+      bloodType: "O+",
+      allergies: "Tidak ada riwayat alergi"
     }
   ],
 

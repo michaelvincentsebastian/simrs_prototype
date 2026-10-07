@@ -1054,6 +1054,10 @@
             <span id="ticket-modal-doctor" class="text-ink font-medium">dr. Andika Pratama, Sp.PD</span>
           </div>
           <div class="flex justify-between">
+            <span>Metode Bayar:</span>
+            <span id="ticket-modal-payment" class="text-ink font-semibold">Umum (Cash)</span>
+          </div>
+          <div class="flex justify-between">
             <span>Waktu Cetak:</span>
             <span id="ticket-modal-time" class="font-mono text-ink">05 Okt 2026, 08:25 WIB</span>
           </div>
@@ -1099,6 +1103,20 @@
       </div>
     </div>
   </div>
+
+  <!-- Datalist Rekomendasi Nama Perusahaan Penjamin Kerjasama -->
+  <datalist id="company-name-suggestions">
+    <option value="PT Pertamina (Persero)"></option>
+    <option value="PT Telkom Indonesia (Persero) Tbk"></option>
+    <option value="PT Bank Mandiri (Persero) Tbk"></option>
+    <option value="PT PLN (Persero)"></option>
+    <option value="PT Astra International Tbk"></option>
+    <option value="PT Bank Central Asia Tbk"></option>
+    <option value="PT Kereta Api Indonesia (Persero)"></option>
+    <option value="PT Indofood CBP Sukses Makmur Tbk"></option>
+    <option value="PT Unilever Indonesia Tbk"></option>
+    <option value="BPJS Ketenagakerjaan (Kecelakaan Kerja)"></option>
+  </datalist>
 
   <!-- ========================================================== -->
   <!-- MODAL: Pendaftaran Pasien Walk-in (Pasien Lama & Baru)     -->
@@ -1320,12 +1338,12 @@
             <span class="text-[11px] text-ink-soft">Pengganti istilah penjaminan / pembiayaan</span>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <label class="flex items-center gap-2.5 p-3 rounded-xl border border-line/60 bg-surface hover:bg-surface-container-low cursor-pointer transition">
               <input type="radio" name="old_payment_method" value="Umum" checked onchange="handleOldPaymentMethodChange(this.value)" class="text-brand focus:ring-brand" />
               <div class="flex flex-col">
                 <span class="font-body-strong text-ink text-[13px] font-bold">Umum / Mandiri</span>
-                <span class="text-[11px] text-ink-soft">Bayar di loket kasir</span>
+                <span class="text-[11px] text-ink-soft">Cash, Debit, QRIS, VA</span>
               </div>
             </label>
 
@@ -1344,20 +1362,28 @@
                 <span class="text-[11px] text-ink-soft">Prudential, Allianz, dsb</span>
               </div>
             </label>
+
+            <label class="flex items-center gap-2.5 p-3 rounded-xl border border-line/60 bg-surface hover:bg-surface-container-low cursor-pointer transition">
+              <input type="radio" name="old_payment_method" value="Perusahaan" onchange="handleOldPaymentMethodChange(this.value)" class="text-brand focus:ring-brand" />
+              <div class="flex flex-col">
+                <span class="font-body-strong text-ink text-[13px] font-bold">Perusahaan Penjamin</span>
+                <span class="text-[11px] text-ink-soft">Kerjasama Korporat / BUMN</span>
+              </div>
+            </label>
           </div>
 
-          <!-- Sub-pembayaran untuk Umum: Cash, Credit, QRIS, VA -->
-          <div id="old-payment-submethod-group" class="p-3 bg-surface-container-low/60 rounded-xl border border-line/40 flex flex-col gap-2">
+          <!-- Sub-pembayaran untuk Umum: Cash, Credit, QRIS, VA beserta Detail Input -->
+          <div id="old-payment-submethod-group" class="p-3.5 bg-surface-container-low/60 rounded-xl border border-line/40 flex flex-col gap-3">
             <div class="flex items-center justify-between">
               <span class="text-[11px] font-semibold text-ink-soft flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[15px] text-brand">payments</span>
                 <span>Pilih Kanal Pembayaran Umum:</span>
               </span>
-              <span class="text-[10px] text-ink-soft">Pilih salah satu metode</span>
+              <span class="text-[10px] text-brand font-medium">Petugas dapat menginput detail kanal di bawah</span>
             </div>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
-                <input type="radio" name="old_sub_payment" value="Cash" checked class="text-brand focus:ring-brand" />
+                <input type="radio" name="old_sub_payment" value="Cash" checked onchange="handleOldSubPaymentChange(this.value)" class="text-brand focus:ring-brand" />
                 <div class="flex flex-col">
                   <span class="font-body-strong text-ink text-[12px] font-bold">Cash</span>
                   <span class="text-[10px] text-ink-soft">Tunai di Kasir</span>
@@ -1365,15 +1391,15 @@
               </label>
 
               <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
-                <input type="radio" name="old_sub_payment" value="Credit" class="text-brand focus:ring-brand" />
+                <input type="radio" name="old_sub_payment" value="Credit" onchange="handleOldSubPaymentChange(this.value)" class="text-brand focus:ring-brand" />
                 <div class="flex flex-col">
-                  <span class="font-body-strong text-ink text-[12px] font-bold">Credit</span>
-                  <span class="text-[10px] text-ink-soft">Debit / Kartu Kredit</span>
+                  <span class="font-body-strong text-ink text-[12px] font-bold">Credit / Debit</span>
+                  <span class="text-[10px] text-ink-soft">Kartu EDC Bank</span>
                 </div>
               </label>
 
               <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
-                <input type="radio" name="old_sub_payment" value="QRIS" class="text-brand focus:ring-brand" />
+                <input type="radio" name="old_sub_payment" value="QRIS" onchange="handleOldSubPaymentChange(this.value)" class="text-brand focus:ring-brand" />
                 <div class="flex flex-col">
                   <span class="font-body-strong text-ink text-[12px] font-bold">QRIS</span>
                   <span class="text-[10px] text-ink-soft">Scan Kode QRIS</span>
@@ -1381,16 +1407,174 @@
               </label>
 
               <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
-                <input type="radio" name="old_sub_payment" value="VA" class="text-brand focus:ring-brand" />
+                <input type="radio" name="old_sub_payment" value="VA" onchange="handleOldSubPaymentChange(this.value)" class="text-brand focus:ring-brand" />
                 <div class="flex flex-col">
                   <span class="font-body-strong text-ink text-[12px] font-bold">VA</span>
                   <span class="text-[10px] text-ink-soft">Virtual Account Bank</span>
                 </div>
               </label>
             </div>
+
+            <!-- Detail Form Sesuai Kanal Bayar Terpilih -->
+            <div id="old-subpayment-details-container" class="pt-2 border-t border-line/30">
+              <!-- Detail Cash -->
+              <div id="old-subdetail-cash" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="old-cash-note">Keterangan / Catatan Tunai</label>
+                  <input 
+                    type="text" 
+                    id="old-cash-note" 
+                    placeholder="Contoh: Uang pas / Bayar di kasir loket..." 
+                    class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="old-cash-amount">Estimasi Nominal Tunai (Rp)</label>
+                  <input 
+                    type="text" 
+                    id="old-cash-amount" 
+                    placeholder="Contoh: 150.000 (Sesuai tarif poli)" 
+                    class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+              </div>
+
+              <!-- Detail Credit / Debit Card -->
+              <div id="old-subdetail-credit" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="old-credit-bank">Bank Penerbit Kartu *</label>
+                  <select id="old-credit-bank" class="w-full h-8 px-2 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+                    <option value="BCA">Bank BCA</option>
+                    <option value="Mandiri">Bank Mandiri</option>
+                    <option value="BRI">Bank BRI</option>
+                    <option value="BNI">Bank BNI</option>
+                    <option value="CIMB Niaga">CIMB Niaga</option>
+                    <option value="Permata">Bank Permata</option>
+                    <option value="Lainnya">Bank Lainnya</option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="old-credit-last4">4 Digit Terakhir Kartu *</label>
+                  <input 
+                    type="text" 
+                    id="old-credit-last4" 
+                    maxlength="4" 
+                    placeholder="Contoh: 8812" 
+                    class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink font-mono tracking-wider border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="old-credit-approval">No. Approval / Reff EDC</label>
+                  <input 
+                    type="text" 
+                    id="old-credit-approval" 
+                    placeholder="Contoh: APP-992140" 
+                    class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+              </div>
+
+              <!-- Detail QRIS -->
+              <div id="old-subdetail-qris" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="old-qris-provider">Platform / Issuer QRIS *</label>
+                  <select id="old-qris-provider" class="w-full h-8 px-2 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+                    <option value="QRIS Dinamis RS">QRIS Dinamis Rumah Sakit</option>
+                    <option value="BCA Mobile / Sakuku">BCA Mobile / Sakuku</option>
+                    <option value="Livin by Mandiri">Livin' by Mandiri</option>
+                    <option value="GoPay">GoPay</option>
+                    <option value="OVO">OVO</option>
+                    <option value="ShopeePay">ShopeePay</option>
+                    <option value="Dana">Dana</option>
+                    <option value="Lainnya">e-Wallet / Mobile Banking Lainnya</option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="old-qris-rrn">No. Referensi / RRN QRIS *</label>
+                  <input 
+                    type="text" 
+                    id="old-qris-rrn" 
+                    placeholder="Contoh: RRN-20261007-9921" 
+                    class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+              </div>
+
+              <!-- Detail Virtual Account (VA) -->
+              <div id="old-subdetail-va" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="old-va-bank">Bank Virtual Account *</label>
+                  <select id="old-va-bank" onchange="generateOldVaNumber(this.value)" class="w-full h-8 px-2 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+                    <option value="BCA">Bank BCA (Kode: 88019)</option>
+                    <option value="Mandiri">Bank Mandiri (Kode: 89012)</option>
+                    <option value="BRI">Bank BRI - BRIVA (Kode: 12845)</option>
+                    <option value="BNI">Bank BNI (Kode: 98801)</option>
+                    <option value="Permata">Bank Permata (Kode: 84551)</option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="old-va-number">Nomor Virtual Account / Kode Billing *</label>
+                  <input 
+                    type="text" 
+                    id="old-va-number" 
+                    placeholder="Contoh: 88019001234567" 
+                    class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink font-mono font-bold tracking-wider border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Card / Member Number Input (Optional/Conditional) -->
+          <!-- Input Perusahaan Penjamin (Nama Perusahaan & Kode Penjamin) -->
+          <div id="old-payment-company-group" class="hidden p-3.5 bg-amber-50/70 rounded-xl border border-amber-200 flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[12px] font-bold text-amber-900 flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[17px] text-amber-700">corporate_fare</span>
+                <span>Data Perusahaan Penjamin Pasien:</span>
+              </span>
+              <span class="text-[10px] text-amber-800 font-medium">Kerjasama Korporat / Asuransi Perusahaan</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-ink-soft" for="old-payment-company-name">Nama Perusahaan Penjamin *</label>
+                <input 
+                  type="text" 
+                  id="old-payment-company-name" 
+                  list="company-name-suggestions"
+                  placeholder="Ketik nama perusahaan (mis: PT Pertamina)..." 
+                  class="w-full h-9 px-3 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-ink-soft" for="old-payment-company-code">Kode Penjamin dari Perusahaan *</label>
+                <input 
+                  type="text" 
+                  id="old-payment-company-code" 
+                  placeholder="Contoh: CORP-PLN-8821 / ID Jaminan Pegawai..." 
+                  class="w-full h-9 px-3 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div class="flex flex-col gap-1">
+                <label class="text-[11px] font-semibold text-ink-soft" for="old-payment-company-letter">No. Surat Jaminan / GL (Opsional)</label>
+                <input 
+                  type="text" 
+                  id="old-payment-company-letter" 
+                  placeholder="Contoh: GL-77182/HRD/X/2026..." 
+                  class="w-full h-9 px-3 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                />
+              </div>
+              <div class="flex items-end">
+                <div class="w-full h-9 px-3 bg-white/90 rounded-lg flex items-center gap-2 text-amber-900 text-[11px] border border-amber-200">
+                  <span class="material-symbols-outlined text-[16px] text-amber-600">verified</span>
+                  <span>Verifikasi penjamin korporat aktif · Tagihan dialihkan ke Piutang Instansi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card / Member Number Input (Untuk BPJS / Asuransi Swasta) -->
           <div id="old-payment-card-group" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div class="flex flex-col gap-1">
               <label class="text-[11px] font-semibold text-ink-soft" for="old-payment-card-no">No. Kartu BPJS / Polis Asuransi</label>
@@ -1600,12 +1784,12 @@
               <span class="text-[11px] text-ink-soft">Pengganti istilah penjaminan</span>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               <label class="flex items-center gap-2.5 p-3 rounded-xl border border-line/60 bg-surface hover:bg-surface-container-low cursor-pointer transition">
                 <input type="radio" name="new_payment_method" value="Umum" checked onchange="handleNewPaymentMethodChange(this.value)" class="text-brand focus:ring-brand" />
                 <div class="flex flex-col">
                   <span class="font-body-strong text-ink text-[13px] font-bold">Umum / Mandiri</span>
-                  <span class="text-[11px] text-ink-soft">Bayar di kasir</span>
+                  <span class="text-[11px] text-ink-soft">Cash, Debit, QRIS, VA</span>
                 </div>
               </label>
 
@@ -1624,20 +1808,28 @@
                   <span class="text-[11px] text-ink-soft">Prudential, Allianz, dsb</span>
                 </div>
               </label>
+
+              <label class="flex items-center gap-2.5 p-3 rounded-xl border border-line/60 bg-surface hover:bg-surface-container-low cursor-pointer transition">
+                <input type="radio" name="new_payment_method" value="Perusahaan" onchange="handleNewPaymentMethodChange(this.value)" class="text-brand focus:ring-brand" />
+                <div class="flex flex-col">
+                  <span class="font-body-strong text-ink text-[13px] font-bold">Perusahaan Penjamin</span>
+                  <span class="text-[11px] text-ink-soft">Kerjasama Korporat / BUMN</span>
+                </div>
+              </label>
             </div>
 
-            <!-- Sub-pembayaran untuk Pasien Baru (Umum: Cash, Credit, QRIS, VA) -->
-            <div id="new-payment-submethod-group" class="p-3 bg-surface-container-low/60 rounded-xl border border-line/40 flex flex-col gap-2">
+            <!-- Sub-pembayaran untuk Pasien Baru (Umum: Cash, Credit, QRIS, VA beserta Detail Input) -->
+            <div id="new-payment-submethod-group" class="p-3.5 bg-surface-container-low/60 rounded-xl border border-line/40 flex flex-col gap-3">
               <div class="flex items-center justify-between">
                 <span class="text-[11px] font-semibold text-ink-soft flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-[15px] text-brand">payments</span>
                   <span>Pilih Kanal Pembayaran Umum:</span>
                 </span>
-                <span class="text-[10px] text-ink-soft">Pilih salah satu metode</span>
+                <span class="text-[10px] text-brand font-medium">Petugas dapat menginput detail kanal di bawah</span>
               </div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
-                  <input type="radio" name="new_sub_payment" value="Cash" checked class="text-brand focus:ring-brand" />
+                  <input type="radio" name="new_sub_payment" value="Cash" checked onchange="handleNewSubPaymentChange(this.value)" class="text-brand focus:ring-brand" />
                   <div class="flex flex-col">
                     <span class="font-body-strong text-ink text-[12px] font-bold">Cash</span>
                     <span class="text-[10px] text-ink-soft">Tunai di Kasir</span>
@@ -1645,15 +1837,15 @@
                 </label>
 
                 <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
-                  <input type="radio" name="new_sub_payment" value="Credit" class="text-brand focus:ring-brand" />
+                  <input type="radio" name="new_sub_payment" value="Credit" onchange="handleNewSubPaymentChange(this.value)" class="text-brand focus:ring-brand" />
                   <div class="flex flex-col">
-                    <span class="font-body-strong text-ink text-[12px] font-bold">Credit</span>
-                    <span class="text-[10px] text-ink-soft">Debit / Kartu Kredit</span>
+                    <span class="font-body-strong text-ink text-[12px] font-bold">Credit / Debit</span>
+                    <span class="text-[10px] text-ink-soft">Kartu EDC Bank</span>
                   </div>
                 </label>
 
                 <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
-                  <input type="radio" name="new_sub_payment" value="QRIS" class="text-brand focus:ring-brand" />
+                  <input type="radio" name="new_sub_payment" value="QRIS" onchange="handleNewSubPaymentChange(this.value)" class="text-brand focus:ring-brand" />
                   <div class="flex flex-col">
                     <span class="font-body-strong text-ink text-[12px] font-bold">QRIS</span>
                     <span class="text-[10px] text-ink-soft">Scan Kode QRIS</span>
@@ -1661,12 +1853,170 @@
                 </label>
 
                 <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
-                  <input type="radio" name="new_sub_payment" value="VA" class="text-brand focus:ring-brand" />
+                  <input type="radio" name="new_sub_payment" value="VA" onchange="handleNewSubPaymentChange(this.value)" class="text-brand focus:ring-brand" />
                   <div class="flex flex-col">
                     <span class="font-body-strong text-ink text-[12px] font-bold">VA</span>
                     <span class="text-[10px] text-ink-soft">Virtual Account Bank</span>
                   </div>
                 </label>
+              </div>
+
+              <!-- Detail Form Sesuai Kanal Bayar Terpilih (Pasien Baru) -->
+              <div id="new-subpayment-details-container" class="pt-2 border-t border-line/30">
+                <!-- Detail Cash -->
+                <div id="new-subdetail-cash" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div class="flex flex-col gap-1">
+                    <label class="text-[11px] font-semibold text-ink-soft" for="new-cash-note">Keterangan / Catatan Tunai</label>
+                    <input 
+                      type="text" 
+                      id="new-cash-note" 
+                      placeholder="Contoh: Uang pas / Bayar di kasir loket..." 
+                      class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-[11px] font-semibold text-ink-soft" for="new-cash-amount">Estimasi Nominal Tunai (Rp)</label>
+                    <input 
+                      type="text" 
+                      id="new-cash-amount" 
+                      placeholder="Contoh: 150.000 (Sesuai tarif poli)" 
+                      class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                    />
+                  </div>
+                </div>
+
+                <!-- Detail Credit / Debit Card -->
+                <div id="new-subdetail-credit" class="hidden grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <div class="flex flex-col gap-1">
+                    <label class="text-[11px] font-semibold text-ink-soft" for="new-credit-bank">Bank Penerbit Kartu *</label>
+                    <select id="new-credit-bank" class="w-full h-8 px-2 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+                      <option value="BCA">Bank BCA</option>
+                      <option value="Mandiri">Bank Mandiri</option>
+                      <option value="BRI">Bank BRI</option>
+                      <option value="BNI">Bank BNI</option>
+                      <option value="CIMB Niaga">CIMB Niaga</option>
+                      <option value="Permata">Bank Permata</option>
+                      <option value="Lainnya">Bank Lainnya</option>
+                    </select>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-[11px] font-semibold text-ink-soft" for="new-credit-last4">4 Digit Terakhir Kartu *</label>
+                    <input 
+                      type="text" 
+                      id="new-credit-last4" 
+                      maxlength="4" 
+                      placeholder="Contoh: 8812" 
+                      class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink font-mono tracking-wider border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                    />
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-[11px] font-semibold text-ink-soft" for="new-credit-approval">No. Approval / Reff EDC</label>
+                    <input 
+                      type="text" 
+                      id="new-credit-approval" 
+                      placeholder="Contoh: APP-992140" 
+                      class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                    />
+                  </div>
+                </div>
+
+                <!-- Detail QRIS -->
+                <div id="new-subdetail-qris" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div class="flex flex-col gap-1">
+                    <label class="text-[11px] font-semibold text-ink-soft" for="new-qris-provider">Platform / Issuer QRIS *</label>
+                    <select id="new-qris-provider" class="w-full h-8 px-2 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+                      <option value="QRIS Dinamis RS">QRIS Dinamis Rumah Sakit</option>
+                      <option value="BCA Mobile / Sakuku">BCA Mobile / Sakuku</option>
+                      <option value="Livin by Mandiri">Livin' by Mandiri</option>
+                      <option value="GoPay">GoPay</option>
+                      <option value="OVO">OVO</option>
+                      <option value="ShopeePay">ShopeePay</option>
+                      <option value="Dana">Dana</option>
+                      <option value="Lainnya">e-Wallet / Mobile Banking Lainnya</option>
+                    </select>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-[11px] font-semibold text-ink-soft" for="new-qris-rrn">No. Referensi / RRN QRIS *</label>
+                    <input 
+                      type="text" 
+                      id="new-qris-rrn" 
+                      placeholder="Contoh: RRN-20261007-9921" 
+                      class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                    />
+                  </div>
+                </div>
+
+                <!-- Detail Virtual Account (VA) -->
+                <div id="new-subdetail-va" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div class="flex flex-col gap-1">
+                    <label class="text-[11px] font-semibold text-ink-soft" for="new-va-bank">Bank Virtual Account *</label>
+                    <select id="new-va-bank" onchange="generateNewVaNumber(this.value)" class="w-full h-8 px-2 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand cursor-pointer">
+                      <option value="BCA">Bank BCA (Kode: 88019)</option>
+                      <option value="Mandiri">Bank Mandiri (Kode: 89012)</option>
+                      <option value="BRI">Bank BRI - BRIVA (Kode: 12845)</option>
+                      <option value="BNI">Bank BNI (Kode: 98801)</option>
+                      <option value="Permata">Bank Permata (Kode: 84551)</option>
+                    </select>
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <label class="text-[11px] font-semibold text-ink-soft" for="new-va-number">Nomor Virtual Account / Kode Billing *</label>
+                    <input 
+                      type="text" 
+                      id="new-va-number" 
+                      placeholder="Contoh: 88019001234567" 
+                      class="w-full h-8 px-2.5 bg-surface rounded-lg text-caption text-ink font-mono font-bold tracking-wider border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Input Perusahaan Penjamin untuk Pasien Baru (Nama Perusahaan & Kode Penjamin) -->
+            <div id="new-payment-company-group" class="hidden p-3.5 bg-amber-50/70 rounded-xl border border-amber-200 flex flex-col gap-2.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[12px] font-bold text-amber-900 flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[17px] text-amber-700">corporate_fare</span>
+                  <span>Data Perusahaan Penjamin Pasien:</span>
+                </span>
+                <span class="text-[10px] text-amber-800 font-medium">Kerjasama Korporat / Asuransi Perusahaan</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="new-payment-company-name">Nama Perusahaan Penjamin *</label>
+                  <input 
+                    type="text" 
+                    id="new-payment-company-name" 
+                    list="company-name-suggestions"
+                    placeholder="Ketik nama perusahaan (mis: PT Pertamina)..." 
+                    class="w-full h-9 px-3 bg-surface rounded-lg text-caption text-ink border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                  />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="new-payment-company-code">Kode Penjamin dari Perusahaan *</label>
+                  <input 
+                    type="text" 
+                    id="new-payment-company-code" 
+                    placeholder="Contoh: CORP-PLN-8821 / ID Jaminan Pegawai..." 
+                    class="w-full h-9 px-3 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div class="flex flex-col gap-1">
+                  <label class="text-[11px] font-semibold text-ink-soft" for="new-payment-company-letter">No. Surat Jaminan / GL (Opsional)</label>
+                  <input 
+                    type="text" 
+                    id="new-payment-company-letter" 
+                    placeholder="Contoh: GL-77182/HRD/X/2026..." 
+                    class="w-full h-9 px-3 bg-surface rounded-lg text-caption text-ink font-mono border border-line/50 focus:outline-none focus:ring-2 focus:ring-brand"
+                  />
+                </div>
+                <div class="flex items-end">
+                  <div class="w-full h-9 px-3 bg-white/90 rounded-lg flex items-center gap-2 text-amber-900 text-[11px] border border-amber-200">
+                    <span class="material-symbols-outlined text-[16px] text-amber-600">verified</span>
+                    <span>Verifikasi penjamin korporat aktif · Tagihan dialihkan ke Piutang Instansi</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1752,11 +2102,12 @@
             <input type="date" id="reg-birthdate" required class="w-full h-10 px-2.5 bg-canvas rounded-xl font-body-default text-body-default focus:ring-2 focus:ring-brand">
           </div>
           <div>
-            <label class="block font-body-strong mb-1 text-ink text-caption">Penjamin</label>
+            <label class="block font-body-strong mb-1 text-ink text-caption">Penjamin / Metode Bayar</label>
             <select id="reg-payer" onchange="togglePayerMemberNo(this.value)" class="w-full h-10 px-2.5 bg-canvas rounded-xl font-body-default text-body-default focus:ring-2 focus:ring-brand cursor-pointer">
-              <option value="Umum">Umum</option>
+              <option value="Umum">Umum / Mandiri</option>
               <option value="BPJS">BPJS Kesehatan</option>
               <option value="Asuransi">Asuransi Swasta</option>
+              <option value="Perusahaan">Perusahaan Penjamin</option>
             </select>
           </div>
         </div>
@@ -1764,6 +2115,33 @@
         <div id="payer-member-group" class="hidden">
           <label class="block font-body-strong mb-1 text-ink text-caption">No. Kartu BPJS / Polis</label>
           <input type="text" id="reg-payer-no" placeholder="0001xxxxxxxx" class="w-full h-10 px-3 bg-canvas rounded-xl font-mono text-body-default focus:ring-2 focus:ring-brand shadow-inner">
+        </div>
+
+        <div id="payer-company-group" class="hidden grid grid-cols-2 gap-space-sm p-3 bg-amber-50/70 border border-amber-200 rounded-xl">
+          <div>
+            <label class="block font-body-strong mb-1 text-amber-900 text-caption">Nama Perusahaan *</label>
+            <input type="text" id="reg-company-name" list="company-name-suggestions" placeholder="Nama Perusahaan (PT...)" class="w-full h-9 px-3 bg-surface rounded-lg text-body-default focus:ring-2 focus:ring-brand">
+          </div>
+          <div>
+            <label class="block font-body-strong mb-1 text-amber-900 text-caption">Kode Penjamin *</label>
+            <input type="text" id="reg-company-code" placeholder="Kode Penjamin (CORP-...)" class="w-full h-9 px-3 bg-surface rounded-lg font-mono text-body-default focus:ring-2 focus:ring-brand">
+          </div>
+        </div>
+
+        <div id="payer-umum-group" class="grid grid-cols-2 gap-space-sm p-2.5 bg-surface-container-low/70 border border-line/40 rounded-xl">
+          <div>
+            <label class="block font-body-strong mb-1 text-ink-soft text-caption">Kanal Bayar Umum</label>
+            <select id="reg-sub-payment" class="w-full h-9 px-2 bg-surface rounded-lg text-body-default focus:ring-2 focus:ring-brand cursor-pointer">
+              <option value="Cash">Cash (Tunai di Kasir)</option>
+              <option value="Credit">Credit / Debit EDC</option>
+              <option value="QRIS">QRIS Dinamis RS</option>
+              <option value="VA">Virtual Account Bank</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-body-strong mb-1 text-ink-soft text-caption">Keterangan / No. Ref</label>
+            <input type="text" id="reg-payment-ref" placeholder="Uang pas / No. Kartu / RRN..." class="w-full h-9 px-3 bg-surface rounded-lg text-body-default focus:ring-2 focus:ring-brand">
+          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-space-sm">

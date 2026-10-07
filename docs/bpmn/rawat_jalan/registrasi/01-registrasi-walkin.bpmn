@@ -1,517 +1,599 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_RegWalkin" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.20.0">
   <bpmn:collaboration id="Collab_RegWalkin">
-    <bpmn:participant id="Part_RegWalkin" name="Registrasi Walk-in (§1.2)" processRef="Proc_RegWalkin"/>
+    <bpmn:participant id="Part_RegWalkin" name="Registrasi Walk-in (§1.2)" processRef="Proc_RegWalkin" />
   </bpmn:collaboration>
   <bpmn:process id="Proc_RegWalkin" name="Registrasi Walk-in" isExecutable="false">
     <bpmn:documentation>
-      Alur detail pendaftaran pasien walk-in di loket registrasi.
-      Mencakup: pencarian pasien, registrasi baru, pemilihan poli/dokter/penjamin,
-      dan pembuatan appointment walk-in.
-      Hirarki: §1.2 Walk-in Registration, §1.5 Verifikasi Identitas.
-      Aktor: Staf Registrasi (Registration Staff).
-      Status Visit: belum ada — appointment dibuat di akhir proses ini.
+      Alur detail pendaftaran pasien rawat jalan walk-in (offline) di loket admisi pendaftaran.
+      Mencakup: pemilahan mode Pasien Lama (pencarian RME via Nama/NIK/No. RM dan filter tanggal lahir/gender)
+      vs Pasien Baru (input NIK 16 digit dengan deteksi duplikasi NIK real-time dan penerbitan MRN baru),
+      pemilihan poliklinik tujuan &amp; DPJP praktik dengan validasi jadwal dan kuota slot kunjungan,
+      serta pemilihan metode pembayaran/skema penjamin (BPJS Kesehatan, Asuransi Swasta, Perusahaan Penjamin
+      kerjasama dengan input nama perusahaan &amp; kode penjamin, serta Pasien Umum dengan kanal bayar
+      Cash, Credit/Debit, QRIS, dan VA beserta input detail transaksi).
+      Diakhiri penerbitan kunjungan Outpatient Visit (WAITING_TRIAGE), tiket antrian triase (T-xxx), cetak thermal, dan audio bell.
+      Hirarki: §1.2 Walk-in Registration, §1.5 Verifikasi Identitas, §1.6 Verifikasi Penjamin, §1.7 Antrian Rawat Jalan.
+      Aktor: Pasien, Staf Registrasi Loket, Sistem SIMRS.
     </bpmn:documentation>
     <bpmn:laneSet id="LS_RegWalkin">
       <bpmn:lane id="Lane_Pasien" name="Pasien">
         <bpmn:flowNodeRef>Start_WalkIn</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_DatangLoket</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_SerahDokumen</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SerahkanIdentitasPenjamin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>End_TerdaftarWalkin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TerimaTiketTriase</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="Lane_StafReg" name="Staf Registrasi (Loket)">
-        <bpmn:flowNodeRef>Task_TerimaPasien</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_CariPasien</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>GW_PasienAda</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_RegBaru</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_BuatMRN</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_InputDemografi</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Merge_Pasien</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_VerifIdentitas</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>GW_DataLengkap</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_LengkapiData</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Merge_DataOK</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_PilihPoli</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_PilihDokter</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_CekJadwal</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>GW_JadwalTersedia</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_GantiDokter</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Merge_Jadwal</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_PilihPenjamin</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>GW_Penjamin</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_InputKartuAsuransi</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Merge_Penjamin</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_BuatAppointmentWalkin</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_KonfirmasiRingkasan</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>End_TerdaftarWalkin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_DuplikasiNIK</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PeringatanDuplikat</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Merge_DataPasienOK</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PilihPoliDokter</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CariPasienRME</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TerimaPasienBerkas</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_BukaModulRegistrasi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InputNIKPasienBaru</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_ModePendaftaran</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_LengkapiFormPasienBaru</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PilihPasienRME</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_KuotaJadwal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_TawarkanAlternatifDokter</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PilihMetodePembayaran</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>GW_MetodePembayaran</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InputPerusahaanPenjamin</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InputVerifAsuransi</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_PilihKanalUmum</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_InputVerifBPJS</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_SubmitPendaftaran</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="Lane_Sistem" name="Sistem SIMRS">
-        <bpmn:flowNodeRef>Task_GenerateTiket</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_CetakTiket</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CekDuplikasiNIK</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_GenerateMRN</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CekJadwalKuota</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_AudioBellDisplay</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_CetakTiketThermal</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_BuatKunjunganVisit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_GenerateNomorTiket</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
-    <bpmn:startEvent id="Start_WalkIn" name="Pasien datang tanpa appointment">
+    <bpmn:startEvent id="Start_WalkIn" name="Pasien datang langsung tanpa appointment (Walk-in)">
       <bpmn:outgoing>F01</bpmn:outgoing>
     </bpmn:startEvent>
-    <bpmn:userTask id="Task_DatangLoket" name="Datang ke loket registrasi">
-      <bpmn:documentation>Pasien menyerahkan KTP/KIA untuk identifikasi</bpmn:documentation>
+    <bpmn:userTask id="Task_DatangLoket" name="Menuju loket pendaftaran rawat jalan">
+      <bpmn:documentation>Pasien mengambil nomor antrian loket pendaftaran atau langsung menuju meja admisi</bpmn:documentation>
       <bpmn:incoming>F01</bpmn:incoming>
       <bpmn:outgoing>F02</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Task_SerahDokumen" name="Serahkan KTP / kartu asuransi / BPJS">
+    <bpmn:userTask id="Task_SerahkanIdentitasPenjamin" name="Menyerahkan KTP/KIA &#38; kartu penjamin (BPJS/Polis/Surat Jaminan)">
+      <bpmn:documentation>Pasien menyerahkan bukti identitas fisik dan kartu kepesertaan penjamin kepada petugas</bpmn:documentation>
       <bpmn:incoming>F02</bpmn:incoming>
       <bpmn:outgoing>F03</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Task_TerimaPasien" name="Terima pasien &amp; dokumen identitas">
+    <bpmn:exclusiveGateway id="Merge_DataPasienOK">
+      <bpmn:incoming>F07</bpmn:incoming>
+      <bpmn:incoming>F12</bpmn:incoming>
+      <bpmn:outgoing>F13</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_PilihPoliDokter" name="Pilih Poliklinik tujuan &#38; Dokter DPJP praktik">
+      <bpmn:documentation>Hirarki: 1.2 › Pemilihan Poli &amp; Dokter. Dropdown poli aktif dan DPJP terjadwal.</bpmn:documentation>
+      <bpmn:incoming>F13</bpmn:incoming>
+      <bpmn:incoming>F16</bpmn:incoming>
+      <bpmn:outgoing>F14</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="F01" sourceRef="Start_WalkIn" targetRef="Task_DatangLoket" />
+    <bpmn:sequenceFlow id="F02" sourceRef="Task_DatangLoket" targetRef="Task_SerahkanIdentitasPenjamin" />
+    <bpmn:sequenceFlow id="F03" sourceRef="Task_SerahkanIdentitasPenjamin" targetRef="Task_TerimaPasienBerkas" />
+    <bpmn:sequenceFlow id="F_PasienLama" name="Pasien Lama" sourceRef="GW_ModePendaftaran" targetRef="Task_CariPasienRME" />
+    <bpmn:sequenceFlow id="F06" sourceRef="Task_CariPasienRME" targetRef="Task_PilihPasienRME" />
+    <bpmn:sequenceFlow id="F07" sourceRef="Task_PilihPasienRME" targetRef="Merge_DataPasienOK" />
+    <bpmn:sequenceFlow id="F08" sourceRef="Task_InputNIKPasienBaru" targetRef="Task_CekDuplikasiNIK" />
+    <bpmn:sequenceFlow id="F09" sourceRef="Task_CekDuplikasiNIK" targetRef="GW_DuplikasiNIK" />
+    <bpmn:sequenceFlow id="F_NIKDuplikat" name="NIK Terdaftar" sourceRef="GW_DuplikasiNIK" targetRef="Task_PeringatanDuplikat" />
+    <bpmn:sequenceFlow id="F10" sourceRef="Task_PeringatanDuplikat" targetRef="Task_PilihPasienRME" />
+    <bpmn:sequenceFlow id="F_NIKBaru" name="NIK Baru" sourceRef="GW_DuplikasiNIK" targetRef="Task_LengkapiFormPasienBaru" />
+    <bpmn:sequenceFlow id="F11" sourceRef="Task_LengkapiFormPasienBaru" targetRef="Task_GenerateMRN" />
+    <bpmn:sequenceFlow id="F12" sourceRef="Task_GenerateMRN" targetRef="Merge_DataPasienOK" />
+    <bpmn:sequenceFlow id="F13" sourceRef="Merge_DataPasienOK" targetRef="Task_PilihPoliDokter" />
+    <bpmn:sequenceFlow id="F14" sourceRef="Task_PilihPoliDokter" targetRef="Task_CekJadwalKuota" />
+    <bpmn:sequenceFlow id="F15" sourceRef="Task_CekJadwalKuota" targetRef="GW_KuotaJadwal" />
+    <bpmn:sequenceFlow id="F16" sourceRef="Task_TawarkanAlternatifDokter" targetRef="Task_PilihPoliDokter" />
+    <bpmn:sequenceFlow id="F_KuotaOK" name="Tersedia" sourceRef="GW_KuotaJadwal" targetRef="Task_PilihMetodePembayaran" />
+    <bpmn:sequenceFlow id="F18" sourceRef="Task_PilihMetodePembayaran" targetRef="GW_MetodePembayaran" />
+    <bpmn:sequenceFlow id="F_BPJS" name="BPJS Kesehatan" sourceRef="GW_MetodePembayaran" targetRef="Task_InputVerifBPJS" />
+    <bpmn:sequenceFlow id="F_Asuransi" name="Asuransi Swasta" sourceRef="GW_MetodePembayaran" targetRef="Task_InputVerifAsuransi" />
+    <bpmn:sequenceFlow id="F_Perusahaan" name="Perusahaan Penjamin" sourceRef="GW_MetodePembayaran" targetRef="Task_InputPerusahaanPenjamin" />
+    <bpmn:sequenceFlow id="F_Umum" name="Umum / Mandiri" sourceRef="GW_MetodePembayaran" targetRef="Task_PilihKanalUmum" />
+    <bpmn:sequenceFlow id="F24" sourceRef="Task_SubmitPendaftaran" targetRef="Task_BuatKunjunganVisit" />
+    <bpmn:sequenceFlow id="F28" sourceRef="Task_AudioBellDisplay" targetRef="Task_TerimaTiketTriase" />
+    <bpmn:userTask id="Task_PeringatanDuplikat" name="Peringatan NIK ganda: konfirmasi dan beralih ke Pasien Lama">
+      <bpmn:documentation>Banner peringatan muncul: NIK telah terdaftar atas nama pasien aktif. Staf diarahkan memilih data pasien lama.</bpmn:documentation>
+      <bpmn:incoming>F_NIKDuplikat</bpmn:incoming>
+      <bpmn:outgoing>F10</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_DuplikasiNIK" name="Apakah NIK sudah terdaftar?" default="F_NIKBaru">
+      <bpmn:incoming>F09</bpmn:incoming>
+      <bpmn:outgoing>F_NIKDuplikat</bpmn:outgoing>
+      <bpmn:outgoing>F_NIKBaru</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_CariPasienRME" name="Cari data RME (Nama / NIK / No. RM &#38; filter Tgl Lahir / Gender)">
+      <bpmn:documentation>Hirarki: 1.2 Walk-in › Pencarian pasien RME. Filter tanggal lahir &amp; gender untuk membedakan nama serupa.</bpmn:documentation>
+      <bpmn:incoming>F_PasienLama</bpmn:incoming>
+      <bpmn:outgoing>F06</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_TerimaPasienBerkas" name="Staf menerima pasien &#38; memeriksa berkas identitas">
+      <bpmn:documentation>Petugas loket menyapa pasien dan menerima berkas fisik identitas dan penjamin</bpmn:documentation>
       <bpmn:incoming>F03</bpmn:incoming>
       <bpmn:outgoing>F04</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:userTask id="Task_CariPasien" name="Cari pasien di sistem (MRN / NIK / nama)">
-      <bpmn:documentation>Hirarki: 1.2 Walk-in › Pencarian pasien. Input: NIK 16 digit atau MRN atau nama.</bpmn:documentation>
+    <bpmn:userTask id="Task_BukaModulRegistrasi" name="Buka modul Pendaftaran Walk-in (Pilihan Mode: Lama / Baru)">
+      <bpmn:documentation>Staf membuka antarmuka pendaftaran walk-in loket di sistem SIMRS Mini</bpmn:documentation>
       <bpmn:incoming>F04</bpmn:incoming>
       <bpmn:outgoing>F05</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:exclusiveGateway id="GW_PasienAda" name="Pasien sudah terdaftar?" default="F_Baru">
-      <bpmn:documentation>Cek duplikat MRN — hindari rekam medis ganda (§1.5)</bpmn:documentation>
-      <bpmn:incoming>F05</bpmn:incoming>
-      <bpmn:outgoing>F_Ada</bpmn:outgoing>
-      <bpmn:outgoing>F_Baru</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_RegBaru" name="Registrasi pasien baru (form identitas)">
-      <bpmn:documentation>Hirarki: 1.2 › Registrasi Pasien Baru. Isi: nama, NIK, tanggal lahir, gender, alamat, telepon.</bpmn:documentation>
-      <bpmn:incoming>F_Baru</bpmn:incoming>
-      <bpmn:outgoing>F06</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:serviceTask id="Task_BuatMRN" name="Generate nomor rekam medis (MRN)">
-      <bpmn:documentation>Sistem otomatis generate MRN-XXXXXX berdasarkan sequence</bpmn:documentation>
-      <bpmn:incoming>F06</bpmn:incoming>
-      <bpmn:outgoing>F07</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:userTask id="Task_InputDemografi" name="Lengkapi data demografi &amp; kontak darurat">
-      <bpmn:documentation>Alamat lengkap, golongan darah, alergi diketahui, kontak keluarga</bpmn:documentation>
-      <bpmn:incoming>F07</bpmn:incoming>
+    <bpmn:userTask id="Task_InputNIKPasienBaru" name="Input NIK 16 digit pada formulir Pasien Baru">
+      <bpmn:documentation>Hirarki: 1.2 › Registrasi Pasien Baru. Input NIK 16 digit sesuai KTP/KIA.</bpmn:documentation>
+      <bpmn:incoming>F_PasienBaru</bpmn:incoming>
       <bpmn:outgoing>F08</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:exclusiveGateway id="Merge_Pasien">
-      <bpmn:incoming>F_Ada</bpmn:incoming>
-      <bpmn:incoming>F08</bpmn:incoming>
-      <bpmn:outgoing>F09</bpmn:outgoing>
+    <bpmn:exclusiveGateway id="GW_ModePendaftaran" name="Status pendaftaran pasien?" default="F_PasienLama">
+      <bpmn:incoming>F05</bpmn:incoming>
+      <bpmn:outgoing>F_PasienLama</bpmn:outgoing>
+      <bpmn:outgoing>F_PasienBaru</bpmn:outgoing>
     </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_VerifIdentitas" name="Verifikasi identitas pasien (nama, tanggal lahir, foto)">
-      <bpmn:documentation>Hirarki: 1.5 Verifikasi Identitas. Cocokkan wajah + KTP + data di sistem.</bpmn:documentation>
-      <bpmn:incoming>F09</bpmn:incoming>
-      <bpmn:outgoing>F10</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:exclusiveGateway id="GW_DataLengkap" name="Data pasien lengkap?" default="F_TidakLengkap">
-      <bpmn:incoming>F10</bpmn:incoming>
-      <bpmn:outgoing>F_Lengkap</bpmn:outgoing>
-      <bpmn:outgoing>F_TidakLengkap</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_LengkapiData" name="Minta pasien lengkapi data / update">
-      <bpmn:incoming>F_TidakLengkap</bpmn:incoming>
+    <bpmn:sequenceFlow id="F04" sourceRef="Task_TerimaPasienBerkas" targetRef="Task_BukaModulRegistrasi" />
+    <bpmn:sequenceFlow id="F05" sourceRef="Task_BukaModulRegistrasi" targetRef="GW_ModePendaftaran" />
+    <bpmn:sequenceFlow id="F_PasienBaru" name="Pasien Baru" sourceRef="GW_ModePendaftaran" targetRef="Task_InputNIKPasienBaru" />
+    <bpmn:userTask id="Task_LengkapiFormPasienBaru" name="Input formulir data diri (Nama, TTL, Gender, HP, Alamat, Gol Darah)">
+      <bpmn:documentation>Staf melengkapi formulir pendaftaran identitas pasien baru secara lengkap</bpmn:documentation>
+      <bpmn:incoming>F_NIKBaru</bpmn:incoming>
       <bpmn:outgoing>F11</bpmn:outgoing>
     </bpmn:userTask>
-    <bpmn:exclusiveGateway id="Merge_DataOK">
-      <bpmn:incoming>F_Lengkap</bpmn:incoming>
+    <bpmn:userTask id="Task_PilihPasienRME" name="Pilih pasien &#38; sistem fetch data diri serta riwayat penjamin">
+      <bpmn:documentation>Sistem memuat data demografi lengkap pasien (Nama, NIK, No. RM, TTL, alamat, HP, dan default penjamin)</bpmn:documentation>
+      <bpmn:incoming>F06</bpmn:incoming>
+      <bpmn:incoming>F10</bpmn:incoming>
+      <bpmn:outgoing>F07</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="GW_KuotaJadwal" name="Kuota &#38; jadwal DPJP tersedia?" default="F_KuotaOK">
+      <bpmn:incoming>F15</bpmn:incoming>
+      <bpmn:outgoing>F_KuotaOK</bpmn:outgoing>
+      <bpmn:outgoing>F_KuotaPenuh</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:userTask id="Task_TawarkanAlternatifDokter" name="Tawarkan dokter pengganti atau sesi praktik lain ke pasien">
+      <bpmn:documentation>Jika kuota dokter habis atau dokter tidak praktik, tawarkan alternatif poli/dokter lain</bpmn:documentation>
+      <bpmn:incoming>F_KuotaPenuh</bpmn:incoming>
+      <bpmn:outgoing>F16</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="F_KuotaPenuh" name="Kuota Penuh" sourceRef="GW_KuotaJadwal" targetRef="Task_TawarkanAlternatifDokter" />
+    <bpmn:userTask id="Task_PilihMetodePembayaran" name="Pilih Metode Pembayaran / Skema Penjamin (§1.6)">
+      <bpmn:documentation>Hirarki: 1.6 Verifikasi Penjamin. Petugas menanyakan metode penjaminan/pembayaran yang digunakan pasien.</bpmn:documentation>
+      <bpmn:incoming>F_KuotaOK</bpmn:incoming>
+      <bpmn:outgoing>F18</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:parallelGateway id="GW_MetodePembayaran" name="Pilihan Skema Pembayaran?">
+      <bpmn:incoming>F18</bpmn:incoming>
+      <bpmn:outgoing>F_BPJS</bpmn:outgoing>
+      <bpmn:outgoing>F_Asuransi</bpmn:outgoing>
+      <bpmn:outgoing>F_Perusahaan</bpmn:outgoing>
+      <bpmn:outgoing>F_Umum</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:userTask id="Task_InputPerusahaanPenjamin" name="Input Nama Perusahaan Penjamin &#38; Kode Penjamin / Surat Jaminan (GL)">
+      <bpmn:documentation>Input nama instansi/perusahaan penjamin rekanan dan kode penjamin dari perusahaan serta nomor surat jaminan (GL)</bpmn:documentation>
+      <bpmn:incoming>F_Perusahaan</bpmn:incoming>
+      <bpmn:outgoing>Flow_0ezkies</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_InputVerifAsuransi" name="Input No. Polis Asuransi &#38; verifikasi polis provider aktif">
+      <bpmn:documentation>Input nomor kartu/polis asuransi swasta rekanan (Prudential, Allianz, Sinarmas, dll) dan verifikasi plafon</bpmn:documentation>
+      <bpmn:incoming>F_Asuransi</bpmn:incoming>
+      <bpmn:outgoing>Flow_1qf8wxx</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_PilihKanalUmum" name="Pilih kanal bayar Umum (Cash, Credit, QRIS, VA) &#38; input detail transaksi">
+      <bpmn:documentation>Pilih submetode bayar: Cash (catatan/nominal), Credit/Debit (bank penerbit, 4 digit kartu, approval code), QRIS (provider &amp; RRN), VA (bank &amp; no VA billing)</bpmn:documentation>
+      <bpmn:incoming>F_Umum</bpmn:incoming>
+      <bpmn:outgoing>Flow_1muyp1h</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:userTask id="Task_InputVerifBPJS" name="Input No. Kartu BPJS &#38; verifikasi eligibility rujukan faskes">
+      <bpmn:documentation>Input nomor kartu BPJS / NIK, validasi keaktifan kepesertaan JKN dan bridging rujukan faskes 1</bpmn:documentation>
+      <bpmn:incoming>F_BPJS</bpmn:incoming>
+      <bpmn:outgoing>Flow_0fbzp5f</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="Flow_0fbzp5f" sourceRef="Task_InputVerifBPJS" targetRef="Task_SubmitPendaftaran" />
+    <bpmn:sequenceFlow id="Flow_1muyp1h" sourceRef="Task_PilihKanalUmum" targetRef="Task_SubmitPendaftaran" />
+    <bpmn:sequenceFlow id="Flow_1qf8wxx" sourceRef="Task_InputVerifAsuransi" targetRef="Task_SubmitPendaftaran" />
+    <bpmn:sequenceFlow id="Flow_0ezkies" sourceRef="Task_InputPerusahaanPenjamin" targetRef="Task_SubmitPendaftaran" />
+    <bpmn:userTask id="Task_SubmitPendaftaran" name="Klik Daftarkan &#38; Cetak Tiket (Konfirmasi pendaftaran)">
+      <bpmn:documentation>Petugas mengonfirmasi ringkasan data pendaftaran kepada pasien dan menekan tombol daftarkan</bpmn:documentation>
+      <bpmn:incoming>Flow_0fbzp5f</bpmn:incoming>
+      <bpmn:incoming>Flow_1muyp1h</bpmn:incoming>
+      <bpmn:incoming>Flow_1qf8wxx</bpmn:incoming>
+      <bpmn:incoming>Flow_0ezkies</bpmn:incoming>
+      <bpmn:outgoing>F24</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="End_TerdaftarWalkin" name="Pasien terdaftar &#38; menuju ruang tunggu Triase Rawat Jalan">
+      <bpmn:incoming>F29</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_TerimaTiketTriase" name="Pasien menerima bukti pendaftaran &#38; tiket antrian triase">
+      <bpmn:documentation>Pasien mengambil tiket fisik yang diserahkan petugas loket pendaftaran</bpmn:documentation>
+      <bpmn:incoming>F28</bpmn:incoming>
+      <bpmn:outgoing>F29</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:sequenceFlow id="F29" sourceRef="Task_TerimaTiketTriase" targetRef="End_TerdaftarWalkin" />
+    <bpmn:serviceTask id="Task_CekDuplikasiNIK" name="Sistem validasi format &#38; deteksi duplikasi NIK real-time">
+      <bpmn:documentation>Mencegah duplikasi nomor rekam medis jika NIK telah terdaftar sebelumnya (§1.5)</bpmn:documentation>
+      <bpmn:incoming>F08</bpmn:incoming>
+      <bpmn:outgoing>F09</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_GenerateMRN" name="Sistem generate Nomor Rekam Medis (MRN) baru otomatis">
+      <bpmn:documentation>Sistem otomatis membuat identifier MRN unik (format RM-YYYY-xxxx)</bpmn:documentation>
       <bpmn:incoming>F11</bpmn:incoming>
       <bpmn:outgoing>F12</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_PilihPoli" name="Pilih poli tujuan">
-      <bpmn:documentation>Hirarki: 1.2 › Pemilihan Poli. Dropdown poli aktif hari ini.</bpmn:documentation>
-      <bpmn:incoming>F12</bpmn:incoming>
-      <bpmn:outgoing>F13</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:userTask id="Task_PilihDokter" name="Pilih dokter praktik">
-      <bpmn:documentation>Filter dokter berdasarkan poli + jadwal hari ini. Tampilkan SIP, ruang praktik.</bpmn:documentation>
-      <bpmn:incoming>F13</bpmn:incoming>
-      <bpmn:outgoing>F14</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:serviceTask id="Task_CekJadwal" name="Cek ketersediaan jadwal &amp; kuota">
-      <bpmn:documentation>Sistem cek: jadwal aktif, sisa kuota slot, estimasi waktu tunggu</bpmn:documentation>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_CekJadwalKuota" name="Sistem verifikasi jadwal praktik dokter &#38; sisa kuota slot">
+      <bpmn:documentation>Sistem memverifikasi jam praktik, ruangan poli, dan ketersediaan kuota antrian dokter</bpmn:documentation>
       <bpmn:incoming>F14</bpmn:incoming>
       <bpmn:outgoing>F15</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:exclusiveGateway id="GW_JadwalTersedia" name="Jadwal tersedia?" default="F_JadwalNo">
-      <bpmn:incoming>F15</bpmn:incoming>
-      <bpmn:outgoing>F_JadwalOK</bpmn:outgoing>
-      <bpmn:outgoing>F_JadwalNo</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_GantiDokter" name="Pilih dokter / jadwal alternatif">
-      <bpmn:incoming>F_JadwalNo</bpmn:incoming>
-      <bpmn:outgoing>F16</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:exclusiveGateway id="Merge_Jadwal">
-      <bpmn:incoming>F_JadwalOK</bpmn:incoming>
-      <bpmn:incoming>F16</bpmn:incoming>
-      <bpmn:outgoing>F17</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_PilihPenjamin" name="Pilih skema penjamin (Umum / Asuransi / BPJS)">
-      <bpmn:documentation>Hirarki: 1.6 Verifikasi Penjamin. Pilih metode pembiayaan.</bpmn:documentation>
-      <bpmn:incoming>F17</bpmn:incoming>
-      <bpmn:outgoing>F18</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:exclusiveGateway id="GW_Penjamin" name="Menggunakan asuransi/BPJS?" default="F_Umum">
-      <bpmn:incoming>F18</bpmn:incoming>
-      <bpmn:outgoing>F_Umum</bpmn:outgoing>
-      <bpmn:outgoing>F_Asuransi</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:userTask id="Task_InputKartuAsuransi" name="Input no. kartu asuransi / BPJS &amp; verifikasi eligibility">
-      <bpmn:documentation>Validasi nomor kartu, status kepesertaan aktif, faskes terdaftar</bpmn:documentation>
-      <bpmn:incoming>F_Asuransi</bpmn:incoming>
-      <bpmn:outgoing>F19</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:exclusiveGateway id="Merge_Penjamin">
-      <bpmn:incoming>F_Umum</bpmn:incoming>
-      <bpmn:incoming>F19</bpmn:incoming>
-      <bpmn:outgoing>F20</bpmn:outgoing>
-    </bpmn:exclusiveGateway>
-    <bpmn:serviceTask id="Task_BuatAppointmentWalkin" name="Buat Patient Appointment walk-in (BOOKED → CHECK_IN)">
-      <bpmn:documentation>Hirarki: 1.2 › Appointment Walk-in. Appointment otomatis check-in karena pasien sudah hadir.</bpmn:documentation>
-      <bpmn:incoming>F20</bpmn:incoming>
-      <bpmn:outgoing>F21</bpmn:outgoing>
+    <bpmn:serviceTask id="Task_AudioBellDisplay" name="Putar audio bell pemanggilan antrian &#38; perbarui display loket">
+      <bpmn:documentation>Sistem memutar suara panggil nomor antrian dan memperbarui antrian pada display televisi ruang tunggu</bpmn:documentation>
+      <bpmn:incoming>F27</bpmn:incoming>
+      <bpmn:outgoing>F28</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:userTask id="Task_KonfirmasiRingkasan" name="Konfirmasi ringkasan pendaftaran ke pasien">
-      <bpmn:documentation>Tampilkan: pasien, poli, dokter, penjamin, estimasi waktu. Staf konfirmasi lisan.</bpmn:documentation>
-      <bpmn:incoming>F21</bpmn:incoming>
-      <bpmn:outgoing>F22</bpmn:outgoing>
-    </bpmn:userTask>
-    <bpmn:serviceTask id="Task_GenerateTiket" name="Generate nomor tiket antrian triase">
-      <bpmn:documentation>Hirarki: 1.7. Antrian Rawat Jalan. Format: T-NNN.</bpmn:documentation>
-      <bpmn:incoming>F22</bpmn:incoming>
-      <bpmn:outgoing>F23</bpmn:outgoing>
+    <bpmn:serviceTask id="Task_CetakTiketThermal" name="Cetak bukti pendaftaran &#38; tiket antrian thermal">
+      <bpmn:documentation>Printer loket mencetak bukti pendaftaran resmi dan tiket nomor antrian triase ber-QR code</bpmn:documentation>
+      <bpmn:incoming>F26</bpmn:incoming>
+      <bpmn:outgoing>F27</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Task_CetakTiket" name="Cetak tiket antrian (thermal printer)">
-      <bpmn:documentation>Output: tiket kertas dengan no. antrian, nama pasien, poli, dokter, QR code</bpmn:documentation>
-      <bpmn:incoming>F23</bpmn:incoming>
-      <bpmn:outgoing>F24</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:endEvent id="End_TerdaftarWalkin" name="Pasien terdaftar — menunggu dipanggil triase">
+    <bpmn:serviceTask id="Task_BuatKunjunganVisit" name="Sistem buat Outpatient Visit (Status: WAITING_TRIAGE)">
+      <bpmn:documentation>Sistem membuat dokumen kunjungan rawat jalan (OPV-2026-xxxx) dengan status WAITING_TRIAGE dan tautan poli &amp; dokter</bpmn:documentation>
       <bpmn:incoming>F24</bpmn:incoming>
-    </bpmn:endEvent>
-    <bpmn:sequenceFlow id="F01" sourceRef="Start_WalkIn" targetRef="Task_DatangLoket"/>
-    <bpmn:sequenceFlow id="F02" sourceRef="Task_DatangLoket" targetRef="Task_SerahDokumen"/>
-    <bpmn:sequenceFlow id="F03" sourceRef="Task_SerahDokumen" targetRef="Task_TerimaPasien"/>
-    <bpmn:sequenceFlow id="F04" sourceRef="Task_TerimaPasien" targetRef="Task_CariPasien"/>
-    <bpmn:sequenceFlow id="F05" sourceRef="Task_CariPasien" targetRef="GW_PasienAda"/>
-    <bpmn:sequenceFlow id="F_Ada" name="Ya (sudah terdaftar)" sourceRef="GW_PasienAda" targetRef="Merge_Pasien"/>
-    <bpmn:sequenceFlow id="F_Baru" name="Tidak (pasien baru)" sourceRef="GW_PasienAda" targetRef="Task_RegBaru"/>
-    <bpmn:sequenceFlow id="F06" sourceRef="Task_RegBaru" targetRef="Task_BuatMRN"/>
-    <bpmn:sequenceFlow id="F07" sourceRef="Task_BuatMRN" targetRef="Task_InputDemografi"/>
-    <bpmn:sequenceFlow id="F08" sourceRef="Task_InputDemografi" targetRef="Merge_Pasien"/>
-    <bpmn:sequenceFlow id="F09" sourceRef="Merge_Pasien" targetRef="Task_VerifIdentitas"/>
-    <bpmn:sequenceFlow id="F10" sourceRef="Task_VerifIdentitas" targetRef="GW_DataLengkap"/>
-    <bpmn:sequenceFlow id="F_Lengkap" name="Ya" sourceRef="GW_DataLengkap" targetRef="Merge_DataOK"/>
-    <bpmn:sequenceFlow id="F_TidakLengkap" name="Tidak" sourceRef="GW_DataLengkap" targetRef="Task_LengkapiData"/>
-    <bpmn:sequenceFlow id="F11" sourceRef="Task_LengkapiData" targetRef="Merge_DataOK"/>
-    <bpmn:sequenceFlow id="F12" sourceRef="Merge_DataOK" targetRef="Task_PilihPoli"/>
-    <bpmn:sequenceFlow id="F13" sourceRef="Task_PilihPoli" targetRef="Task_PilihDokter"/>
-    <bpmn:sequenceFlow id="F14" sourceRef="Task_PilihDokter" targetRef="Task_CekJadwal"/>
-    <bpmn:sequenceFlow id="F15" sourceRef="Task_CekJadwal" targetRef="GW_JadwalTersedia"/>
-    <bpmn:sequenceFlow id="F_JadwalOK" name="Ya" sourceRef="GW_JadwalTersedia" targetRef="Merge_Jadwal"/>
-    <bpmn:sequenceFlow id="F_JadwalNo" name="Tidak (penuh)" sourceRef="GW_JadwalTersedia" targetRef="Task_GantiDokter"/>
-    <bpmn:sequenceFlow id="F16" sourceRef="Task_GantiDokter" targetRef="Merge_Jadwal"/>
-    <bpmn:sequenceFlow id="F17" sourceRef="Merge_Jadwal" targetRef="Task_PilihPenjamin"/>
-    <bpmn:sequenceFlow id="F18" sourceRef="Task_PilihPenjamin" targetRef="GW_Penjamin"/>
-    <bpmn:sequenceFlow id="F_Umum" name="Umum (bayar mandiri)" sourceRef="GW_Penjamin" targetRef="Merge_Penjamin"/>
-    <bpmn:sequenceFlow id="F_Asuransi" name="Asuransi / BPJS" sourceRef="GW_Penjamin" targetRef="Task_InputKartuAsuransi"/>
-    <bpmn:sequenceFlow id="F19" sourceRef="Task_InputKartuAsuransi" targetRef="Merge_Penjamin"/>
-    <bpmn:sequenceFlow id="F20" sourceRef="Merge_Penjamin" targetRef="Task_BuatAppointmentWalkin"/>
-    <bpmn:sequenceFlow id="F21" sourceRef="Task_BuatAppointmentWalkin" targetRef="Task_KonfirmasiRingkasan"/>
-    <bpmn:sequenceFlow id="F22" sourceRef="Task_KonfirmasiRingkasan" targetRef="Task_GenerateTiket"/>
-    <bpmn:sequenceFlow id="F23" sourceRef="Task_GenerateTiket" targetRef="Task_CetakTiket"/>
-    <bpmn:sequenceFlow id="F24" sourceRef="Task_CetakTiket" targetRef="End_TerdaftarWalkin"/>
+      <bpmn:outgoing>F25</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="Task_GenerateNomorTiket" name="Sistem generate nomor tiket antrian triase otomatis (T-xxx)">
+      <bpmn:documentation>Hirarki: 1.7 Antrian Rawat Jalan. Penomoran antrian triase otomatis berurutan (T-xxx).</bpmn:documentation>
+      <bpmn:incoming>F25</bpmn:incoming>
+      <bpmn:outgoing>F26</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="F27" sourceRef="Task_CetakTiketThermal" targetRef="Task_AudioBellDisplay" />
+    <bpmn:sequenceFlow id="F26" sourceRef="Task_GenerateNomorTiket" targetRef="Task_CetakTiketThermal" />
+    <bpmn:sequenceFlow id="F25" sourceRef="Task_BuatKunjunganVisit" targetRef="Task_GenerateNomorTiket" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_Proc_RegWalkin">
     <bpmndi:BPMNPlane id="BPMNPlane_Proc_RegWalkin" bpmnElement="Collab_RegWalkin">
       <bpmndi:BPMNShape id="Part_RegWalkin_di" bpmnElement="Part_RegWalkin" isHorizontal="true">
-        <dc:Bounds x="160" y="60" width="5416" height="560"/>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_Pasien_di" bpmnElement="Lane_Pasien" isHorizontal="true">
-        <dc:Bounds x="190" y="60" width="5356" height="160"/>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Lane_StafReg_di" bpmnElement="Lane_StafReg" isHorizontal="true">
-        <dc:Bounds x="190" y="220" width="5356" height="240"/>
+        <dc:Bounds x="160" y="60" width="6316" height="760" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Lane_Sistem_di" bpmnElement="Lane_Sistem" isHorizontal="true">
-        <dc:Bounds x="190" y="460" width="5356" height="160"/>
+        <dc:Bounds x="190" y="690" width="6256" height="130" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_StafReg_di" bpmnElement="Lane_StafReg" isHorizontal="true">
+        <dc:Bounds x="190" y="220" width="6256" height="470" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Pasien_di" bpmnElement="Lane_Pasien" isHorizontal="true">
+        <dc:Bounds x="190" y="60" width="6256" height="160" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Start_WalkIn_di" bpmnElement="Start_WalkIn">
-        <dc:Bounds x="260" y="122" width="36" height="36"/>
+        <dc:Bounds x="260" y="122" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="235" y="163" width="86" height="24"/>
+          <dc:Bounds x="235" y="163" width="86" height="24" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_DatangLoket_di" bpmnElement="Task_DatangLoket">
-        <dc:Bounds x="440" y="100" width="120" height="80"/>
+        <dc:Bounds x="440" y="100" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_SerahDokumen_di" bpmnElement="Task_SerahDokumen">
-        <dc:Bounds x="620" y="100" width="120" height="80"/>
+      <bpmndi:BPMNShape id="Task_SerahkanIdentitasPenjamin_di" bpmnElement="Task_SerahkanIdentitasPenjamin">
+        <dc:Bounds x="620" y="100" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_TerimaPasien_di" bpmnElement="Task_TerimaPasien">
-        <dc:Bounds x="800" y="240" width="120" height="80"/>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_CariPasien_di" bpmnElement="Task_CariPasien">
-        <dc:Bounds x="980" y="240" width="120" height="80"/>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="GW_PasienAda_di" bpmnElement="GW_PasienAda" isMarkerVisible="true">
-        <dc:Bounds x="1160" y="255" width="50" height="50"/>
+      <bpmndi:BPMNShape id="GW_DuplikasiNIK_di" bpmnElement="GW_DuplikasiNIK" isMarkerVisible="true">
+        <dc:Bounds x="1880" y="255" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1140" y="225" width="90" height="24"/>
+          <dc:Bounds x="1865" y="225" width="81" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_RegBaru_di" bpmnElement="Task_RegBaru">
-        <dc:Bounds x="1340" y="350" width="120" height="80"/>
+      <bpmndi:BPMNShape id="Task_PeringatanDuplikat_di" bpmnElement="Task_PeringatanDuplikat">
+        <dc:Bounds x="2240" y="240" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_BuatMRN_di" bpmnElement="Task_BuatMRN">
-        <dc:Bounds x="1520" y="240" width="120" height="80"/>
+      <bpmndi:BPMNShape id="Merge_DataPasienOK_di" bpmnElement="Merge_DataPasienOK" isMarkerVisible="true">
+        <dc:Bounds x="2780" y="255" width="50" height="50" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_InputDemografi_di" bpmnElement="Task_InputDemografi">
-        <dc:Bounds x="1700" y="240" width="120" height="80"/>
+      <bpmndi:BPMNShape id="Task_PilihPoliDokter_di" bpmnElement="Task_PilihPoliDokter">
+        <dc:Bounds x="2960" y="240" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Merge_Pasien_di" bpmnElement="Merge_Pasien" isMarkerVisible="true">
-        <dc:Bounds x="1880" y="255" width="50" height="50"/>
+      <bpmndi:BPMNShape id="Task_CariPasienRME_di" bpmnElement="Task_CariPasienRME">
+        <dc:Bounds x="1360" y="290" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_VerifIdentitas_di" bpmnElement="Task_VerifIdentitas">
-        <dc:Bounds x="2060" y="240" width="120" height="80"/>
+      <bpmndi:BPMNShape id="Task_TerimaPasienBerkas_di" bpmnElement="Task_TerimaPasienBerkas">
+        <dc:Bounds x="800" y="290" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="GW_DataLengkap_di" bpmnElement="GW_DataLengkap" isMarkerVisible="true">
-        <dc:Bounds x="2240" y="255" width="50" height="50"/>
+      <bpmndi:BPMNShape id="Task_BukaModulRegistrasi_di" bpmnElement="Task_BukaModulRegistrasi">
+        <dc:Bounds x="980" y="290" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_InputNIKPasienBaru_di" bpmnElement="Task_InputNIKPasienBaru">
+        <dc:Bounds x="1520" y="370" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="GW_ModePendaftaran_di" bpmnElement="GW_ModePendaftaran" isMarkerVisible="true">
+        <dc:Bounds x="1160" y="305" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2220" y="225" width="90" height="24"/>
+          <dc:Bounds x="1156" y="260" width="59" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_LengkapiData_di" bpmnElement="Task_LengkapiData">
-        <dc:Bounds x="2420" y="350" width="120" height="80"/>
+      <bpmndi:BPMNShape id="Task_LengkapiFormPasienBaru_di" bpmnElement="Task_LengkapiFormPasienBaru">
+        <dc:Bounds x="2060" y="380" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Merge_DataOK_di" bpmnElement="Merge_DataOK" isMarkerVisible="true">
-        <dc:Bounds x="2600" y="255" width="50" height="50"/>
+      <bpmndi:BPMNShape id="Task_PilihPasienRME_di" bpmnElement="Task_PilihPasienRME">
+        <dc:Bounds x="2510" y="240" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_PilihPoli_di" bpmnElement="Task_PilihPoli">
-        <dc:Bounds x="2780" y="240" width="120" height="80"/>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_PilihDokter_di" bpmnElement="Task_PilihDokter">
-        <dc:Bounds x="2960" y="240" width="120" height="80"/>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_CekJadwal_di" bpmnElement="Task_CekJadwal">
-        <dc:Bounds x="3140" y="240" width="120" height="80"/>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="GW_JadwalTersedia_di" bpmnElement="GW_JadwalTersedia" isMarkerVisible="true">
-        <dc:Bounds x="3320" y="255" width="50" height="50"/>
+      <bpmndi:BPMNShape id="GW_KuotaJadwal_di" bpmnElement="GW_KuotaJadwal" isMarkerVisible="true">
+        <dc:Bounds x="3320" y="296" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="3300" y="225" width="90" height="24"/>
+          <dc:Bounds x="3307" y="266" width="77" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_GantiDokter_di" bpmnElement="Task_GantiDokter">
-        <dc:Bounds x="3500" y="350" width="120" height="80"/>
+      <bpmndi:BPMNShape id="Task_TawarkanAlternatifDokter_di" bpmnElement="Task_TawarkanAlternatifDokter">
+        <dc:Bounds x="3540" y="361" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Merge_Jadwal_di" bpmnElement="Merge_Jadwal" isMarkerVisible="true">
-        <dc:Bounds x="3680" y="255" width="50" height="50"/>
+      <bpmndi:BPMNShape id="Task_PilihMetodePembayaran_di" bpmnElement="Task_PilihMetodePembayaran">
+        <dc:Bounds x="3730" y="281" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_PilihPenjamin_di" bpmnElement="Task_PilihPenjamin">
-        <dc:Bounds x="3860" y="240" width="120" height="80"/>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="GW_Penjamin_di" bpmnElement="GW_Penjamin" isMarkerVisible="true">
-        <dc:Bounds x="4040" y="255" width="50" height="50"/>
+      <bpmndi:BPMNShape id="Gateway_1gk6d53_di" bpmnElement="GW_MetodePembayaran">
+        <dc:Bounds x="3885" y="365" width="50" height="50" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="4020" y="225" width="90" height="24"/>
+          <dc:Bounds x="3803.5" y="370" width="71" height="40" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_InputKartuAsuransi_di" bpmnElement="Task_InputKartuAsuransi">
-        <dc:Bounds x="4220" y="350" width="120" height="80"/>
+      <bpmndi:BPMNShape id="Task_InputPerusahaanPenjamin_di" bpmnElement="Task_InputPerusahaanPenjamin">
+        <dc:Bounds x="4250" y="590" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Merge_Penjamin_di" bpmnElement="Merge_Penjamin" isMarkerVisible="true">
-        <dc:Bounds x="4400" y="255" width="50" height="50"/>
+      <bpmndi:BPMNShape id="Task_InputVerifAsuransi_di" bpmnElement="Task_InputVerifAsuransi">
+        <dc:Bounds x="4250" y="490" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_BuatAppointmentWalkin_di" bpmnElement="Task_BuatAppointmentWalkin">
-        <dc:Bounds x="4580" y="240" width="120" height="80"/>
+      <bpmndi:BPMNShape id="Task_PilihKanalUmum_di" bpmnElement="Task_PilihKanalUmum">
+        <dc:Bounds x="4250" y="390" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_KonfirmasiRingkasan_di" bpmnElement="Task_KonfirmasiRingkasan">
-        <dc:Bounds x="4760" y="240" width="120" height="80"/>
+      <bpmndi:BPMNShape id="Task_InputVerifBPJS_di" bpmnElement="Task_InputVerifBPJS">
+        <dc:Bounds x="4250" y="281" width="120" height="80" />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_GenerateTiket_di" bpmnElement="Task_GenerateTiket">
-        <dc:Bounds x="4940" y="500" width="120" height="80"/>
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_CetakTiket_di" bpmnElement="Task_CetakTiket">
-        <dc:Bounds x="5120" y="500" width="120" height="80"/>
+      <bpmndi:BPMNShape id="Task_SubmitPendaftaran_di" bpmnElement="Task_SubmitPendaftaran">
+        <dc:Bounds x="4560" y="281" width="120" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="End_TerdaftarWalkin_di" bpmnElement="End_TerdaftarWalkin">
-        <dc:Bounds x="5300" y="262" width="36" height="36"/>
+        <dc:Bounds x="5680" y="102" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="5275" y="303" width="86" height="24"/>
+          <dc:Bounds x="5659" y="143" width="78" height="53" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_TerimaTiketTriase_di" bpmnElement="Task_TerimaTiketTriase">
+        <dc:Bounds x="5500" y="80" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CekDuplikasiNIK_di" bpmnElement="Task_CekDuplikasiNIK">
+        <dc:Bounds x="1730" y="710" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GenerateMRN_di" bpmnElement="Task_GenerateMRN">
+        <dc:Bounds x="2530" y="710" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CekJadwalKuota_di" bpmnElement="Task_CekJadwalKuota">
+        <dc:Bounds x="3160" y="700" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_AudioBellDisplay_di" bpmnElement="Task_AudioBellDisplay">
+        <dc:Bounds x="5300" y="720" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_CetakTiketThermal_di" bpmnElement="Task_CetakTiketThermal">
+        <dc:Bounds x="5120" y="720" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_BuatKunjunganVisit_di" bpmnElement="Task_BuatKunjunganVisit">
+        <dc:Bounds x="4760" y="720" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_GenerateNomorTiket_di" bpmnElement="Task_GenerateNomorTiket">
+        <dc:Bounds x="4940" y="720" width="120" height="80" />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="F01_di" bpmnElement="F01">
-        <di:waypoint x="296" y="140"/>
-        <di:waypoint x="440" y="140"/>
+        <di:waypoint x="296" y="140" />
+        <di:waypoint x="440" y="140" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F02_di" bpmnElement="F02">
-        <di:waypoint x="560" y="140"/>
-        <di:waypoint x="620" y="140"/>
+        <di:waypoint x="560" y="140" />
+        <di:waypoint x="620" y="140" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F03_di" bpmnElement="F03">
-        <di:waypoint x="740" y="140"/>
-        <di:waypoint x="770" y="140"/>
-        <di:waypoint x="770" y="280"/>
-        <di:waypoint x="800" y="280"/>
+        <di:waypoint x="740" y="140" />
+        <di:waypoint x="770" y="140" />
+        <di:waypoint x="770" y="330" />
+        <di:waypoint x="800" y="330" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F04_di" bpmnElement="F04">
-        <di:waypoint x="920" y="280"/>
-        <di:waypoint x="980" y="280"/>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F05_di" bpmnElement="F05">
-        <di:waypoint x="1100" y="280"/>
-        <di:waypoint x="1160" y="280"/>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F_Ada_di" bpmnElement="F_Ada">
-        <di:waypoint x="1210" y="280"/>
-        <di:waypoint x="1880" y="280"/>
+      <bpmndi:BPMNEdge id="F_PasienLama_di" bpmnElement="F_PasienLama">
+        <di:waypoint x="1210" y="330" />
+        <di:waypoint x="1360" y="330" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1530" y="262" width="40" height="14"/>
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F_Baru_di" bpmnElement="F_Baru">
-        <di:waypoint x="1210" y="280"/>
-        <di:waypoint x="1275" y="280"/>
-        <di:waypoint x="1275" y="390"/>
-        <di:waypoint x="1340" y="390"/>
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="1227" y="262" width="40" height="14"/>
+          <dc:Bounds x="1261" y="312" width="65" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F06_di" bpmnElement="F06">
-        <di:waypoint x="1460" y="390"/>
-        <di:waypoint x="1490" y="390"/>
-        <di:waypoint x="1490" y="280"/>
-        <di:waypoint x="1520" y="280"/>
+        <di:waypoint x="1480" y="350" />
+        <di:waypoint x="2570" y="350" />
+        <di:waypoint x="2570" y="320" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F07_di" bpmnElement="F07">
-        <di:waypoint x="1640" y="280"/>
-        <di:waypoint x="1700" y="280"/>
+        <di:waypoint x="2630" y="280" />
+        <di:waypoint x="2780" y="280" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F08_di" bpmnElement="F08">
-        <di:waypoint x="1820" y="280"/>
-        <di:waypoint x="1880" y="280"/>
+        <di:waypoint x="1640" y="410" />
+        <di:waypoint x="1670" y="410" />
+        <di:waypoint x="1670" y="750" />
+        <di:waypoint x="1730" y="750" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F09_di" bpmnElement="F09">
-        <di:waypoint x="1930" y="280"/>
-        <di:waypoint x="2060" y="280"/>
+        <di:waypoint x="1850" y="750" />
+        <di:waypoint x="1905" y="750" />
+        <di:waypoint x="1905" y="305" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10">
-        <di:waypoint x="2180" y="280"/>
-        <di:waypoint x="2240" y="280"/>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F_Lengkap_di" bpmnElement="F_Lengkap">
-        <di:waypoint x="2290" y="280"/>
-        <di:waypoint x="2600" y="280"/>
+      <bpmndi:BPMNEdge id="F_NIKDuplikat_di" bpmnElement="F_NIKDuplikat">
+        <di:waypoint x="1930" y="280" />
+        <di:waypoint x="2240" y="280" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2430" y="262" width="40" height="14"/>
+          <dc:Bounds x="2058" y="262" width="65" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F_TidakLengkap_di" bpmnElement="F_TidakLengkap">
-        <di:waypoint x="2290" y="280"/>
-        <di:waypoint x="2355" y="280"/>
-        <di:waypoint x="2355" y="390"/>
-        <di:waypoint x="2420" y="390"/>
+      <bpmndi:BPMNEdge id="F10_di" bpmnElement="F10">
+        <di:waypoint x="2360" y="280" />
+        <di:waypoint x="2510" y="280" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_NIKBaru_di" bpmnElement="F_NIKBaru">
+        <di:waypoint x="1930" y="280" />
+        <di:waypoint x="1995" y="280" />
+        <di:waypoint x="1995" y="420" />
+        <di:waypoint x="2060" y="420" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="2307" y="262" width="40" height="14"/>
+          <dc:Bounds x="1945" y="262" width="45" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F11_di" bpmnElement="F11">
-        <di:waypoint x="2540" y="390"/>
-        <di:waypoint x="2570" y="390"/>
-        <di:waypoint x="2570" y="280"/>
-        <di:waypoint x="2600" y="280"/>
+        <di:waypoint x="2180" y="420" />
+        <di:waypoint x="2380" y="420" />
+        <di:waypoint x="2380" y="750" />
+        <di:waypoint x="2530" y="750" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F12_di" bpmnElement="F12">
-        <di:waypoint x="2650" y="280"/>
-        <di:waypoint x="2780" y="280"/>
+        <di:waypoint x="2650" y="750" />
+        <di:waypoint x="2805" y="750" />
+        <di:waypoint x="2805" y="305" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F13_di" bpmnElement="F13">
-        <di:waypoint x="2900" y="280"/>
-        <di:waypoint x="2960" y="280"/>
+        <di:waypoint x="2830" y="280" />
+        <di:waypoint x="2960" y="280" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F14_di" bpmnElement="F14">
-        <di:waypoint x="3080" y="280"/>
-        <di:waypoint x="3140" y="280"/>
+        <di:waypoint x="3080" y="280" />
+        <di:waypoint x="3115" y="280" />
+        <di:waypoint x="3115" y="740" />
+        <di:waypoint x="3160" y="740" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F15_di" bpmnElement="F15">
-        <di:waypoint x="3260" y="280"/>
-        <di:waypoint x="3320" y="280"/>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F_JadwalOK_di" bpmnElement="F_JadwalOK">
-        <di:waypoint x="3370" y="280"/>
-        <di:waypoint x="3680" y="280"/>
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="3510" y="262" width="40" height="14"/>
-        </bpmndi:BPMNLabel>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F_JadwalNo_di" bpmnElement="F_JadwalNo">
-        <di:waypoint x="3370" y="280"/>
-        <di:waypoint x="3435" y="280"/>
-        <di:waypoint x="3435" y="390"/>
-        <di:waypoint x="3500" y="390"/>
-        <bpmndi:BPMNLabel>
-          <dc:Bounds x="3387" y="262" width="40" height="14"/>
-        </bpmndi:BPMNLabel>
+        <di:waypoint x="3280" y="740" />
+        <di:waypoint x="3345" y="740" />
+        <di:waypoint x="3345" y="346" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F16_di" bpmnElement="F16">
-        <di:waypoint x="3620" y="390"/>
-        <di:waypoint x="3650" y="390"/>
-        <di:waypoint x="3650" y="280"/>
-        <di:waypoint x="3680" y="280"/>
+        <di:waypoint x="3600" y="441" />
+        <di:waypoint x="3600" y="480" />
+        <di:waypoint x="3020" y="480" />
+        <di:waypoint x="3020" y="320" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F17_di" bpmnElement="F17">
-        <di:waypoint x="3730" y="280"/>
-        <di:waypoint x="3860" y="280"/>
+      <bpmndi:BPMNEdge id="F_KuotaOK_di" bpmnElement="F_KuotaOK">
+        <di:waypoint x="3370" y="321" />
+        <di:waypoint x="3730" y="321" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3411" y="303" width="42" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F18_di" bpmnElement="F18">
-        <di:waypoint x="3980" y="280"/>
-        <di:waypoint x="4040" y="280"/>
+        <di:waypoint x="3850" y="321" />
+        <di:waypoint x="3910" y="321" />
+        <di:waypoint x="3910" y="365" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F_Umum_di" bpmnElement="F_Umum">
-        <di:waypoint x="4090" y="280"/>
-        <di:waypoint x="4400" y="280"/>
+      <bpmndi:BPMNEdge id="F_BPJS_di" bpmnElement="F_BPJS">
+        <di:waypoint x="3931" y="386" />
+        <di:waypoint x="4250" y="331" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="4230" y="262" width="40" height="14"/>
+          <dc:Bounds x="4049" y="340" width="84" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F_Asuransi_di" bpmnElement="F_Asuransi">
-        <di:waypoint x="4090" y="280"/>
-        <di:waypoint x="4155" y="280"/>
-        <di:waypoint x="4155" y="390"/>
-        <di:waypoint x="4220" y="390"/>
+        <di:waypoint x="3910" y="415" />
+        <di:waypoint x="3910" y="530" />
+        <di:waypoint x="4250" y="530" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="4107" y="262" width="40" height="14"/>
+          <dc:Bounds x="4049" y="512" width="82" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F19_di" bpmnElement="F19">
-        <di:waypoint x="4340" y="390"/>
-        <di:waypoint x="4370" y="390"/>
-        <di:waypoint x="4370" y="280"/>
-        <di:waypoint x="4400" y="280"/>
+      <bpmndi:BPMNEdge id="F_Perusahaan_di" bpmnElement="F_Perusahaan">
+        <di:waypoint x="3910" y="415" />
+        <di:waypoint x="3910" y="630" />
+        <di:waypoint x="4250" y="630" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4073" y="612" width="60" height="27" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F20_di" bpmnElement="F20">
-        <di:waypoint x="4450" y="280"/>
-        <di:waypoint x="4580" y="280"/>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F21_di" bpmnElement="F21">
-        <di:waypoint x="4700" y="280"/>
-        <di:waypoint x="4760" y="280"/>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F22_di" bpmnElement="F22">
-        <di:waypoint x="4880" y="280"/>
-        <di:waypoint x="4910" y="280"/>
-        <di:waypoint x="4910" y="540"/>
-        <di:waypoint x="4940" y="540"/>
-      </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F23_di" bpmnElement="F23">
-        <di:waypoint x="5060" y="540"/>
-        <di:waypoint x="5120" y="540"/>
+      <bpmndi:BPMNEdge id="F_Umum_di" bpmnElement="F_Umum">
+        <di:waypoint x="3910" y="415" />
+        <di:waypoint x="3910" y="430" />
+        <di:waypoint x="4250" y="430" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="4046" y="412" width="78" height="14" />
+        </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F24_di" bpmnElement="F24">
-        <di:waypoint x="5240" y="540"/>
-        <di:waypoint x="5270" y="540"/>
-        <di:waypoint x="5270" y="280"/>
-        <di:waypoint x="5300" y="280"/>
+        <di:waypoint x="4680" y="321" />
+        <di:waypoint x="4720" y="321" />
+        <di:waypoint x="4720" y="760" />
+        <di:waypoint x="4760" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F28_di" bpmnElement="F28">
+        <di:waypoint x="5420" y="760" />
+        <di:waypoint x="5460" y="760" />
+        <di:waypoint x="5460" y="120" />
+        <di:waypoint x="5500" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F04_di" bpmnElement="F04">
+        <di:waypoint x="920" y="330" />
+        <di:waypoint x="980" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F05_di" bpmnElement="F05">
+        <di:waypoint x="1100" y="330" />
+        <di:waypoint x="1160" y="330" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_PasienBaru_di" bpmnElement="F_PasienBaru">
+        <di:waypoint x="1185" y="355" />
+        <di:waypoint x="1185" y="410" />
+        <di:waypoint x="1520" y="410" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1166" y="376" width="60" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F_KuotaPenuh_di" bpmnElement="F_KuotaPenuh">
+        <di:waypoint x="3356" y="335" />
+        <di:waypoint x="3390" y="381" />
+        <di:waypoint x="3540" y="395" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="3436" y="370" width="64" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0fbzp5f_di" bpmnElement="Flow_0fbzp5f">
+        <di:waypoint x="4370" y="321" />
+        <di:waypoint x="4560" y="321" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1muyp1h_di" bpmnElement="Flow_1muyp1h">
+        <di:waypoint x="4370" y="430" />
+        <di:waypoint x="4490" y="430" />
+        <di:waypoint x="4490" y="321" />
+        <di:waypoint x="4560" y="321" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qf8wxx_di" bpmnElement="Flow_1qf8wxx">
+        <di:waypoint x="4370" y="530" />
+        <di:waypoint x="4490" y="530" />
+        <di:waypoint x="4490" y="321" />
+        <di:waypoint x="4560" y="321" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ezkies_di" bpmnElement="Flow_0ezkies">
+        <di:waypoint x="4370" y="630" />
+        <di:waypoint x="4490" y="630" />
+        <di:waypoint x="4490" y="321" />
+        <di:waypoint x="4560" y="321" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F29_di" bpmnElement="F29">
+        <di:waypoint x="5620" y="120" />
+        <di:waypoint x="5680" y="120" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F27_di" bpmnElement="F27">
+        <di:waypoint x="5240" y="760" />
+        <di:waypoint x="5300" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F26_di" bpmnElement="F26">
+        <di:waypoint x="5060" y="760" />
+        <di:waypoint x="5120" y="760" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="F25_di" bpmnElement="F25">
+        <di:waypoint x="4880" y="760" />
+        <di:waypoint x="4940" y="760" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

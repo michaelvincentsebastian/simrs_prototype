@@ -994,9 +994,23 @@ function renderRecentVisitsTableHtml() {
               <td class="p-space-sm text-ink-soft">${v.practitionerName}</td>
               <td class="p-space-sm">
                 <span class="px-2 py-0.5 rounded font-caption text-caption font-semibold ${
-                  v.payerType === 'BPJS' ? 'bg-info-tint text-info' : v.payerType === 'Asuransi' ? 'bg-purple-50 text-purple-700' : 'bg-surface-container-low text-ink-soft border border-line/40'
+                  v.payerType === 'BPJS' 
+                    ? 'bg-info-tint text-info' 
+                    : v.payerType === 'Asuransi' 
+                    ? 'bg-purple-50 text-purple-700' 
+                    : v.payerType === 'Perusahaan'
+                    ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                    : 'bg-surface-container-low text-ink-soft border border-line/40'
                 }">
-                  ${v.payerType === 'BPJS' ? 'BPJS Kesehatan' : v.payerType === 'Asuransi' ? 'Asuransi Swasta' : `Umum (${v.paymentSubMethod || 'Cash'})`}
+                  ${
+                    v.payerType === 'BPJS' 
+                      ? 'BPJS Kesehatan' 
+                      : v.payerType === 'Asuransi' 
+                      ? 'Asuransi Swasta' 
+                      : v.payerType === 'Perusahaan'
+                      ? `Perusahaan: ${v.companyName ? (v.companyName.length > 20 ? v.companyName.slice(0, 18) + '...' : v.companyName) : (v.guarantorCode || 'Penjamin')}`
+                      : `Umum (${v.paymentSubMethod || 'Cash'})`
+                  }
                 </span>
               </td>
               <td class="p-space-sm text-right space-x-1">
@@ -1232,6 +1246,14 @@ function selectOldPatient(patientId) {
     handleOldPaymentMethodChange("Asuransi");
     const cardNo = document.getElementById("old-payment-card-no");
     if (cardNo) cardNo.value = patient.payerMemberNo || "";
+  } else if (patient.payerType === "Perusahaan") {
+    const radioCorp = document.querySelector('input[name="old_payment_method"][value="Perusahaan"]');
+    if (radioCorp) radioCorp.checked = true;
+    handleOldPaymentMethodChange("Perusahaan");
+    const compName = document.getElementById("old-payment-company-name");
+    const compCode = document.getElementById("old-payment-company-code");
+    if (compName) compName.value = patient.companyName || "";
+    if (compCode) compCode.value = patient.guarantorCode || patient.payerMemberNo || "";
   } else {
     const radioUmum = document.querySelector('input[name="old_payment_method"][value="Umum"]');
     if (radioUmum) radioUmum.checked = true;
@@ -1286,15 +1308,52 @@ function handleOldDoctorChange(docId) {
   }
 }
 
+function handleOldSubPaymentChange(subVal) {
+  const subTypes = ["cash", "credit", "qris", "va"];
+  subTypes.forEach(t => {
+    const el = document.getElementById(`old-subdetail-${t}`);
+    if (el) {
+      if (t === subVal.toLowerCase()) {
+        el.classList.remove("hidden");
+      } else {
+        el.classList.add("hidden");
+      }
+    }
+  });
+  if (subVal === "VA") {
+    const bank = document.getElementById("old-va-bank")?.value || "BCA";
+    generateOldVaNumber(bank);
+  }
+}
+
+function generateOldVaNumber(bank) {
+  const codes = { BCA: "88019", Mandiri: "89012", BRI: "12845", BNI: "98801", Permata: "84551" };
+  const prefix = codes[bank] || "88019";
+  const mrnDigits = selectedOldPatient?.mrNo ? selectedOldPatient.mrNo.replace(/\D/g, "") : "0124";
+  const el = document.getElementById("old-va-number");
+  if (el) el.value = `${prefix}2026${mrnDigits.slice(-4).padStart(4, "0")}`;
+}
+
 function handleOldPaymentMethodChange(val) {
   const cardGroup = document.getElementById("old-payment-card-group");
   const subGroup = document.getElementById("old-payment-submethod-group");
-  if (val === "BPJS" || val === "Asuransi") {
+  const compGroup = document.getElementById("old-payment-company-group");
+
+  if (val === "Perusahaan") {
+    if (compGroup) compGroup.classList.remove("hidden");
+    if (cardGroup) cardGroup.classList.add("hidden");
+    if (subGroup) subGroup.classList.add("hidden");
+  } else if (val === "BPJS" || val === "Asuransi") {
     if (cardGroup) cardGroup.classList.remove("hidden");
+    if (compGroup) compGroup.classList.add("hidden");
     if (subGroup) subGroup.classList.add("hidden");
   } else {
-    if (cardGroup) cardGroup.classList.add("hidden");
+    // Umum
     if (subGroup) subGroup.classList.remove("hidden");
+    if (cardGroup) cardGroup.classList.add("hidden");
+    if (compGroup) compGroup.classList.add("hidden");
+    const activeSub = document.querySelector('input[name="old_sub_payment"]:checked')?.value || "Cash";
+    handleOldSubPaymentChange(activeSub);
   }
 }
 
@@ -1312,8 +1371,64 @@ function submitOldPatientRegistration(event) {
     const deptId = document.getElementById("old-reg-poli")?.value || SIMRS_MASTER_DATA.departments[0].id;
     const docId = document.getElementById("old-reg-doctor")?.value || SIMRS_MASTER_DATA.practitioners[0].id;
     const method = document.querySelector('input[name="old_payment_method"]:checked')?.value || "Umum";
-    const subPayment = method === "Umum" ? (document.querySelector('input[name="old_sub_payment"]:checked')?.value || "Cash") : null;
-    const cardNo = document.getElementById("old-payment-card-no")?.value || "-";
+
+    let subPayment = null;
+    let paymentDetails = null;
+    let paymentSummary = "";
+    let companyName = null;
+    let guarantorCode = null;
+    let guarantorLetterNo = null;
+    let cardNo = "-";
+
+    if (method === "Perusahaan") {
+      companyName = document.getElementById("old-payment-company-name")?.value.trim() || "";
+      guarantorCode = document.getElementById("old-payment-company-code")?.value.trim() || "";
+      guarantorLetterNo = document.getElementById("old-payment-company-letter")?.value.trim() || null;
+      if (!companyName) {
+        throw new Error("Nama Perusahaan Penjamin wajib diisi!");
+      }
+      if (!guarantorCode) {
+        throw new Error("Kode Penjamin dari Perusahaan wajib diisi!");
+      }
+      cardNo = guarantorCode;
+      paymentSummary = `Perusahaan: ${companyName} (${guarantorCode})`;
+    } else if (method === "Umum") {
+      subPayment = document.querySelector('input[name="old_sub_payment"]:checked')?.value || "Cash";
+      if (subPayment === "Cash") {
+        const note = document.getElementById("old-cash-note")?.value.trim() || "Tunai di Kasir";
+        const amt = document.getElementById("old-cash-amount")?.value.trim() || "";
+        paymentDetails = { note, amount: amt };
+        paymentSummary = `Umum (Cash${note ? `: ${note}` : ''})`;
+      } else if (subPayment === "Credit") {
+        const bank = document.getElementById("old-credit-bank")?.value || "BCA";
+        const last4 = document.getElementById("old-credit-last4")?.value.trim() || "";
+        const approval = document.getElementById("old-credit-approval")?.value.trim() || "";
+        if (!last4) {
+          throw new Error("4 Digit Terakhir Nomor Kartu wajib diisi untuk transaksi Credit/Debit!");
+        }
+        paymentDetails = { bank, last4, approval };
+        paymentSummary = `Umum (Credit/Debit ${bank} *${last4})`;
+      } else if (subPayment === "QRIS") {
+        const provider = document.getElementById("old-qris-provider")?.value || "QRIS";
+        const rrn = document.getElementById("old-qris-rrn")?.value.trim() || "";
+        if (!rrn) {
+          throw new Error("Nomor Referensi (RRN) QRIS wajib diisi!");
+        }
+        paymentDetails = { provider, rrn };
+        paymentSummary = `Umum (QRIS - ${provider}: ${rrn})`;
+      } else if (subPayment === "VA") {
+        const bank = document.getElementById("old-va-bank")?.value || "BCA";
+        const vaNo = document.getElementById("old-va-number")?.value.trim() || "";
+        if (!vaNo) {
+          throw new Error("Nomor Virtual Account (VA) wajib diisi!");
+        }
+        paymentDetails = { bank, vaNo };
+        paymentSummary = `Umum (VA ${bank}: ${vaNo})`;
+      }
+    } else {
+      cardNo = document.getElementById("old-payment-card-no")?.value.trim() || "-";
+      paymentSummary = `${method === "BPJS" ? "BPJS Kesehatan" : "Asuransi Swasta"} (${cardNo})`;
+    }
 
     const registration = {
       patientId: selectedOldPatient.id,
@@ -1324,6 +1439,11 @@ function submitOldPatientRegistration(event) {
       payerType: method,
       paymentSubMethod: subPayment,
       payerMemberNo: cardNo,
+      companyName: companyName,
+      guarantorCode: guarantorCode,
+      guarantorLetterNo: guarantorLetterNo,
+      paymentDetails: paymentDetails,
+      paymentDetailSummary: paymentSummary,
       source: "Walk-in"
     };
 
@@ -1335,7 +1455,8 @@ function submitOldPatientRegistration(event) {
       patientName: visit.patientName,
       mrNo: visit.mrNo,
       poliName: visit.departmentName,
-      doctorName: visit.practitionerName
+      doctorName: visit.practitionerName,
+      paymentMethodText: paymentSummary
     });
 
     showToast(`Pendaftaran berhasil · Tiket ${visit.ticketNo} dicetak untuk ${visit.patientName}`, "success");
@@ -1392,15 +1513,51 @@ function handleNewPoliChange(deptId) {
   }
 }
 
+function handleNewSubPaymentChange(subVal) {
+  const subTypes = ["cash", "credit", "qris", "va"];
+  subTypes.forEach(t => {
+    const el = document.getElementById(`new-subdetail-${t}`);
+    if (el) {
+      if (t === subVal.toLowerCase()) {
+        el.classList.remove("hidden");
+      } else {
+        el.classList.add("hidden");
+      }
+    }
+  });
+  if (subVal === "VA") {
+    const bank = document.getElementById("new-va-bank")?.value || "BCA";
+    generateNewVaNumber(bank);
+  }
+}
+
+function generateNewVaNumber(bank) {
+  const codes = { BCA: "88019", Mandiri: "89012", BRI: "12845", BNI: "98801", Permata: "84551" };
+  const prefix = codes[bank] || "88019";
+  const el = document.getElementById("new-va-number");
+  if (el) el.value = `${prefix}20268899`;
+}
+
 function handleNewPaymentMethodChange(val) {
   const cardGroup = document.getElementById("new-payment-card-group");
   const subGroup = document.getElementById("new-payment-submethod-group");
-  if (val === "BPJS" || val === "Asuransi") {
+  const compGroup = document.getElementById("new-payment-company-group");
+
+  if (val === "Perusahaan") {
+    if (compGroup) compGroup.classList.remove("hidden");
+    if (cardGroup) cardGroup.classList.add("hidden");
+    if (subGroup) subGroup.classList.add("hidden");
+  } else if (val === "BPJS" || val === "Asuransi") {
     if (cardGroup) cardGroup.classList.remove("hidden");
+    if (compGroup) compGroup.classList.add("hidden");
     if (subGroup) subGroup.classList.add("hidden");
   } else {
-    if (cardGroup) cardGroup.classList.add("hidden");
+    // Umum
     if (subGroup) subGroup.classList.remove("hidden");
+    if (cardGroup) cardGroup.classList.add("hidden");
+    if (compGroup) compGroup.classList.add("hidden");
+    const activeSub = document.querySelector('input[name="new_sub_payment"]:checked')?.value || "Cash";
+    handleNewSubPaymentChange(activeSub);
   }
 }
 
@@ -1416,8 +1573,64 @@ function submitNewPatientRegistration(event) {
     const address = document.getElementById("new-reg-address")?.value.trim();
     const bloodType = document.getElementById("new-reg-blood")?.value || "O+";
     const paymentMethod = document.querySelector('input[name="new_payment_method"]:checked')?.value || "Umum";
-    const subPayment = paymentMethod === "Umum" ? (document.querySelector('input[name="new_sub_payment"]:checked')?.value || "Cash") : null;
-    const cardNo = document.getElementById("new-payment-card-no")?.value.trim() || "-";
+
+    let subPayment = null;
+    let paymentDetails = null;
+    let paymentSummary = "";
+    let companyName = null;
+    let guarantorCode = null;
+    let guarantorLetterNo = null;
+    let cardNo = "-";
+
+    if (paymentMethod === "Perusahaan") {
+      companyName = document.getElementById("new-payment-company-name")?.value.trim() || "";
+      guarantorCode = document.getElementById("new-payment-company-code")?.value.trim() || "";
+      guarantorLetterNo = document.getElementById("new-payment-company-letter")?.value.trim() || null;
+      if (!companyName) {
+        throw new Error("Nama Perusahaan Penjamin wajib diisi!");
+      }
+      if (!guarantorCode) {
+        throw new Error("Kode Penjamin dari Perusahaan wajib diisi!");
+      }
+      cardNo = guarantorCode;
+      paymentSummary = `Perusahaan: ${companyName} (${guarantorCode})`;
+    } else if (paymentMethod === "Umum") {
+      subPayment = document.querySelector('input[name="new_sub_payment"]:checked')?.value || "Cash";
+      if (subPayment === "Cash") {
+        const note = document.getElementById("new-cash-note")?.value.trim() || "Tunai di Kasir";
+        const amt = document.getElementById("new-cash-amount")?.value.trim() || "";
+        paymentDetails = { note, amount: amt };
+        paymentSummary = `Umum (Cash${note ? `: ${note}` : ''})`;
+      } else if (subPayment === "Credit") {
+        const bank = document.getElementById("new-credit-bank")?.value || "BCA";
+        const last4 = document.getElementById("new-credit-last4")?.value.trim() || "";
+        const approval = document.getElementById("new-credit-approval")?.value.trim() || "";
+        if (!last4) {
+          throw new Error("4 Digit Terakhir Nomor Kartu wajib diisi untuk transaksi Credit/Debit!");
+        }
+        paymentDetails = { bank, last4, approval };
+        paymentSummary = `Umum (Credit/Debit ${bank} *${last4})`;
+      } else if (subPayment === "QRIS") {
+        const provider = document.getElementById("new-qris-provider")?.value || "QRIS";
+        const rrn = document.getElementById("new-qris-rrn")?.value.trim() || "";
+        if (!rrn) {
+          throw new Error("Nomor Referensi (RRN) QRIS wajib diisi!");
+        }
+        paymentDetails = { provider, rrn };
+        paymentSummary = `Umum (QRIS - ${provider}: ${rrn})`;
+      } else if (subPayment === "VA") {
+        const bank = document.getElementById("new-va-bank")?.value || "BCA";
+        const vaNo = document.getElementById("new-va-number")?.value.trim() || "";
+        if (!vaNo) {
+          throw new Error("Nomor Virtual Account (VA) wajib diisi!");
+        }
+        paymentDetails = { bank, vaNo };
+        paymentSummary = `Umum (VA ${bank}: ${vaNo})`;
+      }
+    } else {
+      cardNo = document.getElementById("new-payment-card-no")?.value.trim() || "-";
+      paymentSummary = `${paymentMethod === "BPJS" ? "BPJS Kesehatan" : "Asuransi Swasta"} (${cardNo})`;
+    }
 
     if (!nik || nik.length < 16) {
       throw new Error("NIK harus terdiri dari 16 digit angka!");
@@ -1438,7 +1651,9 @@ function submitNewPatientRegistration(event) {
       address: address,
       bloodType: bloodType,
       payerType: paymentMethod,
-      payerMemberNo: cardNo
+      payerMemberNo: cardNo,
+      companyName: companyName,
+      guarantorCode: guarantorCode
     });
 
     const deptId = document.getElementById("new-reg-poli")?.value || SIMRS_MASTER_DATA.departments[0].id;
@@ -1453,6 +1668,11 @@ function submitNewPatientRegistration(event) {
       payerType: paymentMethod,
       paymentSubMethod: subPayment,
       payerMemberNo: cardNo,
+      companyName: companyName,
+      guarantorCode: guarantorCode,
+      guarantorLetterNo: guarantorLetterNo,
+      paymentDetails: paymentDetails,
+      paymentDetailSummary: paymentSummary,
       source: "Walk-in"
     });
 
@@ -1463,7 +1683,8 @@ function submitNewPatientRegistration(event) {
       patientName: visit.patientName,
       mrNo: visit.mrNo,
       poliName: visit.departmentName,
-      doctorName: visit.practitionerName
+      doctorName: visit.practitionerName,
+      paymentMethodText: paymentSummary
     });
 
     showToast(`Pasien Baru ${newPatient.name} terdaftar dengan No. RM: ${newPatient.mrNo}! Tiket: ${visit.ticketNo}`, "success");
@@ -1476,12 +1697,13 @@ function submitNewPatientRegistration(event) {
   }
 }
 
-function populateSuccessModal({ ticketNo, patientName, mrNo, poliName, doctorName }) {
+function populateSuccessModal({ ticketNo, patientName, mrNo, poliName, doctorName, paymentMethodText }) {
   const mNumber = document.getElementById("ticket-modal-number");
   const mName = document.getElementById("ticket-modal-name");
   const mMrn = document.getElementById("ticket-modal-mrn");
   const mPoli = document.getElementById("ticket-modal-poli");
   const mDoc = document.getElementById("ticket-modal-doctor");
+  const mPayment = document.getElementById("ticket-modal-payment");
   const mTime = document.getElementById("ticket-modal-time");
 
   if (mNumber) mNumber.textContent = ticketNo;
@@ -1489,6 +1711,7 @@ function populateSuccessModal({ ticketNo, patientName, mrNo, poliName, doctorNam
   if (mMrn) mMrn.textContent = mrNo;
   if (mPoli) mPoli.textContent = poliName;
   if (mDoc) mDoc.textContent = doctorName;
+  if (mPayment) mPayment.textContent = paymentMethodText || "Umum (Cash)";
   if (mTime) {
     const now = new Date();
     mTime.textContent = `${now.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}, ${now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB`;
@@ -5697,35 +5920,78 @@ function updateDoctorDropdown(departmentId) {
 }
 
 function togglePayerMemberNo(payerType) {
-  const group = document.getElementById("payer-member-group");
-  if (payerType === "BPJS" || payerType === "Asuransi") {
-    group.classList.remove("hidden");
+  const memberGroup = document.getElementById("payer-member-group");
+  const companyGroup = document.getElementById("payer-company-group");
+  const umumGroup = document.getElementById("payer-umum-group");
+
+  if (payerType === "Perusahaan") {
+    if (companyGroup) companyGroup.classList.remove("hidden");
+    if (memberGroup) memberGroup.classList.add("hidden");
+    if (umumGroup) umumGroup.classList.add("hidden");
+  } else if (payerType === "BPJS" || payerType === "Asuransi") {
+    if (memberGroup) memberGroup.classList.remove("hidden");
+    if (companyGroup) companyGroup.classList.add("hidden");
+    if (umumGroup) umumGroup.classList.add("hidden");
   } else {
-    group.classList.add("hidden");
+    // Umum
+    if (umumGroup) umumGroup.classList.remove("hidden");
+    if (memberGroup) memberGroup.classList.add("hidden");
+    if (companyGroup) companyGroup.classList.add("hidden");
   }
 }
 
 function submitNewPatient(e) {
   e.preventDefault();
   try {
+    const payerType = document.getElementById("reg-payer").value;
+    let companyName = null;
+    let guarantorCode = null;
+    let payerMemberNo = "-";
+    let subPayment = null;
+    let paymentSummary = "";
+
+    if (payerType === "Perusahaan") {
+      companyName = document.getElementById("reg-company-name")?.value.trim() || "";
+      guarantorCode = document.getElementById("reg-company-code")?.value.trim() || "";
+      if (!companyName) throw new Error("Nama Perusahaan Penjamin wajib diisi!");
+      if (!guarantorCode) throw new Error("Kode Penjamin dari Perusahaan wajib diisi!");
+      payerMemberNo = guarantorCode;
+      paymentSummary = `Perusahaan: ${companyName} (${guarantorCode})`;
+    } else if (payerType === "Umum") {
+      subPayment = document.getElementById("reg-sub-payment")?.value || "Cash";
+      const ref = document.getElementById("reg-payment-ref")?.value.trim() || "";
+      paymentSummary = `Umum (${subPayment}${ref ? `: ${ref}` : ''})`;
+    } else {
+      payerMemberNo = document.getElementById("reg-payer-no") ? document.getElementById("reg-payer-no").value : "-";
+      paymentSummary = `${payerType === "BPJS" ? "BPJS Kesehatan" : "Asuransi Swasta"} (${payerMemberNo})`;
+    }
+
     const patientData = {
       nik: document.getElementById("reg-nik").value,
       name: document.getElementById("reg-name").value,
       gender: document.getElementById("reg-gender").value,
       birthDate: document.getElementById("reg-birthdate").value,
       phone: document.getElementById("reg-phone").value,
-      payerType: document.getElementById("reg-payer").value,
-      payerMemberNo: document.getElementById("reg-payer-no") ? document.getElementById("reg-payer-no").value : "-"
+      payerType: payerType,
+      payerMemberNo: payerMemberNo,
+      companyName: companyName,
+      guarantorCode: guarantorCode
     };
 
     const patient = RegistrationService.createPatient(patientData);
 
     const registration = {
       patientId: patient.id,
+      patientName: patient.name,
+      mrNo: patient.mrNo,
       departmentId: document.getElementById("reg-poli").value,
       practitionerId: document.getElementById("reg-doctor").value,
-      payerType: patientData.payerType,
-      payerMemberNo: patientData.payerMemberNo,
+      payerType: payerType,
+      payerMemberNo: payerMemberNo,
+      companyName: companyName,
+      guarantorCode: guarantorCode,
+      paymentSubMethod: subPayment,
+      paymentDetailSummary: paymentSummary,
       source: "Walk-in"
     };
 
@@ -5744,6 +6010,14 @@ function printBuktiPendaftaran(visitId) {
   const visit = VisitStateService.findVisitById(visitId);
   if (!visit) return;
 
+  const paymentDisplay = visit.payerType === 'Perusahaan' 
+    ? `Perusahaan Penjamin: ${visit.companyName || '-'} (Kode: ${visit.guarantorCode || visit.payerMemberNo || '-'})`
+    : visit.payerType === 'BPJS'
+    ? `BPJS Kesehatan (No: ${visit.payerMemberNo || '-'})`
+    : visit.payerType === 'Asuransi'
+    ? `Asuransi Swasta (Polis: ${visit.payerMemberNo || '-'})`
+    : `Umum / Mandiri (${visit.paymentSubMethod || 'Cash'}${visit.paymentDetailSummary ? ` · ${visit.paymentDetailSummary}` : ''})`;
+
   const html = `
     <div class="max-w-sm mx-auto p-6 bg-surface border border-line rounded-xl text-center space-y-3 font-mono text-ink">
       <div class="border-b border-line pb-3">
@@ -5761,7 +6035,7 @@ function printBuktiPendaftaran(visitId) {
         <p><strong>Nama Pasien:</strong> ${visit.patientName}</p>
         <p><strong>No. Rekam Medis:</strong> ${visit.mrNo}</p>
         <p><strong>Dokter:</strong> ${visit.practitionerName}</p>
-        <p><strong>Penjamin:</strong> ${visit.payerType} ${visit.paymentSubMethod ? `(${visit.paymentSubMethod})` : ''}</p>
+        <p><strong>Penjamin / Bayar:</strong> ${paymentDisplay}</p>
         <p><strong>Waktu:</strong> ${new Date(visit.checkedInAt).toLocaleString('id-ID')}</p>
       </div>
 
