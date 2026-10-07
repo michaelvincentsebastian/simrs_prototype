@@ -743,10 +743,8 @@ function renderWorkspace(workspaceId) {
       renderRegDashboardView(container);
       break;
     case "registrasi":
-      renderRegistrasiWorkspace(container);
-      break;
     case "reg-queue":
-      renderRegQueueView(container);
+      renderRegistrasiWorkspace(container);
       break;
     case "reg-booking":
       renderRegBookingView(container);
@@ -998,7 +996,7 @@ function renderRecentVisitsTableHtml() {
                 <span class="px-2 py-0.5 rounded font-caption text-caption font-semibold ${
                   v.payerType === 'BPJS' ? 'bg-info-tint text-info' : v.payerType === 'Asuransi' ? 'bg-purple-50 text-purple-700' : 'bg-surface-container-low text-ink-soft border border-line/40'
                 }">
-                  ${v.payerType === 'BPJS' ? 'BPJS Kesehatan' : v.payerType === 'Asuransi' ? 'Asuransi Swasta' : 'Umum / Mandiri'}
+                  ${v.payerType === 'BPJS' ? 'BPJS Kesehatan' : v.payerType === 'Asuransi' ? 'Asuransi Swasta' : `Umum (${v.paymentSubMethod || 'Cash'})`}
                 </span>
               </td>
               <td class="p-space-sm text-right space-x-1">
@@ -1050,6 +1048,12 @@ function openWalkinRegistrationModal(initialMode = "old") {
 
   // Run initial patient search
   searchOldPatients();
+
+  // Initialize payment method visibility
+  const oldMethod = document.querySelector('input[name="old_payment_method"]:checked')?.value || "Umum";
+  const newMethod = document.querySelector('input[name="new_payment_method"]:checked')?.value || "Umum";
+  handleOldPaymentMethodChange(oldMethod);
+  handleNewPaymentMethodChange(newMethod);
 
   // Show modal
   const modal = document.getElementById("modal-walkin-registration");
@@ -1284,12 +1288,13 @@ function handleOldDoctorChange(docId) {
 
 function handleOldPaymentMethodChange(val) {
   const cardGroup = document.getElementById("old-payment-card-group");
-  if (cardGroup) {
-    if (val === "BPJS" || val === "Asuransi") {
-      cardGroup.classList.remove("hidden");
-    } else {
-      cardGroup.classList.add("hidden");
-    }
+  const subGroup = document.getElementById("old-payment-submethod-group");
+  if (val === "BPJS" || val === "Asuransi") {
+    if (cardGroup) cardGroup.classList.remove("hidden");
+    if (subGroup) subGroup.classList.add("hidden");
+  } else {
+    if (cardGroup) cardGroup.classList.add("hidden");
+    if (subGroup) subGroup.classList.remove("hidden");
   }
 }
 
@@ -1307,6 +1312,7 @@ function submitOldPatientRegistration(event) {
     const deptId = document.getElementById("old-reg-poli")?.value || SIMRS_MASTER_DATA.departments[0].id;
     const docId = document.getElementById("old-reg-doctor")?.value || SIMRS_MASTER_DATA.practitioners[0].id;
     const method = document.querySelector('input[name="old_payment_method"]:checked')?.value || "Umum";
+    const subPayment = method === "Umum" ? (document.querySelector('input[name="old_sub_payment"]:checked')?.value || "Cash") : null;
     const cardNo = document.getElementById("old-payment-card-no")?.value || "-";
 
     const registration = {
@@ -1316,6 +1322,7 @@ function submitOldPatientRegistration(event) {
       departmentId: deptId,
       practitionerId: docId,
       payerType: method,
+      paymentSubMethod: subPayment,
       payerMemberNo: cardNo,
       source: "Walk-in"
     };
@@ -1387,12 +1394,13 @@ function handleNewPoliChange(deptId) {
 
 function handleNewPaymentMethodChange(val) {
   const cardGroup = document.getElementById("new-payment-card-group");
-  if (cardGroup) {
-    if (val === "BPJS" || val === "Asuransi") {
-      cardGroup.classList.remove("hidden");
-    } else {
-      cardGroup.classList.add("hidden");
-    }
+  const subGroup = document.getElementById("new-payment-submethod-group");
+  if (val === "BPJS" || val === "Asuransi") {
+    if (cardGroup) cardGroup.classList.remove("hidden");
+    if (subGroup) subGroup.classList.add("hidden");
+  } else {
+    if (cardGroup) cardGroup.classList.add("hidden");
+    if (subGroup) subGroup.classList.remove("hidden");
   }
 }
 
@@ -1408,6 +1416,7 @@ function submitNewPatientRegistration(event) {
     const address = document.getElementById("new-reg-address")?.value.trim();
     const bloodType = document.getElementById("new-reg-blood")?.value || "O+";
     const paymentMethod = document.querySelector('input[name="new_payment_method"]:checked')?.value || "Umum";
+    const subPayment = paymentMethod === "Umum" ? (document.querySelector('input[name="new_sub_payment"]:checked')?.value || "Cash") : null;
     const cardNo = document.getElementById("new-payment-card-no")?.value.trim() || "-";
 
     if (!nik || nik.length < 16) {
@@ -1442,6 +1451,7 @@ function submitNewPatientRegistration(event) {
       departmentId: deptId,
       practitionerId: docId,
       payerType: paymentMethod,
+      paymentSubMethod: subPayment,
       payerMemberNo: cardNo,
       source: "Walk-in"
     });
@@ -1548,16 +1558,6 @@ function renderRegDashboardView(container) {
 
         <div class="p-space-md bg-surface rounded-2xl border border-line/50 flex items-center justify-between shadow-xs">
           <div>
-            <span class="text-caption text-ink-soft font-semibold block">Antrian Loket Menunggu</span>
-            <span class="font-headline-lg text-[28px] font-bold text-amber-600 mt-0.5 block">3</span>
-          </div>
-          <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center">
-            <span class="material-symbols-outlined text-[26px]">confirmation_number</span>
-          </div>
-        </div>
-
-        <div class="p-space-md bg-surface rounded-2xl border border-line/50 flex items-center justify-between shadow-xs">
-          <div>
             <span class="text-caption text-ink-soft font-semibold block">Peserta Rujukan BPJS</span>
             <span class="font-headline-lg text-[28px] font-bold text-emerald-600 mt-0.5 block">${bpjsVisits.length}</span>
           </div>
@@ -1565,10 +1565,20 @@ function renderRegDashboardView(container) {
             <span class="material-symbols-outlined text-[26px]">verified_user</span>
           </div>
         </div>
+
+        <div class="p-space-md bg-surface rounded-2xl border border-line/50 flex items-center justify-between shadow-xs">
+          <div>
+            <span class="text-caption text-ink-soft font-semibold block">Total Kunjungan Terdaftar</span>
+            <span class="font-headline-lg text-[28px] font-bold text-blue-600 mt-0.5 block">${visits.length}</span>
+          </div>
+          <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
+            <span class="material-symbols-outlined text-[26px]">how_to_reg</span>
+          </div>
+        </div>
       </div>
 
-      <!-- Quick Action Cards (3 Grid: Walk-in, Loket, BPJS) -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md">
+      <!-- Quick Action Cards (2 Grid: Walk-in & BPJS) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
         <button onclick="activeWorkspaceId='registrasi'; renderSidebar(); renderContextualTopBar(); renderWorkspace('registrasi');" class="p-space-md bg-surface hover:bg-canvas border border-line/50 rounded-2xl flex flex-col items-center text-center gap-2 transition group shadow-xs">
           <div class="w-11 h-11 rounded-xl bg-brand-tint text-brand flex items-center justify-center group-hover:scale-105 transition-transform">
             <span class="material-symbols-outlined text-[24px]">person_add</span>
@@ -1576,16 +1586,6 @@ function renderRegDashboardView(container) {
           <div>
             <span class="font-body-strong text-ink text-[13px] block font-bold">Pendaftaran Walk-in</span>
             <span class="text-[11px] text-ink-soft">Daftar pasien loket langsung &amp; terbitkan tiket</span>
-          </div>
-        </button>
-
-        <button onclick="activeWorkspaceId='reg-queue'; renderSidebar(); renderContextualTopBar(); renderWorkspace('reg-queue');" class="p-space-md bg-surface hover:bg-canvas border border-line/50 rounded-2xl flex flex-col items-center text-center gap-2 transition group shadow-xs">
-          <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center group-hover:scale-105 transition-transform">
-            <span class="material-symbols-outlined text-[24px]">confirmation_number</span>
-          </div>
-          <div>
-            <span class="font-body-strong text-ink text-[13px] block font-bold">Antrian Loket</span>
-            <span class="text-[11px] text-ink-soft">Panggil nomor antrian &amp; kelola antrian fisik</span>
           </div>
         </button>
 
@@ -1659,113 +1659,9 @@ function renderRegDashboardView(container) {
   `;
 }
 
-// 1.2 REGISTRASI ANTRIAN LOKET (Queue Display & Calling Console)
+// 1.2 REGISTRASI ANTRIAN LOKET (Deprecated - Fallback to Pendaftaran Walk-in)
 function renderRegQueueView(container) {
-  const visits = VisitStateService.getVisits();
-  const queueItems = [
-    { ticketNo: "A-001", patientName: "Bambang Sutrisno", mrNo: "RM-2026-0042", time: "08:05 WIB", type: "Walk-in Loket", status: "Selesai" },
-    { ticketNo: "A-002", patientName: "Siti Rahayu Ningrum", mrNo: "RM-2026-0089", time: "08:12 WIB", type: "Walk-in Loket", status: "Selesai" },
-    { ticketNo: "A-003", patientName: "Ahmad Fauzi", mrNo: "RM-2026-0112", time: "08:20 WIB", type: "Walk-in Loket", status: "Dipanggil" },
-    { ticketNo: "A-004", patientName: "Muhammad Rayhan (Anak)", mrNo: "RM-2026-0210", time: "08:25 WIB", type: "Booking Online", status: "Menunggu" },
-    { ticketNo: "A-005", patientName: "Dewi Lestari", mrNo: "RM-2026-0315", time: "08:30 WIB", type: "Walk-in Loket", status: "Menunggu" }
-  ];
-
-  container.innerHTML = `
-    <div class="flex flex-col gap-space-lg w-full">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-sm border-b border-line/40">
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="font-headline-lg text-headline-lg text-ink font-bold tracking-tight">Antrian Loket Pendaftaran &amp; Admisi</h1>
-            <span class="px-2.5 py-0.5 rounded-full text-caption font-bold bg-brand-tint text-brand font-mono">
-              Loket 01 Aktif
-            </span>
-          </div>
-          <p class="font-caption text-caption text-ink-soft">Pemanggilan suara nomor antrian dan pemantauan arus pasien ruang tunggu pendaftaran.</p>
-        </div>
-        <button onclick="activeWorkspaceId='registrasi'; renderSidebar(); renderContextualTopBar(); renderWorkspace('registrasi');" class="h-9 px-4 bg-brand hover:bg-brand-strong text-on-primary rounded-xl font-body-strong text-caption font-bold flex items-center gap-1.5 shadow-sm transition">
-          <span class="material-symbols-outlined text-[18px]">person_add</span>
-          <span>Buka Form Pendaftaran</span>
-        </button>
-      </div>
-
-      <!-- Calling Banner Card -->
-      <div class="p-space-lg bg-surface rounded-2xl border border-line/50 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
-        <div class="flex items-center gap-4">
-          <div class="w-16 h-16 rounded-2xl bg-brand text-on-primary font-mono font-bold text-3xl flex items-center justify-center shadow-md">
-            A-003
-          </div>
-          <div>
-            <span class="text-caption font-bold uppercase tracking-wider text-brand block">Nomor Antrian Dipanggil Saat Ini</span>
-            <span class="font-headline-md text-headline-md font-bold text-ink">Ahmad Fauzi</span>
-            <span class="text-caption text-ink-soft block font-mono">Loket Pendaftaran 1 · Walk-in</span>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <button onclick="callTicket('A-003', 'Loket Pendaftaran 1')" class="h-10 px-4 bg-brand hover:bg-brand-strong text-on-primary rounded-xl font-body-strong text-caption font-bold flex items-center gap-2 shadow-sm transition active:scale-95">
-            <span class="material-symbols-outlined text-[19px]">volume_up</span>
-            <span>Panggil Ulang Suara</span>
-          </button>
-          <button onclick="callTicket('A-004', 'Loket Pendaftaran 1'); showToast('Memanggil A-004...', 'info');" class="h-10 px-4 bg-surface hover:bg-canvas border border-line/60 text-ink rounded-xl font-body-strong text-caption font-semibold flex items-center gap-1.5 transition shadow-xs">
-            <span class="material-symbols-outlined text-[19px]">skip_next</span>
-            <span>Panggil Nomor Berikutnya (A-004)</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Queue Table -->
-      <div class="bg-surface rounded-2xl border border-line/50 overflow-hidden shadow-xs">
-        <div class="p-space-md border-b border-line/30 flex items-center justify-between">
-          <span class="font-headline-md text-[16px] text-ink font-bold">Daftar Antrian Fisik Loket Pendaftaran</span>
-          <span class="text-caption text-ink-soft font-mono">5 Antrian Tercatat</span>
-        </div>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left border-collapse">
-            <thead>
-              <tr class="bg-canvas/50 border-b border-line/40 text-caption font-semibold text-ink-soft uppercase text-[11px]">
-                <th class="py-3 px-4">No. Antrian</th>
-                <th class="py-3 px-4">Nama Pasien / Estimasi</th>
-                <th class="py-3 px-4">Waktu Kedatangan</th>
-                <th class="py-3 px-4">Jenis Kedatangan</th>
-                <th class="py-3 px-4">Status Loket</th>
-                <th class="py-3 px-4 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-line/30">
-              ${queueItems.map(q => `
-                <tr class="hover:bg-canvas/30 transition">
-                  <td class="py-3 px-4 font-mono font-bold text-caption text-brand">
-                    <span class="px-2.5 py-1 bg-brand-tint rounded-lg">${q.ticketNo}</span>
-                  </td>
-                  <td class="py-3 px-4">
-                    <span class="font-body-strong text-ink block font-bold text-[13px]">${q.patientName}</span>
-                    <span class="font-mono text-[11px] text-ink-soft">${q.mrNo}</span>
-                  </td>
-                  <td class="py-3 px-4 font-mono text-caption text-ink-soft">${q.time}</td>
-                  <td class="py-3 px-4 text-caption text-ink">${q.type}</td>
-                  <td class="py-3 px-4">
-                    <span class="px-2.5 py-0.5 rounded-full text-caption font-semibold ${
-                      q.status === 'Selesai' ? 'bg-emerald-100 text-emerald-800' : (q.status === 'Dipanggil' ? 'bg-amber-100 text-amber-800' : 'bg-surface-container-low text-ink-soft')
-                    }">
-                      ${q.status}
-                    </span>
-                  </td>
-                  <td class="py-3 px-4 text-right space-x-1">
-                    <button onclick="callTicket('${q.ticketNo}', 'Loket Pendaftaran 1')" class="h-8 px-2.5 bg-surface hover:bg-brand-tint border border-line/60 text-brand rounded-lg text-caption transition shadow-xs">
-                      <span class="material-symbols-outlined text-[15px]">volume_up</span>
-                    </button>
-                    <button onclick="activeWorkspaceId='registrasi'; renderSidebar(); renderContextualTopBar(); renderWorkspace('registrasi');" class="h-8 px-3 bg-brand hover:bg-brand-strong text-on-primary rounded-lg text-[12px] font-bold transition shadow-xs">
-                      Layani
-                    </button>
-                  </td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  `;
+  renderRegistrasiWorkspace(container);
 }
 
 // 1.3 REGISTRASI BOOKING & QR (Scan QR & Pre-booked Appointments)
@@ -5865,7 +5761,7 @@ function printBuktiPendaftaran(visitId) {
         <p><strong>Nama Pasien:</strong> ${visit.patientName}</p>
         <p><strong>No. Rekam Medis:</strong> ${visit.mrNo}</p>
         <p><strong>Dokter:</strong> ${visit.practitionerName}</p>
-        <p><strong>Penjamin:</strong> ${visit.payerType}</p>
+        <p><strong>Penjamin:</strong> ${visit.payerType} ${visit.paymentSubMethod ? `(${visit.paymentSubMethod})` : ''}</p>
         <p><strong>Waktu:</strong> ${new Date(visit.checkedInAt).toLocaleString('id-ID')}</p>
       </div>
 

@@ -264,6 +264,7 @@ class RegistrationService {
     const ticketNo = QueueService.getNextSequence(department.prefix);
 
     const payerType = registration.payerType || (patient ? patient.payerType : "Umum");
+    const paymentSubMethod = registration.paymentSubMethod || (payerType === "Umum" ? "Cash" : null);
     const payerMemberNo = registration.payerMemberNo || (patient ? patient.payerMemberNo : "-");
 
     const newVisit = {
@@ -277,6 +278,7 @@ class RegistrationService {
       practitionerName: practitioner.name,
       registrationSource: registration.source || "Walk-in",
       payerType: payerType,
+      paymentSubMethod: paymentSubMethod,
       payerMemberNo: payerMemberNo,
       eligibilityStatus: payerType === "BPJS" ? "Valid" : "Tidak Perlu",
       visitStatus: "WAITING_TRIAGE",

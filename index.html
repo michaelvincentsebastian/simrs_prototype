@@ -378,7 +378,7 @@
                 <td class="p-2.5 font-mono text-ink-soft">registrasi123</td>
                 <td class="p-2.5 font-semibold">Budi Santoso (Petugas Pendaftaran RJ)</td>
                 <td class="p-2.5 text-blue-700 font-bold">1. Registrasi Pasien</td>
-                <td class="p-2.5 text-[11px] text-ink-soft">Pendaftaran Walk-in, Antrian Loket, Rujukan BPJS &amp; SEP</td>
+                <td class="p-2.5 text-[11px] text-ink-soft">Pendaftaran Walk-in, Rujukan BPJS &amp; SEP</td>
               </tr>
               <tr>
                 <td class="p-2.5 font-bold text-brand">perawat.siti</td>
@@ -1346,6 +1346,50 @@
             </label>
           </div>
 
+          <!-- Sub-pembayaran untuk Umum: Cash, Credit, QRIS, VA -->
+          <div id="old-payment-submethod-group" class="p-3 bg-surface-container-low/60 rounded-xl border border-line/40 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] font-semibold text-ink-soft flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[15px] text-brand">payments</span>
+                <span>Pilih Kanal Pembayaran Umum:</span>
+              </span>
+              <span class="text-[10px] text-ink-soft">Pilih salah satu metode</span>
+            </div>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
+                <input type="radio" name="old_sub_payment" value="Cash" checked class="text-brand focus:ring-brand" />
+                <div class="flex flex-col">
+                  <span class="font-body-strong text-ink text-[12px] font-bold">Cash</span>
+                  <span class="text-[10px] text-ink-soft">Tunai di Kasir</span>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
+                <input type="radio" name="old_sub_payment" value="Credit" class="text-brand focus:ring-brand" />
+                <div class="flex flex-col">
+                  <span class="font-body-strong text-ink text-[12px] font-bold">Credit</span>
+                  <span class="text-[10px] text-ink-soft">Debit / Kartu Kredit</span>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
+                <input type="radio" name="old_sub_payment" value="QRIS" class="text-brand focus:ring-brand" />
+                <div class="flex flex-col">
+                  <span class="font-body-strong text-ink text-[12px] font-bold">QRIS</span>
+                  <span class="text-[10px] text-ink-soft">Scan Kode QRIS</span>
+                </div>
+              </label>
+
+              <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
+                <input type="radio" name="old_sub_payment" value="VA" class="text-brand focus:ring-brand" />
+                <div class="flex flex-col">
+                  <span class="font-body-strong text-ink text-[12px] font-bold">VA</span>
+                  <span class="text-[10px] text-ink-soft">Virtual Account Bank</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
           <!-- Card / Member Number Input (Optional/Conditional) -->
           <div id="old-payment-card-group" class="hidden grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
             <div class="flex flex-col gap-1">
@@ -1580,6 +1624,50 @@
                   <span class="text-[11px] text-ink-soft">Prudential, Allianz, dsb</span>
                 </div>
               </label>
+            </div>
+
+            <!-- Sub-pembayaran untuk Pasien Baru (Umum: Cash, Credit, QRIS, VA) -->
+            <div id="new-payment-submethod-group" class="p-3 bg-surface-container-low/60 rounded-xl border border-line/40 flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-semibold text-ink-soft flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[15px] text-brand">payments</span>
+                  <span>Pilih Kanal Pembayaran Umum:</span>
+                </span>
+                <span class="text-[10px] text-ink-soft">Pilih salah satu metode</span>
+              </div>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
+                  <input type="radio" name="new_sub_payment" value="Cash" checked class="text-brand focus:ring-brand" />
+                  <div class="flex flex-col">
+                    <span class="font-body-strong text-ink text-[12px] font-bold">Cash</span>
+                    <span class="text-[10px] text-ink-soft">Tunai di Kasir</span>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
+                  <input type="radio" name="new_sub_payment" value="Credit" class="text-brand focus:ring-brand" />
+                  <div class="flex flex-col">
+                    <span class="font-body-strong text-ink text-[12px] font-bold">Credit</span>
+                    <span class="text-[10px] text-ink-soft">Debit / Kartu Kredit</span>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
+                  <input type="radio" name="new_sub_payment" value="QRIS" class="text-brand focus:ring-brand" />
+                  <div class="flex flex-col">
+                    <span class="font-body-strong text-ink text-[12px] font-bold">QRIS</span>
+                    <span class="text-[10px] text-ink-soft">Scan Kode QRIS</span>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-2 p-2.5 rounded-lg border border-line/50 bg-surface hover:bg-canvas cursor-pointer transition">
+                  <input type="radio" name="new_sub_payment" value="VA" class="text-brand focus:ring-brand" />
+                  <div class="flex flex-col">
+                    <span class="font-body-strong text-ink text-[12px] font-bold">VA</span>
+                    <span class="text-[10px] text-ink-soft">Virtual Account Bank</span>
+                  </div>
+                </label>
+              </div>
             </div>
 
             <!-- Card Number for BPJS/Asuransi -->

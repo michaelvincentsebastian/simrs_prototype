@@ -77,18 +77,16 @@ const ROLES = {
     badge: "bg-blue-100 text-blue-800 border border-blue-200",
     submoduleName: "Modul Registrasi Pasien",
     landingWorkspace: "registrasi",
-    allowedWorkspaces: ["registrasi", "reg-queue", "reg-bpjs"],
+    allowedWorkspaces: ["registrasi", "reg-bpjs"],
     primaryNav: [
       { id: "registrasi", label: "Pendaftaran Walk-in", icon: "person_add" },
-      { id: "reg-queue", label: "Antrian Loket", icon: "confirmation_number" },
       { id: "reg-bpjs", label: "Rujukan BPJS & SEP", icon: "verified_user" }
     ],
     searchPlaceholder: "Cari NIK / No. RM / Nama Pasien...",
     searchScope: "patients",
     serviceTabs: [
-      { id: "tab-reg-enc", label: "Daftar Encounter", icon: "view_list", target: "registrasi", action: "switchRegView('encounter')" },
-      { id: "tab-reg-bpjs", label: "Rujukan BPJS & SEP", icon: "verified_user", target: "registrasi", action: "switchRegView('bpjs')" },
-      { id: "tab-reg-walkin", label: "Form Registrasi Pasien", icon: "person_add", target: "registrasi", action: "switchRegView('form')" }
+      { id: "tab-reg-walkin", label: "Pendaftaran Walk-in", icon: "person_add", target: "registrasi", action: "activeWorkspaceId='registrasi'; renderSidebar(); renderContextualTopBar(); renderWorkspace('registrasi');" },
+      { id: "tab-reg-bpjs", label: "Rujukan BPJS & SEP", icon: "verified_user", target: "reg-bpjs", action: "activeWorkspaceId='reg-bpjs'; renderSidebar(); renderContextualTopBar(); renderWorkspace('reg-bpjs');" }
     ],
     permissions: {
       "Patient": ["read", "write", "create"],
