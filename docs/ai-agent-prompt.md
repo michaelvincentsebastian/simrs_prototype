@@ -1,7 +1,7 @@
 # AI Agent Prompt — Build SIMRS Mini on Frappe Healthcare v15
 
 > **Cara pakai**
-> 1. Taruh seluruh dokumen di repo: `docs/` ← `system-hierarchy.md`, `user-role.md`, `prd.md`, `data-model.md`, `rawat-jalan.bpmn`, file ini.
+> 1. Taruh seluruh dokumen di repo: `docs/` ← `system-hierarchy.md`, `user-role.md`, `prd.md`, `data-model.md`, `bpmn/rawat_jalan/`, file ini.
 > 2. Salin **Part A** ke `AGENTS.md` / `CLAUDE.md` (agar berlaku di setiap sesi).
 > 3. Jalankan **Part C** satu fase per sesi/PR (urut P0 → P1.x). Jangan minta agent membangun semuanya sekaligus.
 > 4. Prompt ditulis dalam bahasa Inggris karena nama DocType/kode Frappe berbahasa Inggris; **label UI tetap Indonesia**.
@@ -21,7 +21,7 @@ SOURCE OF TRUTH (read before coding, in this order)
 2. docs/system-hierarchy.md     – menu tree with numbering (1.1, 3.8, …), Frappe mapping, phases
 3. docs/user-role.md            – roles, workspace/menu per role, permission matrices, access tests
 4. docs/data-model.md           – DocTypes, fields, state machines, hooks, API, verification checklist
-5. docs/rawat-jalan.bpmn        – end-to-end process; every task carries "Hirarki: x.y"
+5. docs/bpmn/rawat_jalan/       – end-to-end (00-end-to-end.bpmn) & modular processes; every task carries "Hirarki: x.y"
 If documents conflict: prd.md (ADR) > data-model.md > system-hierarchy.md > others. Report conflicts; do not silently pick.
 
 CORE ARCHITECTURE RULE  (PRD ADR A-00)

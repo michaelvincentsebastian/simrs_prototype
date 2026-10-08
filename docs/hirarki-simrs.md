@@ -1,10 +1,14 @@
 # Hirarki SIMRS — Modul Rawat Jalan
 
-> **Tujuan dokumen:** mendetailkan struktur modul **Rawat Jalan** sampai level submodul, menu, sub-menu, fungsi, mekanisme, dan relasi antarproses sehingga hirarki dapat dipakai sebagai dasar desain BPMN, sitemap/menu SIMRS, kebutuhan fungsional, dan diskusi dengan mentor/stakeholder.
+> **Versi:** 0.2 (Synchronized with Interactive Mockup & Modular BPMN) · **Tanggal:** 2026-10-08  
+> **Tujuan dokumen:** mendetailkan struktur modul **Rawat Jalan** sampai level submodul, menu, sub-menu, fungsi, mekanisme, dan relasi antarproses sehingga hirarki dapat dipakai sebagai dasar desain BPMN, sitemap/menu SIMRS, kebutuhan fungsional, dan implementasi aplikasi.
 >
-> **Basis utama:** struktur yang diberikan pada file `SIMRS Hierarchy`, terutama area Registrasi, Triase Tanda Vital, Dokter, Kasir, dan Display Antrian.
+> **Basis utama & status implementasi:**
+> - Struktur utama mengadopsi file `SIMRS Hierarchy` dan file blueprint `docs/SIMRS-0.1.hirarki`, mencakup 5 submodul inti stakeholder (1. Registrasi, 2. Triase/TTV, 3. Dokter, 6. Kasir, 8. Display) ditambah submodul pendukung operasional (4. Penunjang/Lab, 5. Farmasi, 7. Penyelesaian Pasien).
+> - Seluruh alur proses dan penomoran menu (1.1 s/d 8.3) telah **diimplementasikan dan tervalidasi secara interaktif** pada prototipe web app (`index.html`, `js/services.js`, `js/data.js`, `js/permissions.js` via `./start.sh` port 8000).
+> - Diagram proses BPMN modular tersedia di [`docs/bpmn/rawat_jalan/`](file:///home/vincent/Projects/prototype_simrs/docs/bpmn/rawat_jalan/) (termasuk [`00-end-to-end.bpmn`](file:///home/vincent/Projects/prototype_simrs/docs/bpmn/rawat_jalan/00-end-to-end.bpmn), folder `registrasi/`, `ttv/`, `dokter/`, `farmasi/`, `kasir/`, dan `antrian/`).
 >
-> **Catatan penting:** bagian yang diberi label **[SUMBER]** mempertahankan struktur/istilah dari file Anda. Bagian **[BEST PRACTICE]** adalah elaborasi/improvisasi yang disarankan untuk membuat hirarki lebih operasional. Bagian **[BATASAN MODUL]** menjelaskan mana yang sebaiknya hanya diakses dari Rawat Jalan dan mana yang idealnya dieksekusi oleh modul rumah sakit lain.
+> **Catatan penting:** bagian yang diberi label **[SUMBER]** mempertahankan struktur/istilah dari file sumber hirarki. Bagian **[BEST PRACTICE]** adalah elaborasi/improvisasi operasional yang telah diselaraskan dengan prototipe web app. Bagian **[BATASAN MODUL]** menjelaskan mana yang dieksekusi dari Rawat Jalan dan mana yang beririsan dengan modul pendukung.
 
 ---
 

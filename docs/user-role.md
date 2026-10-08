@@ -1,78 +1,104 @@
 # User & Role — SIMRS Mini (Rawat Jalan)
 
-> **Versi:** 0.1 (draft) · **Tanggal:** 2026-10-04 · **Basis:** `hirarki-simrs.md` §88–123 · **Platform:** Frappe v15 + Healthcare
+> **Versi:** 0.2 (Synchronized with Interactive Mockup) · **Tanggal:** 2026-10-08 · **Basis:** `hirarki-simrs.md` §88–123 & `SIMRS-0.1.hirarki` · **Platform:** Frappe v15 + Healthcare + Mockup Web App
 >
-> Dokumen ini menjawab **siapa boleh melakukan apa, di mana, dan pada status apa**, lalu menerjemahkannya ke mekanisme permission Frappe yang bisa langsung diimplementasikan.
+> Dokumen ini menjawab **siapa boleh melakukan apa, di mana, dan pada status apa**, lalu menerjemahkannya ke mekanisme permission yang aktif pada prototipe interaktif ([`js/permissions.js`](file:///home/vincent/Projects/prototype_simrs/js/permissions.js)) dan implementasi Frappe v15.
 
 ---
 
 ## 0. Model akses: satu sistem, banyak role
 
-SIMRS Mini **bukan kumpulan aplikasi per jenis user**. Semua orang masuk ke **sistem yang sama** (1 site, 1 login), lalu **role** menentukan:
+SIMRS Mini **bukan kumpulan aplikasi per jenis user**. Semua staf dan perangkat masuk ke **sistem yang sama** (1 site, 1 login), lalu **Role** menentukan:
 
-1. **Menu yang terlihat** — landing page + Workspace + sidebar (§0.2),
-2. **Aksi yang boleh** — DocPerm + method whitelist (§2, §6),
-3. **Data yang boleh dibuka** — scope poli/dokter/unit + status kunjungan (§7, §8).
+1. **Menu yang terlihat** — landing workspace + sidebar navigasi adaptif (§0.2, §0.3),
+2. **Aksi yang boleh** — penegakan izin fungsi (`permissionEngine.assertPermission()`), DocPerm, dan method whitelist (§2, §6),
+3. **Data yang boleh dibuka** — data scope (departemen poli, dokter DPJP, transaksi aktif) + status kunjungan (§7, §8).
 
-Satu-satunya aplikasi terpisah adalah **Kanal Appointment** (patient-facing, Web/Mobile/WhatsApp) yang bicara ke sistem inti lewat Appointment API dengan akun layanan `Appointment Channel Service` — pasien tidak masuk ke Desk internal.
+Satu-satunya aplikasi terpisah adalah **Kanal Appointment** (patient-facing, Web/Mobile/WhatsApp) yang berkomunikasi lewat Appointment API dengan akun layanan `Appointment Channel Service`.
 
-> **Aturan emas:** menyembunyikan menu hanyalah kenyamanan UI. Keamanan ditegakkan di server. Test akses (§11) harus membuktikan bahwa role tanpa menu juga **ditolak** saat mengakses dokumen/URL langsungnya.
+> **Aturan emas:** Menyembunyikan menu hanyalah kenyamanan UI. Keamanan sejati ditegakkan di server/service layer. Role tanpa kewenangan wajib ditolak (403 Forbidden) saat memanggil method atau dokumen yang dilarang.
 
-### 0.1 Alur login → tampilan
+### 0.1 Kredensial Akun Demo Interaktif (Mockup Login Screen)
 
-```text
-Login (satu halaman login)
-   └─ Sistem membaca Role user
-        ├─ Landing page      = role_home_page (mis. Nursing User → Workspace "Triase")
-        ├─ Sidebar/Workspace = gabungan Workspace yang diizinkan oleh semua Role user
-        ├─ Tombol aksi       = hanya yang lolos guard role (server-side)
-        └─ Data              = tersaring scope (User Permission) + status Visit/Encounter
-```
+Pada layar login prototipe interaktif ([`index.html`](file:///home/vincent/Projects/prototype_simrs/index.html)), tersedia 5 kartu 1-klik akun demo yang merepresentasikan submodul operasional rawat jalan:
 
-### 0.2 Matriks Role × Workspace/Menu (MVP)
+| Username | Password | Nama Pegawai | Peran / Role Key | Submodul Utama | Landing Workspace | Allowed Workspaces |
+|---|---|---|---|---|---|---|
+| `staf.budi` | `registrasi123` | Budi Santoso | Petugas Pendaftaran RJ (`REGISTRATION_STAFF`) | 1. Registrasi Pasien | `registrasi` | `registrasi`, `reg-bpjs`, `reg-dashboard`, `reg-booking`, `reg-patients` |
+| `perawat.siti` | `perawat123` | Ns. Siti Rahma, S.Kep | Perawat Triase (`NURSING_USER`) | 2. Modul TTV | `ttv-queue` | `ttv-queue`, `ttv-input`, `ttv-history`, `triase`, `ttv`, `nurse-dashboard` |
+| `dokter.hendra` | `dokter123` | dr. Hendra Pratama, Sp.PD | Dokter RJ (`PHYSICIAN`) | 3. Dokter Rawat Jalan | `doctor-queue` | `doctor-dashboard`, `doctor-queue`, `doctor-consultation`, `doctor-patients`, `doctor-documents`, `dokter` |
+| `kasir.linda` | `kasir123` | Linda Wijaya, S.E. | Kasir RJ (`CASHIER`) | 4. Kasir Rawat Jalan | `cashier-queue` | `cashier-dashboard`, `cashier-queue`, `cashier-payment`, `cashier-history`, `kasir` |
+| `display.tv` | `display123` | Display TV Publik | Display Antrian TV (`QUEUE_DISPLAY`) | 5. Display Antrian | `display` | `display` (Tab Poli/Dokter & Tab Kasir/Farmasi) |
 
-Legenda: **●** bisa melihat & bekerja · **○** hanya baca (konteks) · **—** tidak terlihat dan tidak boleh diakses.
+*Workstation pendukung tambahan di mockup:*
+- **Laboratorium** (`lab`): Diakses untuk pemrosesan uji spesimen lab patologi klinik.
+- **Farmasi** (`farmasi`): Diakses untuk telaah resep 7-benar, potong stok obat, dan serah obat.
+- **Monitoring SLA** (`monitoring`): Diakses untuk pengawasan SLA waktu tunggu Kemenkes RI (<60 menit) & override.
+- **Audit Trail** (`audit`): Diakses untuk inspeksi log riwayat akses dan perubahan sistem.
+- **Kiosk APM** (`kiosk`): Layar sentuh pendaftaran dan check-in mandiri pasien.
 
-| Role | Landing | Registrasi | Triase | Dokter | Penunjang | Farmasi | Kasir | Monitoring | Audit | Admin |
-|---|---|---|---|---|---|---|---|---|---|---|
-| Registration Staff | Registrasi | ● | — | — | — | — | — | — | — | — |
-| Queue Officer | Registrasi | ○ (antrian) | ○ (antrian) | ○ (antrian) | — | — | ○ (antrian) | — | — | — |
-| **Nursing User** | **Triase** | — | **●** | ○ (TTV & alergi pasien yang sedang ditangani) | — | — | — | — | — | — |
-| Physician | Dokter | — | ○ (TTV/skrining) | ● | ○ (hasil) | ○ (status resep) | — | — | — | — |
-| Laboratory User | Penunjang | — | — | — | ● | — | — | — | — | — |
-| Pharmacist | Farmasi | — | — | ○ (resep) | — | ● | — | — | — | — |
-| Cashier | Kasir | — | — | — | — | — | ● | — | — | — |
-| Outpatient Supervisor | Monitoring | ○ | ○ | ○ | ○ | ○ | ○ | ● (+ override) | — | — |
-| Clinical Auditor | Audit | — | — | — | — | — | — | — | ● (read-only) | — |
-| System Manager | Admin | — | — | — | — | — | — | — | — | ● |
-| Kiosk Device *(akun perangkat)* | `/kiosk` | route khusus, hak minimum | — | — | — | — | — | — | — | — |
-| Queue Display *(akun perangkat)* | `/queue-display` | read-only nomor tiket | — | — | — | — | — | — | — | — |
+---
 
-### 0.3 Contoh konkret: apa yang dilihat tiap role
+### 0.2 Matriks Role × Workspace/Menu
 
-| Role | Menu yang muncul | Yang **tidak** muncul / ditolak |
-|---|---|---|
-| **Nursing User** | Antrian Triase · Input TTV · Skrining Awal · Routing ke Dokter (+ identitas minimum pasien) | Registrasi, Appointment, Encounter dokter (edit), Resep, Billing, Farmasi |
-| Registration Staff | Walk-in · Check-in · Verifikasi Pasien/Penjamin · Daftar Appointment · Antrian Registrasi | TTV, Encounter, Resep, Billing |
-| Physician | My Queue · Patient Chart · Encounter · Order · Resep · Resume · Finalisasi | Pembayaran, Dispensing, master tarif |
-| Pharmacist | Resep Masuk · Verifikasi · Dispensing · Penyerahan | Edit isi resep, Billing, Encounter |
-| Cashier | Antrian Kasir · Billing · Pembayaran · Kwitansi | Encounter, TTV, resep |
+Legenda: **●** bisa melihat & bekerja · **○** hanya baca (konteks) · **—** tidak terlihat dan dilarang diakses.
 
-### 0.4 Aturan navigasi
+| Role | Landing | Registrasi | Triase | Dokter | Lab | Farmasi | Kasir | Monitoring | Audit | Display TV | Kiosk APM |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Registration Staff** | `registrasi` | **●** | — | — | — | — | — | — | — | — | ○ |
+| **Nursing User** | `ttv-queue` | — | **●** | ○ (TTV/Alergi) | — | — | — | — | — | — | — |
+| **Physician** | `doctor-queue` | — | ○ (TTV) | **●** | ○ (Order/Hasil) | ○ (Resep) | — | — | — | — | — |
+| **Cashier** | `cashier-queue` | — | — | — | — | — | **●** | — | — | — | — |
+| **Queue Display** | `display` | — | — | — | — | — | — | — | — | **● (Zero-PHI)** | — |
+| **Laboratory User** | `lab` | — | — | — | **●** | — | — | — | — | — | — |
+| **Pharmacist** | `farmasi` | — | — | ○ (Resep) | — | **●** | — | — | — | — | — |
+| **Outpatient Supervisor** | `monitoring` | ○ | ○ | ○ | ○ | ○ | ○ | **● (+Override)** | ○ | — | — |
+| **Clinical Auditor** | `audit` | — | — | — | — | — | — | — | **● (Read-Only)** | — | — |
+| **Kiosk Device** | `kiosk` | ○ (Walk-in lama) | — | — | — | — | — | — | — | — | **●** |
 
-| Aturan | Implementasi Frappe |
-|---|---|
-| Satu Workspace per kelompok role, hanya terlihat oleh role terkait | `Workspace` + field *Roles* |
-| Landing otomatis sesuai role | hook `role_home_page` |
-| Modul bawaan yang tidak relevan disembunyikan (Buying, Selling, dst.) | `Module Profile` per Role Profile |
-| Multi-role = gabungan Workspace; landing mengikuti urutan prioritas | Role Profile gabungan + urutan `role_home_page` |
-| Perangkat tidak punya Desk | Akun `Queue Display`/`Kiosk Device` dibatasi ke route + endpoint |
+---
 
-### 0.5 Matriks Granular RBAC, Data Scope & Workflow Authority (70 Item Analisis Mockup)
+### 0.3 Konfigurasi Navigasi Sidebar & Batasan Kewenangan (Denied Notes)
 
-Berdasarkan analisis komprehensif seluruh page, screen, form, dan workflow action pada prototipe rawat jalan SIMRS Mini, telah disusun matriks hak akses detail yang terdokumentasi lengkap pada file [`.user-role.csv`](file:///home/vincent/Projects/prototype_simrs/.user-role.csv) dan diinspeksi interaktif pada modal login **"Matriks Hak Akses & Arsitektur"**.
+Sesuai dengan [`js/permissions.js`](file:///home/vincent/Projects/prototype_simrs/js/permissions.js):
 
-#### Ringkasan Distribusi Aksi per Peran:
+#### 1. Registration Staff (`staf.budi`):
+- **Navigasi Utama:** `Pendaftaran Walk-in` (`registrasi`), `Rujukan BPJS & SEP` (`reg-bpjs`).
+- **Izin DocType:** `Patient` [read, write, create], `Patient Appointment` [read, write, create], `Outpatient Visit` [read, create], `Queue Ticket` [read, write, create].
+- **Dilarang Keras:** `Vital Signs` (Dilarang), `Patient Encounter` (Dilarang), `Medication Request` (Dilarang), `Sales Invoice` (Dilarang).
+- **Catatan Kewenangan:** Hanya berwenang mengelola registrasi & encounter pendaftaran. Dilarang membuka rekam medis dokter (SOAP), TTV, atau memproses transaksi kasir pembayaran.
+
+#### 2. Nursing User (`perawat.siti`):
+- **Navigasi Utama:** `Antrian Triase` (`ttv-queue`), `Pengukuran TTV` (`ttv-input`), `Riwayat Triase` (`ttv-history`).
+- **Izin DocType:** `Vital Signs` [read, write, create], `Triage Assessment` [read, write, create], `Outpatient Visit` [read], `Queue Ticket` [read, write], `Patient` [read].
+- **Dilarang Keras:** `Patient Encounter` (Dilarang nulis SOAP), `Medication Request` (Dilarang), `Sales Invoice` (Dilarang).
+- **Catatan Kewenangan:** Berwenang memanggil antrian, menginput TTV & skrining ESI, serta merutekan pasien. Dilarang meresepkan obat, mengisi SOAP dokter, atau memproses kasir.
+
+#### 3. Physician (`dokter.hendra`):
+- **Navigasi Utama:** `Dashboard` (`doctor-dashboard`), `Antrian Pasien` (`doctor-queue`), `Pemeriksaan RME` (`doctor-consultation`), `Data Pasien` (`doctor-patients`), `Dokumen & Resume` (`doctor-documents`).
+- **Izin DocType:** `Patient Encounter` [read, write, create, submit], `Medication Request` [read, write, create], `Lab Test` [read, create], `Clinical Procedure` [read, write, create], `Vital Signs` [read], `Triage Assessment` [read], `Outpatient Visit` [read, write], `Patient` [read].
+- **Dilarang Keras:** `Sales Invoice` (Dilarang), `Pharmacy Dispense` (Dilarang).
+- **Catatan Kewenangan:** Berwenang mengelola rekam medis SOAP, diagnosa ICD-10, order rujukan & penunjang, peresepan formularium, dan finalisasi encounter. Dilarang mengakses kasir keuangan atau dispensing obat fisik.
+
+#### 4. Cashier (`kasir.linda`):
+- **Navigasi Utama:** `Dashboard` (`cashier-dashboard`), `Antrian Billing` (`cashier-queue`), `Pembayaran Kasir` (`cashier-payment`), `Riwayat Transaksi` (`cashier-history`).
+- **Izin DocType:** `Sales Invoice` [read, write, create, submit], `Payment Entry` [read, write, create, submit], `Outpatient Visit` [read], `Patient` [read].
+- **Dilarang Keras:** `Patient Encounter` (Dilarang), `Vital Signs` (Dilarang).
+- **Catatan Kewenangan:** Berwenang memproses billing dan penerimaan pembayaran (tunai, debit, kartu kredit, QRIS, penjamin). Dilarang membaca catatan medis SOAP dokter atau memodifikasi resep obat.
+
+#### 5. Queue Display (`display.tv`):
+- **Navigasi Utama:** `Display Antrian TV` (`display`).
+- **Izin DocType:** `Queue Ticket` [read].
+- **Dilarang Keras:** Seluruh data rekam medis, demografi NIK lengkap, atau billing keuangan.
+- **Catatan Kewenangan:** Perangkat monitor publik ruang tunggu (Zero-PHI). Menampilkan nomor tiket & kode ruangan poli saja.
+
+---
+
+### 0.4 Matriks Granular RBAC, Data Scope & Workflow Authority (70 Item Analisis Mockup)
+
+Berdasarkan analisis komprehensif seluruh antarmuka, form, modal, dan workflow action pada prototipe SIMRS Mini, telah disusun matriks hak akses detail yang terdokumentasi lengkap pada file [`user-role.csv`](file:///home/vincent/Projects/prototype_simrs/user-role.csv) dan diinspeksi interaktif pada modal login **"Matriks Hak Akses & Arsitektur"**:
+
+#### Ringkasan Distribusi 70 Aksi per Peran:
 1. **Staf Pendaftaran (Antrian)** — **14 Aksi**:
    - *Pencarian & Registrasi:* Search Patient (NIK/MRN), Verifikasi Duplikasi NIK, Registrasi Pasien Baru Walk-in, Routing Poli & Dokter, Verifikasi Skema Penjamin (BPJS/Umum/Asuransi), Walk-in Registration, Check-in Reservasi Booking Janji Temu.
    - *Pencetakan & Antrian:* Cetak Tiket Antrian Termal Triase, Cetak Slip Bukti Pendaftaran Resmi, Monitoring Antrian Rawat Jalan Terkini, Panggil Antrian Suara (Web Speech), Recall Antrian, Skip Antrian, Reset Filter Loket.
@@ -102,6 +128,7 @@ Pada mockup prototipe, fungsi Apoteker dan Kasir Farmasi dipisahkan menjadi dua 
 2. **Akun Petugas Terpisah:** Demo persona login terpisah (`apoteker.dewi` vs `kasir.linda`).
 3. **Data Scope & Permissions Berbeda:** Apoteker menangani aspek klinis farmasi (telaah resep, pemotongan stok obat, KIE), sedangkan Kasir menangani aspek finansial (agregasi invoice, klaim asuransi, penerimaan kas/QRIS, cetak kwitansi).
 4. **Separation of Duties (Fraud Prevention):** Mencegah benturan kepentingan di mana petugas yang meracik obat tidak mengelola transaksi penerimaan uang kasir.
+
 
 ---
 

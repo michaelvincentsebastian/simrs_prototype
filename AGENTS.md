@@ -14,7 +14,7 @@ Frappe Healthcare (app `healthcare`, branch version-15), delivered as ONE custom
 2. docs/system-hierarchy.md     – menu tree with numbering (1.1, 3.8, …), Frappe mapping, phases
 3. docs/user-role.md            – roles, workspace/menu per role, permission matrices, access tests
 4. docs/data-model.md           – DocTypes, fields, state machines, hooks, API, verification checklist
-5. docs/rawat-jalan.bpmn        – end-to-end process; every task carries "Hirarki: x.y"
+5. docs/bpmn/rawat_jalan/       – end-to-end (00-end-to-end.bpmn) & modular processes; every task carries "Hirarki: x.y"
 If documents conflict: prd.md (ADR) > data-model.md > system-hierarchy.md > others. Report conflicts; do not silently pick.
 
 ## CORE ARCHITECTURE RULE (PRD ADR A-00)
