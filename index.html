@@ -533,7 +533,7 @@
       <div class="flex items-center gap-2.5 shrink-0">
         
         <!-- Live WIB Clock -->
-        <div class="hidden xl:flex items-center gap-1.5 px-3 py-1 bg-surface-container-low rounded-xl text-caption font-caption text-ink-soft font-mono">
+        <div class="hidden md:flex items-center gap-1.5 px-3 py-1 bg-surface-container-low rounded-xl text-caption font-caption text-ink-soft font-mono">
           <span class="material-symbols-outlined text-[16px] text-ink-soft">schedule</span>
           <span id="clock-wib">08:00:00 WIB</span>
         </div>
@@ -1046,6 +1046,10 @@
         </div>
         <div class="mt-space-md pt-space-sm w-full flex flex-col gap-1 text-[13px] text-ink-soft border-t border-line/40">
           <div class="flex justify-between">
+            <span>ID Registrasi:</span>
+            <span id="ticket-modal-reg-id" class="font-mono text-ink font-semibold">REG-WALK-B8K21</span>
+          </div>
+          <div class="flex justify-between">
             <span>Tujuan:</span>
             <span id="ticket-modal-poli" class="text-ink font-medium">Poli Penyakit Dalam</span>
           </div>
@@ -1132,7 +1136,7 @@
           </div>
           <div>
             <h3 class="font-headline-md text-headline-md font-bold text-ink">Pendaftaran Pasien Walk-in</h3>
-            <span class="text-caption text-ink-soft">Loket 01 Registrasi Rawat Jalan · Terbitkan Tiket Antrian &amp; Triase</span>
+            <span class="text-caption text-ink-soft">Pendaftaran Rawat Jalan · Terbitkan ID Kunjungan &amp; Rujukan Triase</span>
           </div>
         </div>
         <button onclick="closeWalkinRegistrationModal()" type="button" class="p-1.5 rounded-xl hover:bg-surface-container-low text-ink-soft hover:text-ink transition-colors">

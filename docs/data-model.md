@@ -60,7 +60,8 @@ Dokumen orkestrasi sentral yang dibuat saat pasien check-in / registrasi walk-in
 
 | Field | Tipe Data | Keterangan & Validasi |
 |---|---|---|
-| `id` / `name` | String / Series | Format: `OPV-2026-####` (Auto-increment 4 digit per tahun) |
+| `id` / `name` | String / Series | Walk-in: Format `REG-WALK-[random char]` (misal: `REG-WALK-B8K21`, 5 karakter acak alphanumeric huruf kapital/angka untuk mencegah duplikasi dan ID yang terus memanjang). Appointment/Core: Format `OPV-2026-####` (Auto-increment 4 digit per tahun). |
+| `registeredAt` | ISO Datetime | Timestamp waktu pendaftaran registrasi dibuat (disimpan backend & ditampilkan pada tabel registrasi walk-in). |
 | `patientId` | Link `Patient` | ID Pasien (misal: `PAT-001`, `PAT-WALK`) |
 | `patientName` | String | Nama lengkap pasien (diambil dari master pasien) |
 | `mrNo` | String | Nomor Rekam Medis unik: `RM-2026-####` |
@@ -122,6 +123,8 @@ Pengelolaan antrian terpusat berbasis urutan harian (`SIMRS_TICKETS_SEQ`):
 2. **Text-to-Speech:** Memanggil Web Speech API (`SpeechSynthesisUtterance`) bahasa Indonesia (`lang: "id-ID"`, `rate: 0.9`):  
    *"Nomor antrian, [Prefix] [Nomor], silakan menuju, [Nama Ruang / Poli]"*.
 3. **Display Broadcast:** Menyimpan data panggilan ke `SIMRS_LATEST_CALL` untuk disinkronkan secara realtime ke layar TV display antrian publik.
+
+> **Catatan Alur Pemanggilan Antrian:** Antrian loket pendaftaran rawat jalan ditiadakan (petugas pendaftaran bukan petugas antrian). Pasien walk-in langsung didata di meja pendaftaran dan diterbitkan ID kunjungan serta tiket triase (T-xxx). Pemanggilan antrian dan audio bell synthesizer resmi dimulai pada stasiun **Bilik Skrining Triase (TTV)** oleh Perawat dan **Ruang Poliklinik** oleh Dokter DPJP, serta dilanjutkan ke Kasir dan Farmasi.
 
 ---
 

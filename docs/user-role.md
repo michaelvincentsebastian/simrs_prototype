@@ -94,14 +94,14 @@ Sesuai dengan [`js/permissions.js`](file:///home/vincent/Projects/prototype_simr
 
 ---
 
-### 0.4 Matriks Granular RBAC, Data Scope & Workflow Authority (70 Item Analisis Mockup)
+### 0.4 Matriks Granular RBAC, Data Scope & Workflow Authority (67 Item Analisis Mockup)
 
 Berdasarkan analisis komprehensif seluruh antarmuka, form, modal, dan workflow action pada prototipe SIMRS Mini, telah disusun matriks hak akses detail yang terdokumentasi lengkap pada file [`user-role.csv`](file:///home/vincent/Projects/prototype_simrs/user-role.csv) dan diinspeksi interaktif pada modal login **"Matriks Hak Akses & Arsitektur"**:
 
-#### Ringkasan Distribusi 70 Aksi per Peran:
-1. **Staf Pendaftaran (Antrian)** — **14 Aksi**:
-   - *Pencarian & Registrasi:* Search Patient (NIK/MRN), Verifikasi Duplikasi NIK, Registrasi Pasien Baru Walk-in, Routing Poli & Dokter, Verifikasi Skema Penjamin (BPJS/Umum/Asuransi), Walk-in Registration, Check-in Reservasi Booking Janji Temu.
-   - *Pencetakan & Antrian:* Cetak Tiket Antrian Termal Triase, Cetak Slip Bukti Pendaftaran Resmi, Monitoring Antrian Rawat Jalan Terkini, Panggil Antrian Suara (Web Speech), Recall Antrian, Skip Antrian, Reset Filter Loket.
+#### Ringkasan Distribusi 67 Aksi per Peran:
+1. **Petugas Pendaftaran RJ** — **11 Aksi**:
+   - *Pencarian & Registrasi:* Search Patient (NIK/MRN), Verifikasi Duplikasi NIK, Registrasi Pasien Baru Walk-in, Routing Poli & Dokter, Verifikasi Skema Penjamin (BPJS/Umum/Asuransi), Walk-in Registration (ID `REG-WALK-xxxxx` & Jam Registrasi), Check-in Reservasi Booking Janji Temu.
+   - *Pencetakan & Pemantauan:* Cetak Tiket Antrian Termal Triase, Cetak Slip Bukti Pendaftaran Resmi (ID Registrasi & Jam), Monitoring Registrasi Rawat Jalan Terkini (ID & Jam), Reset Filter Registrasi. *(Catatan: Pemanggilan audio bell antrian ditiadakan di loket pendaftaran dan dimulai di Meja Triase/TTV Perawat & Dokter).*
 2. **Perawat** — **15 Aksi**:
    - *Antrian & Identifikasi:* Filter Stasiun & Dokter, Pemantauan Antrian Triase, Panggil Antrian ke Meja Triase, Mulai Sesi Triase (`IN_TRIAGE`).
    - *Tanda Vital & Skrining:* Pengukuran Tekanan Darah Sistolik/Diastolik, Nadi, Suhu Tubuh, Laju Napas & SpO2, Antropometri & Kalkulasi BMI Otomatis, Dokumentasi Keluhan Utama, Asesmen Risiko Jatuh, Skala Nyeri (VAS 0-10), Identifikasi Alergi Obat/Makanan.

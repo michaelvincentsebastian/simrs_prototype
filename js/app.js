@@ -5,7 +5,7 @@
  */
 
 let activeWorkspaceId = "doctor-queue";
-let activeDoctorConsultationVisitId = "OPV-2026-0001";
+let activeDoctorConsultationVisitId = "REG-WALK-B8K21";
 let activeDoctorConsultationTab = "soap";
 let isAudioEnabled = true;
 let searchQuery = "";
@@ -370,6 +370,24 @@ function renderContextualTopBar() {
   const role = permissionEngine.getCurrentRole();
   const breadcrumbEl = document.getElementById("breadcrumb-current-workspace");
   const statusEl = document.getElementById("role-contextual-note");
+  const contextualBar = document.getElementById("role-contextual-bar");
+  const mainEl = document.querySelector("main");
+
+  // Hapus bar status/breadcrumb terduplikasi untuk workspace registrasi walk-in
+  if (activeWorkspaceId === "registrasi") {
+    if (contextualBar) contextualBar.classList.add("hidden");
+    if (mainEl) {
+      mainEl.classList.remove("pt-[104px]");
+      mainEl.classList.add("pt-16");
+    }
+    return;
+  } else {
+    if (contextualBar) contextualBar.classList.remove("hidden");
+    if (mainEl) {
+      mainEl.classList.remove("pt-16");
+      mainEl.classList.add("pt-[104px]");
+    }
+  }
 
   const items = role.primaryNav || [];
   const currentNav = items.find(n => n.id === activeWorkspaceId) || 
@@ -804,29 +822,13 @@ function renderRegistrasiWorkspace(container) {
       <!-- Top Context Header with + Pendaftaran CTA Button at Top Right -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-sm border-b border-line/40">
         <div class="flex flex-col">
-          <div class="flex items-center gap-2 text-ink-soft text-caption font-caption mb-1">
-            <span>Rawat Jalan</span>
-            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span>Petugas Pendaftaran Rawat Jalan</span>
-            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-            <span class="text-ink font-body-strong">Modul Registrasi Pasien</span>
-          </div>
           <div class="flex items-center gap-space-sm">
             <h1 class="font-headline-lg text-headline-lg text-ink font-bold tracking-tight">Pendaftaran Walk-in</h1>
-            <div class="flex items-center gap-1.5 px-2.5 py-1 bg-brand-tint rounded-full text-brand-strong font-caption text-caption">
-              <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
-              <span>Loket 01 Aktif</span>
-            </div>
           </div>
         </div>
 
         <!-- Quick Info & Top-Right Action: + Pendaftaran Button -->
         <div class="flex items-center gap-space-md flex-wrap">
-          <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-xl">
-            <span class="material-symbols-outlined text-[16px] text-ink-soft">access_time</span>
-            <span id="reg-clock-display" class="font-caption text-caption text-ink font-medium">08:24 WIB · Senin, 05 Okt 2026</span>
-          </div>
-
           <!-- + PENDAFTARAN BUTTON (Tombol di Kanan Atas) -->
           <button 
             type="button" 
@@ -849,16 +851,10 @@ function renderRegistrasiWorkspace(container) {
             </div>
             <div>
               <h2 class="font-headline-md text-headline-md text-ink font-bold">
-                Daftar Kunjungan Hari Ini (docs/data-model.md §3.1)
+                Daftar Kunjungan Hari Ini
               </h2>
-              <span class="text-[11px] text-ink-soft font-mono">Antrian &amp; registrasi pasien aktif rawat jalan</span>
+              <span class="text-[11px] text-ink-soft font-mono">Daftar registrasi pasien aktif rawat jalan</span>
             </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <span class="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-700 flex items-center gap-1 border border-emerald-200">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Live Sync Frappe</span>
-            </span>
           </div>
         </div>
 
@@ -878,6 +874,23 @@ function handleRegTableSearch(val) {
   }
 }
 
+function formatRegistrationTime(isoOrTime) {
+  if (!isoOrTime) return "08:00:00";
+  try {
+    if (typeof isoOrTime === "string" && isoOrTime.includes("T")) {
+      const timePart = isoOrTime.split("T")[1];
+      if (timePart) return timePart.substring(0, 8);
+    }
+    const d = new Date(isoOrTime);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false });
+    }
+    return String(isoOrTime);
+  } catch (e) {
+    return String(isoOrTime || "08:00:00");
+  }
+}
+
 function renderRecentVisitsTableHtml() {
   let allVisits = VisitStateService.getVisits();
   let visits = allVisits;
@@ -885,6 +898,7 @@ function renderRecentVisitsTableHtml() {
     visits = visits.filter(v => 
       (v.patientName && v.patientName.toLowerCase().includes(searchQuery)) || 
       (v.mrNo && v.mrNo.toLowerCase().includes(searchQuery)) || 
+      (v.id && v.id.toLowerCase().includes(searchQuery)) ||
       (v.ticketNo && v.ticketNo.toLowerCase().includes(searchQuery)) ||
       (v.departmentName && v.departmentName.toLowerCase().includes(searchQuery)) ||
       (v.practitionerName && v.practitionerName.toLowerCase().includes(searchQuery))
@@ -920,7 +934,7 @@ function renderRecentVisitsTableHtml() {
             type="text" 
             id="reg-table-search-input"
             value="${searchQuery || ''}"
-            placeholder="Cari Pasien / No. RM / Tiket..." 
+            placeholder="Cari Pasien / No. RM / ID..." 
             oninput="handleRegTableSearch(this.value)"
             class="h-8 pl-8 pr-2.5 bg-surface text-ink text-caption font-medium rounded-lg border border-line/50 focus:outline-none focus:ring-1 focus:ring-brand w-48 sm:w-60 shadow-2xs"
           />
@@ -950,7 +964,7 @@ function renderRecentVisitsTableHtml() {
 
       <div class="flex items-center gap-2">
         <span class="text-caption text-ink-soft">
-          Menampilkan: <strong class="text-ink font-mono font-bold">${visits.length}</strong> dari <span class="font-mono">${allVisits.length}</span> antrian
+          Menampilkan: <strong class="text-ink font-mono font-bold">${visits.length}</strong> dari <span class="font-mono">${allVisits.length}</span> kunjungan
         </span>
         ${isFiltered ? `
           <button onclick="searchQuery=''; resetRegQueueFilters();" class="text-caption text-brand hover:underline font-semibold ml-2 flex items-center gap-0.5">
@@ -965,26 +979,29 @@ function renderRecentVisitsTableHtml() {
       <table class="w-full text-left font-table-cell text-table-cell border-collapse">
         <thead>
           <tr class="bg-surface-container-low/60 border-b border-line text-ink-soft font-semibold text-caption">
-            <th class="p-space-sm">Tiket / ID Visit</th>
+            <th class="p-space-sm">ID</th>
+            <th class="p-space-sm">Jam Registrasi</th>
             <th class="p-space-sm">Pasien &amp; No. RM</th>
             <th class="p-space-sm">Poli Tujuan</th>
             <th class="p-space-sm">Dokter Pemeriksa</th>
             <th class="p-space-sm">Metode Pembayaran</th>
-            <th class="p-space-sm text-right">Aksi</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-line">
           ${visits.length === 0 ? `
             <tr>
               <td colspan="6" class="p-8 text-center text-ink-soft font-caption text-caption">
-                Tidak ada kunjungan atau antrian yang sesuai dengan filter yang dipilih.
+                Tidak ada data registrasi atau kunjungan yang sesuai dengan filter yang dipilih.
               </td>
             </tr>
           ` : visits.map(v => `
             <tr class="hover:bg-surface-container-low/50 transition">
               <td class="p-space-sm">
-                <span class="font-mono font-bold text-brand text-caption px-2 py-0.5 bg-brand-tint rounded">${v.ticketNo}</span>
-                <span class="block font-mono text-[10px] text-ink-soft mt-0.5">${v.id}</span>
+                <span class="font-mono font-bold text-brand text-caption px-2.5 py-1 bg-brand-tint rounded-md">${v.id}</span>
+              </td>
+              <td class="p-space-sm">
+                <span class="font-mono text-caption text-ink font-semibold">${formatRegistrationTime(v.registeredAt || v.checkedInAt)}</span>
+                <span class="text-[10px] text-ink-soft ml-0.5">WIB</span>
               </td>
               <td class="p-space-sm">
                 <span class="font-body-strong text-ink block">${v.patientName}</span>
@@ -1012,15 +1029,6 @@ function renderRecentVisitsTableHtml() {
                       : `Umum (${v.paymentSubMethod || 'Cash'})`
                   }
                 </span>
-              </td>
-              <td class="p-space-sm text-right space-x-1">
-                <button onclick="callTicket('${v.ticketNo}', '${v.departmentName}')" class="h-8 px-2 bg-surface hover:bg-brand-tint border border-line text-brand rounded-lg font-caption text-caption transition shadow-sm" title="Panggil Antrian">
-                  <span class="material-symbols-outlined text-[16px]">volume_up</span>
-                </button>
-                <button onclick="printBuktiPendaftaran('${v.id}')" class="h-8 px-2.5 bg-surface hover:bg-surface-container-low border border-line text-ink rounded-lg font-caption text-caption transition shadow-sm">
-                  <span class="material-symbols-outlined text-[16px]">print</span>
-                  <span>Tiket</span>
-                </button>
               </td>
             </tr>
           `).join("")}
@@ -1451,6 +1459,7 @@ function submitOldPatientRegistration(event) {
     closeWalkinRegistrationModal();
 
     populateSuccessModal({
+      id: visit.id,
       ticketNo: visit.ticketNo,
       patientName: visit.patientName,
       mrNo: visit.mrNo,
@@ -1459,9 +1468,7 @@ function submitOldPatientRegistration(event) {
       paymentMethodText: paymentSummary
     });
 
-    showToast(`Pendaftaran berhasil · Tiket ${visit.ticketNo} dicetak untuk ${visit.patientName}`, "success");
-
-    playAudioCall(visit.ticketNo, visit.patientName);
+    showToast(`Pendaftaran berhasil · ID ${visit.id} untuk ${visit.patientName}`, "success");
 
     refreshVisitsTable();
   } catch (err) {
@@ -1679,6 +1686,7 @@ function submitNewPatientRegistration(event) {
     closeWalkinRegistrationModal();
 
     populateSuccessModal({
+      id: visit.id,
       ticketNo: visit.ticketNo,
       patientName: visit.patientName,
       mrNo: visit.mrNo,
@@ -1687,9 +1695,7 @@ function submitNewPatientRegistration(event) {
       paymentMethodText: paymentSummary
     });
 
-    showToast(`Pasien Baru ${newPatient.name} terdaftar dengan No. RM: ${newPatient.mrNo}! Tiket: ${visit.ticketNo}`, "success");
-
-    playAudioCall(visit.ticketNo, visit.patientName);
+    showToast(`Pasien Baru ${newPatient.name} terdaftar! ID: ${visit.id}`, "success");
 
     refreshVisitsTable();
   } catch (err) {
@@ -1697,8 +1703,9 @@ function submitNewPatientRegistration(event) {
   }
 }
 
-function populateSuccessModal({ ticketNo, patientName, mrNo, poliName, doctorName, paymentMethodText }) {
+function populateSuccessModal({ id, ticketNo, patientName, mrNo, poliName, doctorName, paymentMethodText }) {
   const mNumber = document.getElementById("ticket-modal-number");
+  const mRegId = document.getElementById("ticket-modal-reg-id");
   const mName = document.getElementById("ticket-modal-name");
   const mMrn = document.getElementById("ticket-modal-mrn");
   const mPoli = document.getElementById("ticket-modal-poli");
@@ -1707,6 +1714,7 @@ function populateSuccessModal({ ticketNo, patientName, mrNo, poliName, doctorNam
   const mTime = document.getElementById("ticket-modal-time");
 
   if (mNumber) mNumber.textContent = ticketNo;
+  if (mRegId) mRegId.textContent = id || "REG-WALK-B8K21";
   if (mName) mName.textContent = patientName;
   if (mMrn) mMrn.textContent = mrNo;
   if (mPoli) mPoli.textContent = poliName;
@@ -1714,7 +1722,7 @@ function populateSuccessModal({ ticketNo, patientName, mrNo, poliName, doctorNam
   if (mPayment) mPayment.textContent = paymentMethodText || "Umum (Cash)";
   if (mTime) {
     const now = new Date();
-    mTime.textContent = `${now.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}, ${now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB`;
+    mTime.textContent = `${now.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}, ${now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit", second: "2-digit" })} WIB`;
   }
 
   const modal = document.getElementById("success-modal");
@@ -1836,18 +1844,19 @@ function renderRegDashboardView(container) {
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-canvas/50 border-b border-line/40 text-caption font-semibold text-ink-soft">
-                <th class="py-2.5 px-4">Tiket</th>
+                <th class="py-2.5 px-4">ID</th>
+                <th class="py-2.5 px-4">Jam</th>
                 <th class="py-2.5 px-4">Pasien &amp; No. RM</th>
                 <th class="py-2.5 px-4">Poli &amp; DPJP</th>
                 <th class="py-2.5 px-4">Penjamin</th>
                 <th class="py-2.5 px-4">Status</th>
-                <th class="py-2.5 px-4 text-right">Aksi</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-line/30">
               ${visits.slice(0, 6).map(v => `
                 <tr class="hover:bg-canvas/40 transition">
-                  <td class="py-2.5 px-4 font-mono font-bold text-caption text-brand">${v.ticketNo}</td>
+                  <td class="py-2.5 px-4 font-mono font-bold text-caption text-brand">${v.id}</td>
+                  <td class="py-2.5 px-4 font-mono text-caption text-ink font-semibold">${formatRegistrationTime(v.registeredAt || v.checkedInAt)}</td>
                   <td class="py-2.5 px-4">
                     <span class="font-body-strong text-ink block text-[13px] font-bold">${v.patientName}</span>
                     <span class="text-[11px] font-mono text-ink-soft">${v.mrNo}</span>
@@ -1863,14 +1872,6 @@ function renderRegDashboardView(container) {
                   </td>
                   <td class="py-2.5 px-4">
                     ${renderStatusChip(v.visitStatus)}
-                  </td>
-                  <td class="py-2.5 px-4 text-right space-x-1">
-                    <button onclick="callTicket('${v.ticketNo}', '${v.departmentName}')" class="h-8 px-2 bg-surface hover:bg-brand-tint border border-line text-brand rounded-lg text-caption transition shadow-xs">
-                      <span class="material-symbols-outlined text-[15px]">volume_up</span>
-                    </button>
-                    <button onclick="printBuktiPendaftaran('${v.id}')" class="h-8 px-2.5 bg-surface hover:bg-canvas border border-line text-ink rounded-lg text-caption font-medium transition shadow-xs">
-                      Cetak
-                    </button>
                   </td>
                 </tr>
               `).join("")}
@@ -6211,7 +6212,7 @@ async function testApiVitalSigns() {
 async function testApiSatuSehat() {
   const viewer = document.getElementById("api-log-viewer");
   viewer.textContent = "GET /encounter...";
-  const res = await frappeApi.sendSatuSehatEncounter("OPV-2026-0001");
+  const res = await frappeApi.sendSatuSehatEncounter("REG-WALK-B8K21");
   viewer.textContent = JSON.stringify(res, null, 2);
 }
 

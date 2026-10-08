@@ -163,6 +163,15 @@ class QueueService {
 // ==========================================
 // 4. Registration Service (FR-REG-*)
 // ==========================================
+function generateWalkInRegId() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let rand = "";
+  for (let i = 0; i < 5; i++) {
+    rand += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return `REG-WALK-${rand}`;
+}
+
 class RegistrationService {
   static getPatients() {
     return JSON.parse(localStorage.getItem("SIMRS_PATIENTS") || "[]");
@@ -261,8 +270,8 @@ class RegistrationService {
     const mrNo = patient ? patient.mrNo : (registration.mrNo || `RM-2026-WALK`);
     const patientId = patient ? patient.id : `PAT-WALK`;
 
-    const nextOpvNum = visits.length + 1;
-    const opvId = `OPV-2026-${String(nextOpvNum).padStart(4, "0")}`;
+    const nowIso = new Date().toISOString();
+    const walkinId = generateWalkInRegId();
     const ticketNo = QueueService.getNextSequence(department.prefix);
 
     const payerType = registration.payerType || (patient ? patient.payerType : "Umum");
@@ -284,7 +293,7 @@ class RegistrationService {
     }
 
     const newVisit = {
-      id: opvId,
+      id: walkinId,
       patientId: patientId,
       patientName: patientName,
       mrNo: mrNo,
@@ -305,21 +314,22 @@ class RegistrationService {
       visitStatus: "WAITING_TRIAGE",
       pharmacyStatus: "Not Required",
       billingStatus: "Pending",
-      checkedInAt: new Date().toISOString(),
+      registeredAt: nowIso,
+      checkedInAt: nowIso,
       ticketNo: ticketNo,
       queueType: "Triase",
       statusLog: [{
         fromState: "REGISTERED",
         toState: "WAITING_TRIAGE",
-        changedAt: new Date().toISOString(),
+        changedAt: nowIso,
         changedBy: permissionEngine.getCurrentRole().name,
-        reason: "Pendaftaran Walk-in & Check-in Loket"
+        reason: "Pendaftaran Walk-in"
       }]
     };
 
     visits.unshift(newVisit); // Add to beginning of queue list
     VisitStateService.saveVisits(visits);
-    AuditService.log(`Registrasi Kunjungan Rawat Jalan: ${patientName} ke ${department.name} (Tiket: ${ticketNo})`);
+    AuditService.log(`Registrasi Kunjungan Walk-in: ${patientName} ke ${department.name} (ID: ${walkinId})`);
     
     return newVisit;
   }

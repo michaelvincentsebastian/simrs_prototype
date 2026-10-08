@@ -347,7 +347,7 @@ const SIMRS_MASTER_DATA = {
 
   initialVisits: [
     {
-      id: "OPV-2026-0001",
+      id: "REG-WALK-B8K21",
       patientId: "PAT-001",
       patientName: "Bambang Sutrisno",
       mrNo: "RM-2026-0042",
@@ -362,6 +362,7 @@ const SIMRS_MASTER_DATA = {
       visitStatus: "IN_SERVICE",
       pharmacyStatus: "Not Required",
       billingStatus: "Pending",
+      registeredAt: "2026-10-05T08:15:00",
       checkedInAt: "2026-10-05T08:15:00",
       triageStartedAt: "2026-10-05T08:22:00",
       triageCompletedAt: "2026-10-05T08:30:00",
@@ -428,6 +429,7 @@ const SIMRS_MASTER_DATA = {
       visitStatus: "WAITING_DOCTOR",
       pharmacyStatus: "Not Required",
       billingStatus: "Pending",
+      registeredAt: "2026-10-05T08:35:00",
       checkedInAt: "2026-10-05T08:35:00",
       triageStartedAt: "2026-10-05T08:42:00",
       triageCompletedAt: "2026-10-05T08:50:00",
@@ -456,7 +458,7 @@ const SIMRS_MASTER_DATA = {
       }
     },
     {
-      id: "OPV-2026-0003",
+      id: "REG-WALK-D9M47",
       patientId: "PAT-003",
       patientName: "Drs. Hendro Wibowo",
       mrNo: "RM-2026-0105",
@@ -471,6 +473,7 @@ const SIMRS_MASTER_DATA = {
       visitStatus: "WAITING_TRIAGE",
       pharmacyStatus: "Not Required",
       billingStatus: "Pending",
+      registeredAt: "2026-10-05T09:05:00",
       checkedInAt: "2026-10-05T09:05:00",
       ticketNo: "T-003",
       queueType: "Triase"
@@ -491,6 +494,7 @@ const SIMRS_MASTER_DATA = {
       visitStatus: "SERVICE_COMPLETED",
       pharmacyStatus: "Preparing",
       billingStatus: "Pending",
+      registeredAt: "2026-10-05T08:00:00",
       checkedInAt: "2026-10-05T08:00:00",
       triageCompletedAt: "2026-10-05T08:18:00",
       serviceStartedAt: "2026-10-05T08:25:00",
@@ -536,7 +540,7 @@ const SIMRS_MASTER_DATA = {
       }
     },
     {
-      id: "OPV-2026-0005",
+      id: "REG-WALK-F2N83",
       patientId: "PAT-005",
       patientName: "Muhammad Rayhan (Anak)",
       mrNo: "RM-2026-0210",
@@ -551,6 +555,7 @@ const SIMRS_MASTER_DATA = {
       visitStatus: "WAITING_TRIAGE",
       pharmacyStatus: "Not Required",
       billingStatus: "Pending",
+      registeredAt: "2026-10-05T09:12:00",
       checkedInAt: "2026-10-05T09:12:00",
       ticketNo: "T-004",
       queueType: "Triase"
@@ -571,6 +576,7 @@ const SIMRS_MASTER_DATA = {
       visitStatus: "WAITING_DOCTOR",
       pharmacyStatus: "Not Required",
       billingStatus: "Pending",
+      registeredAt: "2026-10-05T08:50:00",
       checkedInAt: "2026-10-05T08:50:00",
       triageCompletedAt: "2026-10-05T09:05:00",
       ticketNo: "B-001",
@@ -597,7 +603,7 @@ const SIMRS_MASTER_DATA = {
       }
     },
     {
-      id: "OPV-2026-0007",
+      id: "REG-WALK-H5P19",
       patientId: "PAT-003",
       patientName: "Agus Setiawan",
       mrNo: "RM-2026-0220",
@@ -612,6 +618,7 @@ const SIMRS_MASTER_DATA = {
       visitStatus: "WAITING_TRIAGE",
       pharmacyStatus: "Not Required",
       billingStatus: "Pending",
+      registeredAt: "2026-10-05T09:20:00",
       checkedInAt: "2026-10-05T09:20:00",
       ticketNo: "T-005",
       queueType: "Triase"
@@ -632,6 +639,7 @@ const SIMRS_MASTER_DATA = {
       visitStatus: "WAITING_DOCTOR",
       pharmacyStatus: "Not Required",
       billingStatus: "Pending",
+      registeredAt: "2026-10-05T08:40:00",
       checkedInAt: "2026-10-05T08:40:00",
       triageCompletedAt: "2026-10-05T09:00:00",
       ticketNo: "E-001",
@@ -658,7 +666,7 @@ const SIMRS_MASTER_DATA = {
       }
     },
     {
-      id: "OPV-2026-0009",
+      id: "REG-WALK-K3T64",
       patientId: "PAT-002",
       patientName: "Hj. Maryam",
       mrNo: "RM-2026-0230",
@@ -673,6 +681,7 @@ const SIMRS_MASTER_DATA = {
       visitStatus: "WAITING_TRIAGE",
       pharmacyStatus: "Not Required",
       billingStatus: "Pending",
+      registeredAt: "2026-10-05T09:30:00",
       checkedInAt: "2026-10-05T09:30:00",
       ticketNo: "T-006",
       queueType: "Triase"
@@ -682,18 +691,18 @@ const SIMRS_MASTER_DATA = {
 
 // Seed or retrieve from LocalStorage
 function initDatabase() {
-  if (!localStorage.getItem("SIMRS_DB_VERSION") || localStorage.getItem("SIMRS_DB_VERSION") !== "3.3") {
+  if (!localStorage.getItem("SIMRS_DB_VERSION") || localStorage.getItem("SIMRS_DB_VERSION") !== "3.4") {
     localStorage.setItem("SIMRS_PATIENTS", JSON.stringify(SIMRS_MASTER_DATA.initialPatients));
     localStorage.setItem("SIMRS_VISITS", JSON.stringify(SIMRS_MASTER_DATA.initialVisits));
     localStorage.setItem("SIMRS_APPOINTMENTS", JSON.stringify(SIMRS_MASTER_DATA.appointments));
     localStorage.setItem("SIMRS_BPJS_REFERRALS", JSON.stringify(SIMRS_MASTER_DATA.bpjsReferrals));
     localStorage.setItem("SIMRS_TICKETS_SEQ", JSON.stringify({ A: 3, B: 2, C: 1, D: 1, E: 2, F: 2, K: 1, T: 7 }));
     localStorage.setItem("SIMRS_AUDIT_LOGS", JSON.stringify([
-      { timestamp: "2026-10-05 08:15:22", user: "Budi Santoso", role: "Petugas Pendaftaran RJ", action: "Check-In Pasien Walk-in: Bambang Sutrisno (Tiket A-001)" },
+      { timestamp: "2026-10-05 08:15:22", user: "Budi Santoso", role: "Petugas Pendaftaran RJ", action: "Registrasi Pasien Walk-in: Bambang Sutrisno (ID: REG-WALK-B8K21)" },
       { timestamp: "2026-10-05 08:30:10", user: "Ns. Siti Rahma", role: "Perawat", action: "Selesai Triase & Input TTV: Bambang Sutrisno -> Routing ke dr. Hendra" },
       { timestamp: "2026-10-05 08:45:04", user: "dr. Hendra Pratama", role: "Dokter", action: "Mulai Pelayanan Medis / Buka Rekam Medis Pasien: Bambang Sutrisno" }
     ]));
-    localStorage.setItem("SIMRS_DB_VERSION", "3.3");
+    localStorage.setItem("SIMRS_DB_VERSION", "3.4");
   }
 }
 

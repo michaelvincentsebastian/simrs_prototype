@@ -62,13 +62,12 @@ Struktur ini mengintegrasikan **5 submodul inti stakeholder (`SIMRS-0.1.hirarki`
 RAWAT JALAN
 │
 ├── 1. Submodul Registrasi Pasien (Petugas Pendaftaran RJ)
-│   ├── 1.1 Pendaftaran Walk-in (Pasien Baru & Lama, Kuota Poli, DPJP, Payer)
+│   ├── 1.1 Pendaftaran Walk-in (Pasien Baru & Lama, Kuota Poli, DPJP, Payer, ID REG-WALK-xxxxx)
 │   ├── 1.2 Rujukan BPJS & Penerbitan SEP (Surat Eligibilitas Berobat)
-│   ├── 1.3 Live Queue & Monitoring Loket Pendaftaran
-│   ├── 1.4 Pemanggilan & Cetak Tiket Antrian Termal (58/80mm)
-│   ├── 1.5 Cetak Slip Bukti Pendaftaran Resmi
-│   ├── 1.6 Cek Duplikasi NIK 16 Digit & Validasi Rekam Medis
-│   └── 1.7 Anjungan Pendaftaran Mandiri (APM Kiosk)
+│   ├── 1.3 Riwayat Registrasi Hari Ini (ID Registrasi, Jam Registrasi & Status Kunjungan)
+│   ├── 1.4 Cetak Tiket Antrian Triase Termal (58/80mm) & Slip Bukti Pendaftaran
+│   ├── 1.5 Cek Duplikasi NIK 16 Digit & Validasi Rekam Medis
+│   └── 1.6 Anjungan Pendaftaran Mandiri (APM Kiosk)
 │
 ├── 2. Submodul TTV & Triase (Perawat)
 │   ├── 2.1 Antrian Triase Pasien per Stasiun & Poliklinik
@@ -163,7 +162,7 @@ Setiap peran memiliki workstation, izin akses (`allowedWorkspaces`), dan navigas
 | 1.1.1 | Cari Pasien & Duplikasi NIK | Custom Field `nik` pada `Patient` + validation hook | C | ✅ **Selesai** (Cari NIK/MRN/Nama + Alert Duplikasi) |
 | 1.1.2 | Form Pasien Baru Walk-in | Dialog buat `Patient` baru | N/C | ✅ **Selesai** (Modal form Pasien Baru) |
 | 1.1.3 | Kuota Poli & Dokter DPJP | `Healthcare Practitioner Schedule` | N | ✅ **Selesai** (6 Poli, 5 Dokter, jadwal & kuota) |
-| 1.1.4 | Tiket Termal & Slip Bukti | Print Format thermal & slip pendaftaran | C | ✅ **Selesai** (Preview Tiket & Slip Pendaftaran) |
+| 1.1.4 | Tiket Triase & Slip Bukti | Print Format thermal tiket triase & slip registrasi (ID REG-WALK) | C | ✅ **Selesai** (Preview Tiket Triase & Slip Pendaftaran) |
 | **1.2** | **Rujukan BPJS & SEP** | Integrasi BPJS / custom doctype `BPJS Referral` | X | ✅ **Selesai** (Verifikasi rujukan & Cetak SEP resmi) |
 | **1.3** | **Kiosk / APM Mandiri** | Route `/kiosk` (Akun `Kiosk Device`) | X | ✅ **Selesai** (Layar sentuh APM QR & Walk-in lama) |
 | **1.4** | **Check-in Kunjungan** | Service `VisitStateService` → `Outpatient Visit` | X | ✅ **Selesai** (Inisiasi kunjungan `WAITING_TRIAGE`) |

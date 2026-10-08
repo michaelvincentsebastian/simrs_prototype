@@ -12,7 +12,7 @@
       serta pemilihan metode pembayaran/skema penjamin (BPJS Kesehatan, Asuransi Swasta, Perusahaan Penjamin
       kerjasama dengan input nama perusahaan &amp; kode penjamin, serta Pasien Umum dengan kanal bayar
       Cash, Credit/Debit, QRIS, dan VA beserta input detail transaksi).
-      Diakhiri penerbitan kunjungan Outpatient Visit (WAITING_TRIAGE), tiket antrian triase (T-xxx), cetak thermal, dan audio bell.
+      Diakhiri penerbitan kunjungan Outpatient Visit (WAITING_TRIAGE, format ID: REG-WALK-[random char] beserta jam registrasi), tiket antrian triase (T-xxx), dan cetak bukti pendaftaran/tiket thermal (tanpa antrian loket/audio bell; pemanggilan antrian dimulai di Triase &amp; Dokter).
       Hirarki: §1.2 Walk-in Registration, §1.5 Verifikasi Identitas, §1.6 Verifikasi Penjamin, §1.7 Antrian Rawat Jalan.
       Aktor: Pasien, Staf Registrasi Loket, Sistem SIMRS.
     </bpmn:documentation>
@@ -50,7 +50,6 @@
         <bpmn:flowNodeRef>Task_CekDuplikasiNIK</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_GenerateMRN</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_CekJadwalKuota</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>Task_AudioBellDisplay</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_CetakTiketThermal</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_BuatKunjunganVisit</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_GenerateNomorTiket</bpmn:flowNodeRef>
@@ -60,7 +59,7 @@
       <bpmn:outgoing>F01</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:userTask id="Task_DatangLoket" name="Menuju loket pendaftaran rawat jalan">
-      <bpmn:documentation>Pasien mengambil nomor antrian loket pendaftaran atau langsung menuju meja admisi</bpmn:documentation>
+      <bpmn:documentation>Pasien langsung menuju meja admisi pendaftaran rawat jalan (antrian loket pendaftaran ditiadakan)</bpmn:documentation>
       <bpmn:incoming>F01</bpmn:incoming>
       <bpmn:outgoing>F02</bpmn:outgoing>
     </bpmn:userTask>
@@ -104,7 +103,6 @@
     <bpmn:sequenceFlow id="F_Perusahaan" name="Perusahaan Penjamin" sourceRef="GW_MetodePembayaran" targetRef="Task_InputPerusahaanPenjamin" />
     <bpmn:sequenceFlow id="F_Umum" name="Umum / Mandiri" sourceRef="GW_MetodePembayaran" targetRef="Task_PilihKanalUmum" />
     <bpmn:sequenceFlow id="F24" sourceRef="Task_SubmitPendaftaran" targetRef="Task_BuatKunjunganVisit" />
-    <bpmn:sequenceFlow id="F28" sourceRef="Task_AudioBellDisplay" targetRef="Task_TerimaTiketTriase" />
     <bpmn:userTask id="Task_PeringatanDuplikat" name="Peringatan NIK ganda: konfirmasi dan beralih ke Pasien Lama">
       <bpmn:documentation>Banner peringatan muncul: NIK telah terdaftar atas nama pasien aktif. Staf diarahkan memilih data pasien lama.</bpmn:documentation>
       <bpmn:incoming>F_NIKDuplikat</bpmn:incoming>
@@ -200,13 +198,13 @@
     <bpmn:endEvent id="End_TerdaftarWalkin" name="Pasien terdaftar &#38; menuju ruang tunggu Triase Rawat Jalan">
       <bpmn:incoming>F29</bpmn:incoming>
     </bpmn:endEvent>
-    <bpmn:userTask id="Task_TerimaTiketTriase" name="Pasien menerima bukti pendaftaran &#38; tiket antrian triase">
+    <bpmn:userTask id="Task_TerimaTiketTriase" name="Pasien menerima bukti pendaftaran &amp; tiket antrian triase">
       <bpmn:documentation>Pasien mengambil tiket fisik yang diserahkan petugas loket pendaftaran</bpmn:documentation>
-      <bpmn:incoming>F28</bpmn:incoming>
+      <bpmn:incoming>F27</bpmn:incoming>
       <bpmn:outgoing>F29</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:sequenceFlow id="F29" sourceRef="Task_TerimaTiketTriase" targetRef="End_TerdaftarWalkin" />
-    <bpmn:serviceTask id="Task_CekDuplikasiNIK" name="Sistem validasi format &#38; deteksi duplikasi NIK real-time">
+    <bpmn:serviceTask id="Task_CekDuplikasiNIK" name="Sistem validasi format &amp; deteksi duplikasi NIK real-time">
       <bpmn:documentation>Mencegah duplikasi nomor rekam medis jika NIK telah terdaftar sebelumnya (§1.5)</bpmn:documentation>
       <bpmn:incoming>F08</bpmn:incoming>
       <bpmn:outgoing>F09</bpmn:outgoing>
@@ -216,23 +214,18 @@
       <bpmn:incoming>F11</bpmn:incoming>
       <bpmn:outgoing>F12</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Task_CekJadwalKuota" name="Sistem verifikasi jadwal praktik dokter &#38; sisa kuota slot">
+    <bpmn:serviceTask id="Task_CekJadwalKuota" name="Sistem verifikasi jadwal praktik dokter &amp; sisa kuota slot">
       <bpmn:documentation>Sistem memverifikasi jam praktik, ruangan poli, dan ketersediaan kuota antrian dokter</bpmn:documentation>
       <bpmn:incoming>F14</bpmn:incoming>
       <bpmn:outgoing>F15</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:serviceTask id="Task_AudioBellDisplay" name="Putar audio bell pemanggilan antrian &#38; perbarui display loket">
-      <bpmn:documentation>Sistem memutar suara panggil nomor antrian dan memperbarui antrian pada display televisi ruang tunggu</bpmn:documentation>
-      <bpmn:incoming>F27</bpmn:incoming>
-      <bpmn:outgoing>F28</bpmn:outgoing>
-    </bpmn:serviceTask>
-    <bpmn:serviceTask id="Task_CetakTiketThermal" name="Cetak bukti pendaftaran &#38; tiket antrian thermal">
-      <bpmn:documentation>Printer loket mencetak bukti pendaftaran resmi dan tiket nomor antrian triase ber-QR code</bpmn:documentation>
+    <bpmn:serviceTask id="Task_CetakTiketThermal" name="Cetak bukti pendaftaran &amp; tiket antrian thermal">
+      <bpmn:documentation>Printer loket mencetak bukti pendaftaran resmi ber-ID registrasi dan tiket nomor antrian triase</bpmn:documentation>
       <bpmn:incoming>F26</bpmn:incoming>
       <bpmn:outgoing>F27</bpmn:outgoing>
     </bpmn:serviceTask>
     <bpmn:serviceTask id="Task_BuatKunjunganVisit" name="Sistem buat Outpatient Visit (Status: WAITING_TRIAGE)">
-      <bpmn:documentation>Sistem membuat dokumen kunjungan rawat jalan (OPV-2026-xxxx) dengan status WAITING_TRIAGE dan tautan poli &amp; dokter</bpmn:documentation>
+      <bpmn:documentation>Sistem membuat dokumen kunjungan rawat jalan (ID: REG-WALK-xxxxx) dengan timestamp jam registrasi (registeredAt), status WAITING_TRIAGE dan tautan poli &amp; dokter</bpmn:documentation>
       <bpmn:incoming>F24</bpmn:incoming>
       <bpmn:outgoing>F25</bpmn:outgoing>
     </bpmn:serviceTask>
@@ -241,7 +234,7 @@
       <bpmn:incoming>F25</bpmn:incoming>
       <bpmn:outgoing>F26</bpmn:outgoing>
     </bpmn:serviceTask>
-    <bpmn:sequenceFlow id="F27" sourceRef="Task_CetakTiketThermal" targetRef="Task_AudioBellDisplay" />
+    <bpmn:sequenceFlow id="F27" sourceRef="Task_CetakTiketThermal" targetRef="Task_TerimaTiketTriase" />
     <bpmn:sequenceFlow id="F26" sourceRef="Task_GenerateNomorTiket" targetRef="Task_CetakTiketThermal" />
     <bpmn:sequenceFlow id="F25" sourceRef="Task_BuatKunjunganVisit" targetRef="Task_GenerateNomorTiket" />
     <bpmn:exclusiveGateway id="GW_MetodePembayaran" name="Pilihan Skema Pembayaran?">
@@ -363,9 +356,6 @@
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_CekJadwalKuota_di" bpmnElement="Task_CekJadwalKuota">
         <dc:Bounds x="3160" y="700" width="120" height="80" />
-      </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="Task_AudioBellDisplay_di" bpmnElement="Task_AudioBellDisplay">
-        <dc:Bounds x="5300" y="720" width="120" height="80" />
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Task_CetakTiketThermal_di" bpmnElement="Task_CetakTiketThermal">
         <dc:Bounds x="5120" y="720" width="120" height="80" />
@@ -528,12 +518,6 @@
         <di:waypoint x="4720" y="760" />
         <di:waypoint x="4760" y="760" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="F28_di" bpmnElement="F28">
-        <di:waypoint x="5420" y="760" />
-        <di:waypoint x="5460" y="760" />
-        <di:waypoint x="5460" y="120" />
-        <di:waypoint x="5500" y="120" />
-      </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F04_di" bpmnElement="F04">
         <di:waypoint x="920" y="330" />
         <di:waypoint x="980" y="330" />
@@ -586,7 +570,9 @@
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F27_di" bpmnElement="F27">
         <di:waypoint x="5240" y="760" />
-        <di:waypoint x="5300" y="760" />
+        <di:waypoint x="5370" y="760" />
+        <di:waypoint x="5370" y="120" />
+        <di:waypoint x="5500" y="120" />
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="F26_di" bpmnElement="F26">
         <di:waypoint x="5060" y="760" />

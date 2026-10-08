@@ -60,7 +60,7 @@ Daftar peran operasional yang aktif pada prototipe web app interaktif:
 ### 4.1 Lima Akun Demo Inti (1-Klik Login):
 | Persona | Role Key | Akun / Password | Workspace Landing | Tugas & Kewenangan Inti |
 |---|---|---|---|---|
-| **Petugas Pendaftaran RJ** | `REGISTRATION_STAFF` | `staf.budi` / `registrasi123` | `registrasi` | Walk-in registration (pasien baru/lama), cek duplikasi NIK, verifikasi penjamin, rujukan BPJS & cetak SEP, cetak tiket triase & bukti pendaftaran resmi, pemanggilan loket. |
+| **Petugas Pendaftaran RJ** | `REGISTRATION_STAFF` | `staf.budi` / `registrasi123` | `registrasi` | Walk-in registration (pasien baru/lama) dengan ID format `REG-WALK-[random char]`, jam registrasi (`registeredAt`), cek duplikasi NIK, verifikasi penjamin, rujukan BPJS & cetak SEP, cetak tiket triase & slip bukti pendaftaran resmi (tanpa antrian/pemanggilan loket). |
 | **Perawat Triase** | `NURSING_USER` | `perawat.siti` / `perawat123` | `ttv-queue` | Pemantauan antrian triase stasiun, pemanggilan audio, pengukuran TTV lengkap (TD, Nadi, Suhu, RR, SpO2), kalkulasi BMI otomatis, keluhan utama, risiko jatuh, skala nyeri VAS 0-10, riwayat alergi, penetapan ESI, routing dokter. |
 | **Dokter Rawat Jalan** | `PHYSICIAN` | `dokter.hendra` / `dokter123` | `doctor-queue` | My Queue antrian dokter spesialis, telaah ringkasan TTV & alergi, pengisian rekam medis SOAP, penetapan diagnosis ICD-10 utama, order uji lab patologi klinik, tindakan medis berbayar, resep formularium online, rujukan online lintas spesialis/lab/radiologi/rehab, simpan draft vs finalisasi encounter, cetak resume medis resmi 11 elemen Permenkes RI. |
 | **Kasir Rawat Jalan** | `CASHIER` | `kasir.linda` / `kasir123` | `cashier-queue` | Pemantauan tagihan siap bayar (`SERVICE_COMPLETED`), rekapitulasi agregasi biaya otomatis (pendaftaran, konsultasi dokter, asuhan keperawatan, tindakan, lab, obat), penambahan tindakan susulan, pemrosesan multi-metode pembayaran (Tunai, Debit, Kartu Kredit, QRIS, Jaminan Asuransi, Jaminan Perusahaan), penerbitan & cetak kwitansi resmi bernomor. |
@@ -149,8 +149,8 @@ Notasi: **FR-<MODUL>-nnn** · *Role* = aktor utama · Prioritas Must/Should/Coul
 | FR-REG-003 | Form registrasi pasien baru walk-in dengan input demografi lengkap | Modal `#modal-new-patient`, `submitNewPatient()` | Registration | ✅ Selesai |
 | FR-REG-004 | Pilihan poliklinik dan dokter praktik dengan kuota antrian dinamis | Select `#poli-select`, `#dokter-select` | Registration | ✅ Selesai |
 | FR-REG-005 | Verifikasi penjamin (Umum, BPJS Kesehatan, Asuransi Swasta, Perusahaan) | Radio penjamin, modal BPJS SEP | Registration | ✅ Selesai |
-| FR-REG-006 | Cetak tiket antrian termal triase (58/80mm) dan slip bukti pendaftaran resmi | Modal preview `#modal-thermal-ticket`, `#modal-print-preview` | Registration | ✅ Selesai |
-| FR-REG-007 | Live table pemantauan antrian pendaftaran hari ini dengan filter status dan tombol panggil | Table `#registration-visits-table-container` | Registration | ✅ Selesai |
+| FR-REG-006 | Cetak tiket antrian termal triase (58/80mm) dan slip bukti pendaftaran resmi ber-ID registrasi | Modal preview `#modal-thermal-ticket`, `#modal-print-preview` | Registration | ✅ Selesai |
+| FR-REG-007 | Pemantauan registrasi pasien rawat jalan hari ini mencakup ID registrasi, Jam Registrasi, filter status, dan tujuan (tanpa antrian loket / audio bell loket) | Table `#registration-visits-table-container` | Registration | ✅ Selesai |
 | FR-REG-008 | Penerimaan rujukan online BPJS dan penerbitan formulir Surat Eligibilitas Berobat (SEP) | Workspace `reg-bpjs`, fungsi `printSEP()` | Registration | ✅ Selesai |
 | FR-REG-009 | Anjungan Pendaftaran Mandiri (APM Kiosk) untuk check-in QR & walk-in pasien lama | Workspace `kiosk`, `renderKioskWorkspace()` | Kiosk Device | ✅ Selesai |
 
